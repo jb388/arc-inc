@@ -1,0 +1,52 @@
+Files: "Beem-Miller_archived_inkubations2.xlsx"
+Source: Manuel Rost <mrost@bgc-jena.mpg.de>
+Curator: J. Beem-Miller
+Date received: 17-May-2019
+Contents:
+  - CO2 measurements, jar information, measurement schedule, and soil and moisture data for first round of archived incubation experiment
+Notes:
+  - also contains copies of 13C and 14C data, but subsequent analysis draws from raw iso lab data files
+  - samples analyzed:
+    - MA-1
+    - MA-2
+    - MA-3
+    - MB-1
+    - MB-2
+    - MB-3
+    - SA-1
+    - SA-2
+    - SA-3
+    - SB-1
+    - SB-2
+    - SB-3
+    - Du123-1
+    - Du120-1
+    - TVA 4E C-1
+    - TVA 6E C-1
+    - TVA 8E C-1
+    - TVA 2B C-1
+    - TVA 3B C-1
+    - TVA 5B C-1
+    - WB 4B C-1
+    - WB 5B C-1
+    - WB 8B C-1
+    - WB 3E C-1
+    - WB 6E C-1
+    - WB 7E C-1
+    - HEW26-1
+    - HEW26-2
+    - HEW47-1
+    - HEW47-2
+    - HEG20-1
+    - HEG20-2
+    - HEG20-3
+    - HEG33-1
+    - HEG33-2
+    - HEG33-3
+    - HEG6-1
+    - HEG6-2
+    - HEG6-3
+    - HEW49-1
+  - final numeral in ID is lab replicate; n reps determined by mass of available sample
+  - most (maybe all?) data in file "ArcInc_IncData_2018.xlsx" is duplicated here
+References:

@@ -1,0 +1,29 @@
+Files: "ArcInc_IncData_2018.xlsx"
+Source: Manuel Rost <mrost@bgc-jena.mpg.de>
+Curator: J. Beem-Miller
+Date received: 30-Jul-2018
+Contents:
+  - soil dry weights and jar information for first round of archived soil incubations
+Notes:
+  - samples analyzed:
+    - MA-1
+    - MA-2
+    - MA-3
+    - MB-1
+    - MB-2
+    - MB-3
+    - SA-1
+    - SA-2
+    - SA-3
+    - SB-1
+    - SB-2
+    - SB-3
+    - Du123-1
+    - Du120-1
+    - TVA 4E C-1
+    - TVA 6E C-1
+    - TVA 8E C-1
+    - TVA 2B C-1
+    - TVA 3B C-1
+    - TVA 5B C-1
+References:
