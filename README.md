@@ -1,2 +1,2 @@
 # arc-inc
-Code and data for archived soil incubation project
+Code, data, and documents for archived soil incubation project
