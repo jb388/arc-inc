@@ -1,0 +1,9 @@
+Files: "jar_information.csv"
+Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Curator: J. Beem-Miller
+Date: 20 Apr 2020
+Contents:
+  - soil mass and moisture data for air-dry + storage samples, t2, copied from data/raw/lab_jena_results-co2_2019-02-25/Beem-Miller_archived_incubations_2.xlsx sheet 'jar_information'
+Notes:
+  - "save as" csv version of above workbook/sheet but with rows 1 and 2 collapsed to a single header row
+References:

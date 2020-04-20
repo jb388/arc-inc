@@ -13,4 +13,3 @@
 2020-04-20
   - creating single excel files from previous "master" data file (arc_inc_IDs.xlsx)
   - new .xlsx files will consist of a metadata sheet, the original data, and the transformed data in a .csv-friendly format
-  

@@ -1,12 +1,9 @@
-Files: "arc-inc_xplr_arc-storage-t2-flux_2020-04-20.xlsx"
+Files: "arc-inc_xplr_arc-storage-t2-flux_2020-04-20.csv"
 Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
 Curator: J. Beem-Miller
 Date: 20 Apr 2020
 Contents:
-  - CO2 fluxes for time 2 of archive + storage treatment samples
+  - CO2 fluxes for 2018 incubation of archive + storage treatment samples (collected 2011)
 Notes:
-  - Sheet 'Jar_Information_copy' contains flux data copied verbatim from data/external/exploratories_ischoening_co2_2011/data file incubations.xlsx sheet 'Jar_information'
-  - Sheet 't1_fluxes' is the .csv source, and contains the extracted raw CO2 flux data
-    - Sheet 't1_fluxes' column D ("water_holding_capacity_60_factor") values are the percent increase in weight relative to the dry soil at a water holding capacity (WHC) of 60%. Note that incubation samples were moistened to 60% WHC from field-moisture status; soil WHC was determined on a separate subsample.
-    - Sheet 't1_fluxes' column E ("dry_soil_wt_corrected_g") values for samples missing data were calculated using the water holding capacity factor (SEW11, SEW34, SEW43).
+  - "save as" .csv version of sheet 'summary' from data/raw/lab_jena_results-co2_2019-02-25/Beem-Miller_archived_incubations_2.xlsx
 References:
