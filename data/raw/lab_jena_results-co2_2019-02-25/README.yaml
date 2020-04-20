@@ -6,6 +6,11 @@ Contents:
   - CO2 measurements, jar information, measurement schedule, and soil and moisture data for second round of archived incubation experiment
 Notes:
   - also contains copies of 13C and 14C data, but subsequent analysis draws from raw iso lab data files
+  - All samples from Biodiversity Exploratories plots
+  - CO2 data in this file is for incubations conducted in 2018 on soils collected in 2011, split, and subsequently air-dried and stored
+  - Note that the other sample split was incubated in 2011 without air-drying
+  - sheet 'summary' was added by J. Beem-Miller, and summarizes all CO2 flux data from each measurement date
+  - sampling time was not recorded for the preincubation period; 10AM was used as a best guess estimate
   - samples analyzed:
     - HEG10-2-1
     - HEG10-2-2

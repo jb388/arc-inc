@@ -9,3 +9,8 @@
   - renamed summary file "OakRidge_CO2_fluxes_summary_2020-04-09.xlsx" to "co2Flux_ornl_sum_2020-04-13.xlsx" using new convention: dataType_source_category_YYYY-MM-DD
   - updated 'meta' sheet with dry soil mass source
   - may want to change absolute values to links to preserve sources of copied data, but then again, I really dislike Excel files with links to external files, so maybe not...
+
+2020-04-20
+  - creating single excel files from previous "master" data file (arc_inc_IDs.xlsx)
+  - new .xlsx files will consist of a metadata sheet, the original data, and the transformed data in a .csv-friendly format
+  
