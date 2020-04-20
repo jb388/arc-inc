@@ -1,0 +1,34 @@
+---
+title: "Archived Soil Incubations Project"
+author: "J. Beem-Miller"
+date: "20 Apr 2020"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document:
+    latex_engine: xelatex
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(dplyr)
+library(SoilR)
+library(corrplot)
+```
+
+```{r read-data, echo = FALSE}
+# read data (tab 'R_ISE_dd-mm-yyyy' from "Fahey_ISE_FineRoots_15-05-2019.xlsx")
+ise <- read.csv("../data/derived/2020-04-17/ise_14c-root_2020-04-17.csv")
+# create new IDs from treat, horizon, rep
+ise$ID <- paste(ise$Treat, ise$Horizon, ise$Rep, sep = "_")
+# combine UCI and Jena 14c data
+ise$d14C <- ifelse(is.na(ise$d14_UCI), ise$d14_JEN, ise$d14_UCI)
+# factorize Plot
+ise$plot_f <- factor(ise$Plot)
+```
+
