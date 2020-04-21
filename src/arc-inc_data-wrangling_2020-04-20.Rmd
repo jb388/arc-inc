@@ -1,7 +1,7 @@
 ---
 title: "Archived Soil Incubations Project"
 author: "J. Beem-Miller"
-date: "20 Apr 2020"
+date: "21 Apr 2020"
 output:
   html_notebook: default
   html_document:
@@ -101,7 +101,8 @@ rewet.dry.ts <- read.csv("../data/derived/2020-04-21_dried-2019-flux/dried-2019-
 ```
 
 3. Combine and summarize data in long format to calculate respiration rates and plot over time.
-```{r summarize data, echo = FALSE}
+```{r summarize data, echo = FALSE, include = FALSE}
+# NB: set "include" to false to suppress bind_rows warning about coercing factor to char
 # remove formula_check columns
 invisible(list2env(lapply(list(archive.arc.ts = archive.arc.ts, 
                                rewet.ctl.ts = rewet.ctl.ts, 
@@ -122,7 +123,7 @@ rewet.dry.ts$Treatment <- "air-dry (2019)"
 
 # combine rewet data
 rewet.ts <- rbind(rewet.ctl.ts, rewet.dry.ts)
-rewet.ts$Experiment <- "rewet"
+rewet.ts$Experiment <- "2019"
 
 # add soil dry wt data
 archive.arc.ts$dw_g <- jarinfo.arc[match(archive.arc.ts$SampleName, jarinfo.arc$Sample), "Soil.dry.weight_.g."]
@@ -132,7 +133,7 @@ rewet.ts <- merge(rewet.ts, jarinfo.rewet[ , c("ID", "Treatment", "dw_g")], by =
 # combine archive data
 archive.ts <- rbind(archive.ctl.ts, 
                     archive.arc.ts[ , names(archive.ctl.ts)])
-archive.ts$Experiment <- "archive"
+archive.ts$Experiment <- "2011"
 
 # Test that required names are present
 nms <- c("ID", "Experiment", "Treatment", "Period", "timepoint_cmtv",  "time_d", "time_d_cmtv", "mgCO2_jar", "dw_g")
@@ -217,4 +218,10 @@ ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
   theme_bw() +
   theme(panel.grid = element_blank())
 ```
-# Isoptope data
+# Isotope data
+Read in isotope data from various sources.
+```{r read iso data, echo = FALSE}
+r3.iso <- read.csv("/Users/jeff/R/14Constraint/arc_inc_iso_06-02-2020.csv")
+```
+
+

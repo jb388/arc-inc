@@ -15,5 +15,6 @@
   - new .xlsx files will consist of a metadata sheet, the original data, and the transformed data in a .csv-friendly format
 
 2020-04-21
-  - updated names of t1 flux file (csv) and source sheet; deleted old folder and made a new one
-  - 
+  - major updates in readmes and .csv files
+  - details noted in readmes
+  - completed Rmd section for plotting CO2 curves, using new data structure and moving some of the data wrangling to R
