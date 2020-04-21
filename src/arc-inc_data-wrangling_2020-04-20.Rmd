@@ -3,11 +3,11 @@ title: "Archived Soil Incubations Project"
 author: "J. Beem-Miller"
 date: "21 Apr 2020"
 output:
-  html_notebook: default
-  html_document:
-    df_print: paged
   pdf_document:
     latex_engine: xelatex
+  html_document:
+    df_print: paged
+  html_notebook: default
 ---
 ```{r setup, include = FALSE}
 library(ggplot2)
@@ -188,7 +188,7 @@ ts.avg <- bind_rows(lapply(ts.avg, bind_rows))
 ts.avg <- as.data.frame(lapply(ts.avg, type.convert))
 ```
 
-4. Plot CO~2~ fluxes over time.
+4. Plot of CO~2~ fluxes over time. The final measurement points for a few samples that took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat.
 ```{r CO2 fluxes plots, echo = FALSE}
 ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
   geom_vline(xintercept = 4, color="gray") +
