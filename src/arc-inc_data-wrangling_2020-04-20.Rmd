@@ -172,20 +172,29 @@ ts.avg$se_slope <- ts.avg$mgCO2.C_gC_d_sd/sqrt(ts.avg$n)
 ts.avg$se_slope_l <- ts.avg$mgCO2.C_gC_d_mean - ts.avg$se_slope
 ts.avg$se_slope_u <- ts.avg$mgCO2.C_gC_d_mean + ts.avg$se_slope
 
+# add timepoint zero data
+tp0.f <- function(df) {
+  tp0 <- df[1, ]
+  tp0[ , -which(names(tp0) == "Experiment" | names(tp0) == "Treatment" | names(tp0) == "Type" | names(tp0) == "n")] <- 0
+  rbind(tp0, df)
+}
+ts.avg <- lapply(split(ts.avg, ts.avg$Treatment), function(x) {
+  lapply(split(x, x$Type), tp0.f)
+  })
+ts.avg <- bind_rows(lapply(ts.avg, bind_rows))
+
 # restore classes
 ts.avg <- as.data.frame(lapply(ts.avg, type.convert))
 ```
 
 Plot CO~2~ fluxes over time.
 ```{r CO2 fluxes plots, echo = FALSE}
-
-
 ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
   geom_vline(xintercept = 4, color="gray") +
   geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
   geom_line(aes(color = Type, linetype = Treatment)) +
   facet_grid(rows = vars(Experiment)) +
-  # scale_x_continuous(limits = c(0,18)) +
+  scale_x_continuous(limits = c(0,18)) +
   # scale_y_continuous(limits = c(0,30)) +
   scale_color_manual(name = 'Landuse',
                      values =c('F'='#a35513','G'='#1361a3'),
@@ -195,14 +204,14 @@ ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
                     labels = c('Forest','Grassland')) +
   scale_alpha_manual(name = 'Treatment',
                      values = c("air-dry + storage (2011)" = .2, 
-                                "control (2011)" = .2, 
-                                "control (2019)" = .4, 
-                                "air-dry + storage (2019)" = .4)) +
+                                "control (2011)" = .4,
+                                "air-dry (2019)" = .2,
+                                "control (2019)" = .4)) +
   scale_linetype_manual(name = 'Treatment',
                         values = c("air-dry + storage (2011)" = 'dashed', 
                                    "control (2011)" ='solid',
-                                   "control (2019)" = "dashed",
-                                   "air-dry + storage (2019)" = "solid")) +
+                                   "air-dry (2019)" = "dashed",
+                                   "control (2019)" = "solid")) +
   ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
   xlab("Time (days)") +
   theme_bw() +
