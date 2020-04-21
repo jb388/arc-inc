@@ -1,9 +1,15 @@
-Files: "archive-flux-t2_2020-04-21.csv"
+Files:
+  - "air-dry-2019-whc_2020-04-21.xlsx"
+  - "air-dry-2019-whc_2020-04-21.csv"
 Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
 Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
 Date: 21 Apr 2020
 Contents:
-  - CO2 fluxes for 2018 incubation of archive + storage treatment samples (collected 2011)
+  - soil mass and moisture data for 2019 samples (air-dry/rewet experiment /#2)
 Notes:
-  - "save as" .csv version of sheet 'archive-flux-t2' from data/raw/lab_jena_results-co2_2019-02-25/Beem-Miller_archived_incubations_2.xlsx
+  - "air-dry-2019-whc_2020-04-21.xlsx"
+    - sheet 'WHC' is a verbatim copy of sheet 'WHC' from data/raw/lab_jena_results-co2_2019-12-18/Archive_Incubations_Rewetting_DRY.xlsx
+    - sheet 'air-dry-2019-whc' is a csv-friendly version of the key data from sheet 'WHC'
+  - "air-dry-2019-whc_2020-04-21.csv"
+    - "save as" .csv version of sheet 'air-dry-2019-whc' from "air-dry-2019-whc_2020-04-21.xlsx" (this directory)
 References:
