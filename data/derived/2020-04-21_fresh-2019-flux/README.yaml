@@ -1,0 +1,9 @@
+Files: "fresh-2019-flux_2020-04-21.csv"
+Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date: 21 Apr 2020
+Contents:
+  - CO2 fluxes for 2019 incubation of control samples, air-dry experiment (collected 2019)
+Notes:
+  - "save as" .csv version of sheet 'fresh-2019-flux' from data/raw/lab_jena_results-co2_2019-11-12/Archive_Incubations_Rewetting_FRESH.xlsx
+References:

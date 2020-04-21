@@ -1,9 +1,0 @@
-Files: "arc-inc_xplr_arc-storage-t2-flux_2020-04-20.csv"
-Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
-Curator: J. Beem-Miller
-Date: 20 Apr 2020
-Contents:
-  - CO2 fluxes for 2018 incubation of archive + storage treatment samples (collected 2011)
-Notes:
-  - "save as" .csv version of sheet 'summary' from data/raw/lab_jena_results-co2_2019-02-25/Beem-Miller_archived_incubations_2.xlsx
-References:

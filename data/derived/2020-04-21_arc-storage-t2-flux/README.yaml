@@ -1,0 +1,9 @@
+Files: "archive-flux-t2_2020-04-21.csv"
+Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date: 21 Apr 2020
+Contents:
+  - CO2 fluxes for 2018 incubation of archive + storage treatment samples (collected 2011)
+Notes:
+  - "save as" .csv version of sheet 'archive-flux-t2' from data/raw/lab_jena_results-co2_2019-02-25/Beem-Miller_archived_incubations_2.xlsx
+References:
