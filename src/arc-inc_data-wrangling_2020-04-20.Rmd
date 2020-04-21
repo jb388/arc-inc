@@ -17,7 +17,9 @@ library(SoilR)
 library(corrplot)
 ```
 # Notes:
-Script from "arc_inc_master.R". This workbook is intended to load and prepare the key data for analysis for the archive incubation project.
+* This workbook is intended to load and prepare the key data for analysis for the archive incubation project.
+* in general, this is an updated version of script "./src/arc_inc_master.R"
+* all code chunk options are set to "echo = FALSE"; see raw .Rmd file for data wrangling code.
 
 # CO~2~ fluxes and soil data 
 1. Load flux data from air-dry + storage control samples, and convert from "wide" to "long" format so as to match other data.
@@ -188,7 +190,7 @@ ts.avg <- bind_rows(lapply(ts.avg, bind_rows))
 ts.avg <- as.data.frame(lapply(ts.avg, type.convert))
 ```
 
-4. Plot of CO~2~ fluxes over time. The final measurement points for a few samples that took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat.
+4. Plot of CO~2~ fluxes over time. Note that the final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat.
 ```{r CO2 fluxes plots, echo = FALSE}
 ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
   geom_vline(xintercept = 4, color="gray") +
@@ -218,8 +220,12 @@ ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
   theme_bw() +
   theme(panel.grid = element_blank())
 ```
+
 # Isotope data
-Read in isotope data from various sources.
+
+*section in progress*
+
+1. Read in isotope data from various sources.
 ```{r read iso data, echo = FALSE}
 r3.iso <- read.csv("/Users/jeff/R/14Constraint/arc_inc_iso_06-02-2020.csv")
 ```
