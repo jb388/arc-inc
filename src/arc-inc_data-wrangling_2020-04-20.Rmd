@@ -3,23 +3,22 @@ title: "Archived Soil Incubations Project"
 author: "J. Beem-Miller"
 date: "20 Apr 2020"
 output:
+  html_notebook: default
   html_document:
     df_print: paged
-  html_notebook: default
   pdf_document:
     latex_engine: xelatex
 ---
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
 ```{r setup, include = FALSE}
 library(ggplot2)
 library(dplyr)
 library(SoilR)
 library(corrplot)
 ```
+# Notes:
+Script from "arc_inc_master.R". This workbook is intended to load and prepare the key data for analysis for the archive incubation project.
+
+# CO~2~ fluxes and soil data 
 
 ```{r read-data, echo = FALSE}
 # read data (tab 'R_ISE_dd-mm-yyyy' from "Fahey_ISE_FineRoots_15-05-2019.xlsx")
