@@ -1,0 +1,53 @@
+Files:
+  - "13C_archivecInc_Pre_20181207-141691-141751.xls"
+  - "13C_archivedInc_20190116-142012-142072.xls"
+Source: Manuel Rost <mrost@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date received: 22-Jan-2019
+Contents:
+  - 13C data from air-dry + storage (2011) samples (2nd round, Exploratories only) of archived soil incubations
+Notes:
+  - "13C_archivecInc_Pre_20181207-141691-141751.xls"
+    - preincubation samples
+    - some samples were not analyzed as there was insufficient CO2 for both 13C and 14C; in those cases only 14C was analyzed
+    - samples analyzed:
+      - HEG10-2-1
+      - HEG10-2-2
+      - HEG32-2-1
+      - HEG32-2-2
+      - HEG48-2-1
+      - HEG48-2-2
+      - HEW22-2-1
+      - HEW22-2-2
+      - HEW41-2-1
+      - HEW42-2-1
+      - SEG38-2-1
+      - SEG38-2-2
+      - SEG40-2-1
+      - SEG40-2-2
+      - SEG46-2-1
+      - SEW11-2-1
+      - SEW34-2-1
+      - SEW43-2-1
+  - "13C_archivedInc_20190116-142012-142072.xls"
+    - equilibrium incubation samples
+    - samples analyzed:
+      - HEG10-2-1
+      - HEG10-2-2
+      - HEG32-2-1
+      - HEG32-2-2
+      - HEG48-2-1
+      - HEG48-2-2
+      - HEW22-2-1
+      - HEW22-2-2
+      - HEW41-2-1
+      - HEW41-2-2
+      - HEW42-2-1
+      - HEW42-2-2
+      - SEG38-2-1
+      - SEG38-2-2
+      - SEG40-2-1
+      - SEG40-2-2
+      - SEG46-2-1
+      - SEG46-2-2
+References:

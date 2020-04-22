@@ -1,0 +1,68 @@
+Files:
+  - "Rost_47.xlsx"
+  - "Rost_50.xlsx"
+  - "Rost_52.xlsx"
+Source: A. Steinhof <steinhof@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date: 13-Feb-2020
+Contents:
+  - AMS results (14C) for CO2 from rewet (2019) experiment soil incubations
+Notes:
+  - "Rost_47.xlsx"
+    - preincubation 14C for control samples
+    - samples analyzed:
+      - HEW22-1_Pre_30082019
+      - HEW22-2_Pre_30082019
+      - HEW41-1_Pre_30082019
+      - HEW41-2_Pre_30082019
+      - HEW42-1_Pre_30082019
+      - HEW42-2_Pre_30082019
+      - HEG10-1_Pre_30082019
+      - HEG10-2_Pre_30082019
+      - HEG32-1_Pre_30082019
+      - HEG32-2_Pre_30082019
+      - HEG48-1_Pre_30082019
+      - HEG48-2_Pre_30082019
+  - "Rost_50.xlsx"
+    - mix of 14C from preincubation and equilibrium respiration for air-dry treatment
+    - samples analyzed:
+      - HEW22-1_dry_PRE_15112019
+      - HEW22-2_dry_PRE_15112019
+      - HEW41-1_dry_PRE_15112019
+      - HEW41-2_dry_PRE_15112019
+      - HEW42-1_dry_PRE_15112019
+      - HEW42-2_dry_PRE_15112019
+      - HEG10-1_dry_PRE_15112019
+      - HEG10-2_dry_PRE_15112019
+      - HEG32-1_dry_PRE_15112019
+      - HEG32-2_dry_PRE_15112019
+      - HEG48-1_dry_PRE_15112019
+      - HEG48-2_dry_PRE_15112019
+      - HEW22-1_dry_INC_22112019
+      - HEW22-2_dry_INC_22112019
+      - HEW41-1_dry_INC_22112019
+      - HEW41-2_dry_INC_22112019
+      - HEW42-1_dry_INC_22112019
+      - HEW42-2_dry_INC_22112019
+      - HEG10-1_dry_INC_22112019
+      - HEG10-2_dry_INC_22112019
+      - HEG32-1_dry_INC_22112019
+      - HEG32-2_dry_INC_22112019
+      - HEG48-1_dry_INC_22112019
+      - HEG48-2_dry_INC_22112019
+  - "Rost_52.xlsx"
+    - 14C from equilibrium respiration for control samples
+    - samples analyzed:
+      - HEW22-1_Inc_fresh_09092019
+      - HEW22-2_Inc_fresh_09092019
+      - HEW41-1_Inc_fresh_13092019
+      - HEW41-2_Inc_fresh_13092019
+      - HEW42-1_Inc_fresh_07102019
+      - HEW42-2_Inc_fresh_30092019
+      - HEG10-1_Inc_fresh_06092019
+      - HEG10-2_Inc_fresh_06092019
+      - HEG32-1_Inc_fresh_06092019
+      - HEG32-2_Inc_fresh_06092019
+      - HEG48-1_Inc_fresh_06092019
+      - HEG48-2_Inc_fresh_06092019
+References:

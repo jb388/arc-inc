@@ -1,0 +1,52 @@
+Files: "ArcInc_IncData_2018.xlsx"
+Source: X. Xu <xxu@uci.edu>
+Curator: J. Beem-Miller
+Date received: 02-Feb-2019
+Contents:
+  - AMS (14C) data from UCI for ISE samples and S. Trumbore's '92 archived Sierra Nevada samples
+Notes:
+  - none of these samples are included in current (22-Apr-2020) version of arc-inc manuscript/analysis
+  - samples analyzed:
+    - Sue's '92 Sierra Nevada samples:
+      - Fallbrook_Litter1_r1
+      - Fallbrook_Litter1_r2
+      - Ahwahnee_Litter1_r1
+      - Ahwahnee_Litter1_r2
+      - Ahwahnee_Litter2_r1
+      - Ahwahnee_Litter2_r2
+      - Musick_Litter1_r1
+      - Musick_Litter1_r1
+      - Musick_Litter1_r2
+      - Shaver_Litter1_r1
+      - Shaver_Litter1_r2
+      - Shaver_Litter2_r1
+      - Shaver_Litter2_r2
+      - Corbett_Litter1_r1
+      - Corbett_Litter1_r2
+      - Corbett_Litter2_r1
+      - Corbett_Litter2_r2
+      - Chiquito_Litter1_r1
+      - Chiquito_Litter1_r2
+      - Fallbrook_0-4cm_r1
+      - Fallbrook_0-4cm_r2
+      - Ahwahnee_0-6cm_r1
+      - Ahwahnee_0-6cm_r2
+      - Musick_0-7cm_r1
+      - Musick_0-7cm_r1
+      - Shaver_0-5cm_r1
+      - Shaver_0-5cm_r2
+      - Corbett_0-6cm_r1
+      - Chiquito_0-4cm_r1
+      - Chiquito_0-4cm_r2
+    - ISE samples (ingrowth core roots from Ice Storm Experiment; T. Fahey [Cornell] is primary investigator)
+      - M-1-1 ISE mid2x
+      - M-1-2 ISE mid2x
+      - M-1-3 ISE mid2x
+      - M-8-1 ISE mid2x
+      - M-8-3 ISE mid2x
+      - M-4-1 ISE control
+      - M-4-2 ISE control
+      - M-7-1 ISE control
+      - M-7-2 ISE control
+      - M-7-3 ISE control
+References:

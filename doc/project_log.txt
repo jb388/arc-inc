@@ -18,3 +18,7 @@
   - major updates in readmes and .csv files
   - details noted in readmes
   - completed Rmd section for plotting CO2 curves, using new data structure and moving some of the data wrangling to R
+
+2020-04-22
+  - goal for the day is to recreate as many of the key manuscript figures as possible with the new code and new file system
+  - first task is to create folders/transparent csv files for iso data
