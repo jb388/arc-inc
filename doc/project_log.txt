@@ -22,3 +22,4 @@
 2020-04-22
   - goal for the day is to recreate as many of the key manuscript figures as possible with the new code and new file system
   - first task is to create folders/transparent csv files for iso data
+  - only made READMEs for 14C files, as not doing much with 13C data at this point

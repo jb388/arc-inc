@@ -225,9 +225,19 @@ ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
 
 *section in progress*
 
-1. Read in isotope data from various sources.
+1. Read in isotope data from various sources. First load helper function 'read_jena_ams_results.R"
+```{r load ams-jena-ingest fx, echo = FALSE}
+source("./utilities/jena_ams_ingest.R")
+```
+
+Next read in data from the appropriate directories in 'data/raw'.
 ```{r read iso data, echo = FALSE}
-r3.iso <- read.csv("/Users/jeff/R/14Constraint/arc_inc_iso_06-02-2020.csv")
+# identify subdirectories in 'raw' directory with "ams_jena" in name
+ams_jena_results_dirs <- list.files("../data/raw", pattern = "ams_jena_results", full.names = TRUE)
+ams_results_ls <- lapply(seq_along(ams_jena_results_dirs), function(i) {
+  read_jena_ams_results(ams_jena_results_dirs[i])
+})
+names(ams_results_ls) <- list.files("../data/raw", pattern = "ams_jena_results")
 ```
 
 
