@@ -25,7 +25,7 @@ library(corrplot)
 1. Load flux data from air-dry + storage control samples, and convert from "wide" to "long" format so as to match other data.
 ```{r read wide ts data, echo = FALSE}
 # Read air-dry + storage respiration control data
-archive.ctl.ts.wide <- read.csv("../data/derived/2020-04-20_arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-20.csv")
+archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-20.csv")
 
 # Convert time data from wide to long
 archive.ctl.ts.d <- select(archive.ctl.ts.wide, starts_with("inc_time_d")) %>%
@@ -87,19 +87,19 @@ rm(archive.ctl.ts.d, archive.ctl.ts.co2, archive.ctl.ts.pre)
 xplr.cn <- read.csv("../data/external/exploratories_ischoening_soilcn_2011/170407_CN_concentrations_Exploratories_EP_Plots_2011.csv")
 
 # Read soil mass and moisture info for air-dry + storage data
-jarinfo.arc <- read.csv("../data/derived/2020-04-20_arc-storage-t2-jarInfo/jar_information.csv")
+jarinfo.arc <- read.csv("../data/derived/arc-storage-t2-jarInfo/jar_information.csv")
 
 # Read soil mass and moisture info for air-dry data
-jarinfo.rewet <- read.csv("../data/derived/2020-04-21_air-dry-2019-whc/air-dry-2019-whc_2020-04-21.csv")
+jarinfo.rewet <- read.csv("../data/derived/air-dry-2019-whc/air-dry-2019-whc_2020-04-21.csv")
 
 # Read air-dry + storage respiration data
-archive.arc.ts <- read.csv("../data/derived/2020-04-21_arc-storage-t2-flux/archive-flux-t2_2020-04-21.csv")
+archive.arc.ts <- read.csv("../data/derived/arc-storage-t2-flux/archive-flux-t2_2020-04-21.csv")
 
 # Read control respiration data from 2019 air-dry experiment
-rewet.ctl.ts <- read.csv("../data/derived/2020-04-21_fresh-2019-flux/fresh-2019-flux_2020-04-21.csv")
+rewet.ctl.ts <- read.csv("../data/derived/fresh-2019-flux/fresh-2019-flux_2020-04-21.csv")
 
 # Read treatment respiration data from 2019 air-dry experiment
-rewet.dry.ts <- read.csv("../data/derived/2020-04-21_dried-2019-flux/dried-2019-flux_2020-04-21.csv")
+rewet.dry.ts <- read.csv("../data/derived/dried-2019-flux/dried-2019-flux_2020-04-21.csv")
 ```
 
 3. Combine and summarize data in long format to calculate respiration rates and plot over time.

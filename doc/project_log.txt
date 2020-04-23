@@ -23,3 +23,10 @@
   - goal for the day is to recreate as many of the key manuscript figures as possible with the new code and new file system
   - first task is to create folders/transparent csv files for iso data
   - only made READMEs for 14C files, as not doing much with 13C data at this point
+  - created script for bulk ingest of Jena AMS results
+  - progress on cleaned Rmd file for data analysis
+
+2020-04-23
+  - goal for the day is to recreate as many of the key manuscript figures as possible with the new code and new file system!
+  - still need to make READMEs for the 13C data
+  - 

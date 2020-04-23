@@ -4,6 +4,9 @@
 #' @param template_file Filename, character
 #' @return list of data frames
 #' @import openxlsx
+
+library(openxlsx)
+
 read_jena_ams_results <- function(jena_ams_dir, template_file) {
   if(missing(template_file)) {
     template_file <- "../data/raw/ams_jena_template_2020-04-22/ams_jena_template.xlsx"
