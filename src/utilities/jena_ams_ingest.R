@@ -34,4 +34,3 @@ read_jena_ams_results <- function(jena_ams_dir, template_file) {
 
   return(data_ls)
 }
-  

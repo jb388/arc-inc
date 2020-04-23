@@ -380,11 +380,11 @@ ggplot(r3.iso.inc, aes(d14C_CO2_corr, d14C_CO2_t2_inc, color=Type)) +
   scale_color_manual(name = 'Landuse',
                      values =c('F'='#a35513','G'='#1361a3'),
                      labels = c('Forest','Grassland')) +
-  xlab(expression(Delta*''^14*'C of initial incubation')) +
-  ylab(expression(Delta*''^14*'C of final incubation')) +
+  xlab(expression(Delta*''^14*'C control (2011)')) +
+  ylab(expression(Delta*''^14*'C air-dry + storage (2011)')) +
   theme_bw() +
   theme(panel.grid = element_blank(),
-        text = element_text(size=18))
+        text = element_text(size=16))
 
 # Add margin of error lines
 library(ISRaD)
