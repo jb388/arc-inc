@@ -3,7 +3,7 @@ Source: A. Steinhof <steinhof@bgc-jena.mpg.de>
 Curator: J. Beem-Miller
 Date: 28-Jan-2019
 Contents:
-  - AMS results (14C) for CO2 from air-dry + storage treatment soil incubations (round 1)
+  - AMS results (14C) for CO2 from air-dry + storage treatment soil pre-incubation (round 1)
 Notes:
   - samples analyzed:
     - HEG10-2-2
@@ -24,5 +24,5 @@ Notes:
     - SEW11-2-1
   - two samples in batch were not analyzed:
     - HEG10-2-1 (note says "other reasons"---probably AMS failure)
-    - SEW11-2-2 (note says "sample not delivered"---I seem to recall there was a lab issue with this sample)
+    - SEW11-2-2 (note says "sample not delivered"---this sample is in data/raw/ams_jena_results-co2_2019-04-30/Rost_31-2.xlsx)
 References:

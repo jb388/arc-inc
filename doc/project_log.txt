@@ -32,3 +32,5 @@
   - still need to make READMEs for the 13C data
   - would be nice to eventually add some tests...
   - updated error in "Period" col in rewetting raw data summary and corresponding .csv files
+  - updated error in cmtv time cols in all raw flux data summary sheets and corresponding .csv files
+  - added more 14C data that I had missed initially
