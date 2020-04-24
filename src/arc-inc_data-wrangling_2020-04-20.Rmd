@@ -3,11 +3,11 @@ title: "Archived Soil Incubations Project"
 author: "J. Beem-Miller"
 date: "21 Apr 2020"
 output:
-  html_notebook: default
-  html_document:
-    df_print: paged
   pdf_document:
     latex_engine: xelatex
+  html_document:
+    df_print: paged
+  html_notebook: default
 ---
 ```{r setup, include = FALSE}
 library(ggplot2)
@@ -233,7 +233,8 @@ ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
 source("./utilities/jena_ams_ingest.R")
 ```
 
-Next read in data from the appropriate directories in 'data/raw'.
+
+2. Next read in data from the appropriate directories in 'data/raw'.
 ```{r read iso data, echo = FALSE}
 # identify subdirectories in 'raw' directory with "ams_jena" in name
 ams_jena_results_dirs <- list.files("../data/raw", pattern = "ams_jena_results", full.names = TRUE)
@@ -243,7 +244,8 @@ ams_results_ls <- lapply(seq_along(ams_jena_results_dirs), function(i) {
 names(ams_results_ls) <- list.files("../data/raw", pattern = "ams_jena_results")
 ```
 
-2. Create a "tidy" style template for the data, i.e. variables in columns. 
+
+3. Create a "tidy" style template for the data, i.e. variables in columns. 
 * Key variables are as follows:
   * SampleName (incorporates lab rep and treatment, e.g. "HEG10-1_dry")
   * ID (plot IDs, e.g. for "HEG10" for Exploratory samples)
@@ -253,13 +255,13 @@ names(ams_results_ls) <- list.files("../data/raw", pattern = "ams_jena_results")
   * Experiment (3 levels: arc = air-dry + storage, rewet = air-dry/rewet, time = storage duration)
 
 * Observational columns include:
-  * \Delta14C-CO2
-  * \delta13C-CO2
+  * d14c ($\Delta$^14^C-CO~2~)
+  * d13c ($\delta$^13^C-CO~2~)
   * C_g_kg (C content)
   * dw_g (dry weight)
-  * mgCO2.C_gS (mgCO2-C respired per g soil per period)
+  * mgCO2.C_gS (mg CO~2~-C respired g^-1^ soil Period^-1^)
   * time_d (days in incubation period prior to measurement)
-  * h2o_grav (gravimetric water content, pct)
+  * h2o_grav (gravimetric water content, percent)
   * h2o_whc_field (percent of water holding capacity, field-moist)
   
 ```{r non-timeseries data template, echo = FALSE}
@@ -284,27 +286,37 @@ pre.14c$Period <- "pre"
 # create inc period df as duplicate of pre-inc df, but test that it is the right shape first
 if(nrow(pre.14c) == sum(unique.id.n)) {
   inc.14c <- pre.14c
+  inc.14c$Period <- "inc"
 } else {
   "pre.14c data frame malformed"
 }
 ```
-3. Add observational data from timeseries data.
 
+
+4. Add observational data from timeseries data.
 ```{r combine soil obs data, echo = FALSE}
 # summarize time and co2 data by experiment, period, and sample name
 ts.epsn.avg <- na.omit(ts) %>%
   select(Period, SampleName, gC_gS, dw_g, mgCO2.C_gC, time_d, time_d_cmtv)  %>%
   group_by(Period, SampleName) %>%
   summarise_all(list(max = max))
+all.14c <- merge(rbind(pre.14c, inc.14c), ts.epsn.avg, by = c("SampleName", "Period"))
 
-
+# sort (order) to look at data
+all.14c <- all.14c[order(all.14c$Experiment, all.14c$Period, all.14c$Treatment), ]
 ```
 
 
-4. Add ^14^C data to template.
-
+5. Add ^14^C data to template. Note that archived sample $\Delta$^14^C data needs to be corrected for decay. The correction is very small and likely insignificant, but will do this anyway.
+* decay correction formula is:
+$$1000 \cdot \left( (FM \cdot e^{\frac{-year_{obs} + 1950}{8267}}) - 1 \right)$$
 ```{r combine 14C data, echo = FALSE}
 
+
+
+# *** Need to figure out method for determining that these are outliers *** 
+# # remove outliers
+# all.14c <- all.14c[-which(all.14c$SampleName == "HEW26-1" | all.14c$SampleName == "HEW49-1"),]
 
 ```
 
