@@ -3,11 +3,11 @@ title: "Archived Soil Incubations Project"
 author: "J. Beem-Miller"
 date: "21 Apr 2020"
 output:
-  pdf_document:
-    latex_engine: xelatex
+  html_notebook: default
   html_document:
     df_print: paged
-  html_notebook: default
+  pdf_document:
+    latex_engine: xelatex
 ---
 ```{r setup, include = FALSE}
 library(ggplot2)
@@ -47,7 +47,7 @@ archive.ctl.ts.co2 <- archive.ctl.ts.co2[order(archive.ctl.ts.co2$timepoint_cmtv
 
 # assemble in long dataframe 
 archive.ctl.ts <- data.frame(ID = rep(unique(archive.ctl.ts.wide$ID), 4),
-                             Period = "equilibrium respiration",
+                             Period = "inc",
                              timepoint_cmtv = rep(seq(from = 2, 
                                                       to = 5), 
                                                   each = length(archive.ctl.ts.wide$ID)),
@@ -59,7 +59,7 @@ archive.ctl.ts.pre <- archive.ctl.ts.wide[1:length(unique(archive.ctl.ts.wide$ID
                                           c("ID", "preinc_time_d", "preinc_mgCO2_jar")]
 archive.ctl.ts.pre <- rename(archive.ctl.ts.pre, time_d = preinc_time_d, mgCO2_jar = preinc_mgCO2_jar)
 archive.ctl.ts.pre$timepoint_cmtv <- 1
-archive.ctl.ts.pre$Period <- "pre-incubation"
+archive.ctl.ts.pre$Period <- "pre"
 archive.ctl.ts.pre$time_d_cmtv <- archive.ctl.ts.pre$time_d
   
 # Calculate time_d_cmtv
@@ -77,6 +77,9 @@ archive.ctl.ts <- bind_rows(
 # rbind preinc and inc data
 archive.ctl.ts <- rbind(archive.ctl.ts.pre, archive.ctl.ts)
 
+# add SampleName column
+archive.ctl.ts$SampleName <- archive.ctl.ts$ID
+
 # remove intermediate files
 rm(archive.ctl.ts.d, archive.ctl.ts.co2, archive.ctl.ts.pre)
 ```
@@ -93,13 +96,13 @@ jarinfo.arc <- read.csv("../data/derived/arc-storage-t2-jarInfo/jar_information.
 jarinfo.rewet <- read.csv("../data/derived/air-dry-2019-whc/air-dry-2019-whc_2020-04-21.csv")
 
 # Read air-dry + storage respiration data
-archive.arc.ts <- read.csv("../data/derived/arc-storage-t2-flux/archive-flux-t2_2020-04-21.csv")
+archive.arc.ts <- read.csv("../data/derived/arc-storage-t2-flux/archive-flux-t2_2020-04-24.csv")
 
 # Read control respiration data from 2019 air-dry experiment
-rewet.ctl.ts <- read.csv("../data/derived/fresh-2019-flux/fresh-2019-flux_2020-04-21.csv")
+rewet.ctl.ts <- read.csv("../data/derived/fresh-2019-flux/fresh-2019-flux_2020-04-24.csv")
 
 # Read treatment respiration data from 2019 air-dry experiment
-rewet.dry.ts <- read.csv("../data/derived/dried-2019-flux/dried-2019-flux_2020-04-21.csv")
+rewet.dry.ts <- read.csv("../data/derived/dried-2019-flux/dried-2019-flux_2020-04-24.csv")
 ```
 
 3. Combine and summarize data in long format to calculate respiration rates and plot over time.
@@ -138,7 +141,7 @@ archive.ts <- rbind(archive.ctl.ts,
 archive.ts$Experiment <- "2011"
 
 # Test that required names are present
-nms <- c("ID", "Experiment", "Treatment", "Period", "timepoint_cmtv",  "time_d", "time_d_cmtv", "mgCO2_jar", "dw_g")
+nms <- c("SampleName", "ID", "Experiment", "Treatment", "Period", "timepoint_cmtv",  "time_d", "time_d_cmtv", "mgCO2_jar", "dw_g")
 invisible(lapply(list(archive.ts = archive.ts,
                       rewet.ts = rewet.ts),
        function(x) {
@@ -240,4 +243,68 @@ ams_results_ls <- lapply(seq_along(ams_jena_results_dirs), function(i) {
 names(ams_results_ls) <- list.files("../data/raw", pattern = "ams_jena_results")
 ```
 
+2. Create a "tidy" style template for the data, i.e. variables in columns. 
+* Key variables are as follows:
+  * SampleName (incorporates lab rep and treatment, e.g. "HEG10-1_dry")
+  * ID (plot IDs, e.g. for "HEG10" for Exploratory samples)
+  * Treatment (3 treatments: air-dry, air-dry + storage, storage duration; + controls)
+  * Type (2 levels: F = forest, G = grassland)
+  * Period (incubation period, 2 levels: pre = preincubation, inc = equilibrium incubation)
+  * Experiment (3 levels: arc = air-dry + storage, rewet = air-dry/rewet, time = storage duration)
+
+* Observational columns include:
+  * \Delta14C-CO2
+  * \delta13C-CO2
+  * C_g_kg (C content)
+  * dw_g (dry weight)
+  * mgCO2.C_gS (mgCO2-C respired per g soil per period)
+  * time_d (days in incubation period prior to measurement)
+  * h2o_grav (gravimetric water content, pct)
+  * h2o_whc_field (percent of water holding capacity, field-moist)
+  
+```{r non-timeseries data template, echo = FALSE}
+unique.id.n <- c(length(unique(archive.ctl.ts$ID)),
+                 length(unique(archive.arc.ts$SampleName)),
+                 length(unique(rewet.ctl.ts$SampleName)),
+                 length(unique(rewet.dry.ts$SampleName)))
+pre.14c <- data.frame(SampleName = c(as.character(unique(archive.ctl.ts$ID)),
+                                     as.character(unique(archive.arc.ts$SampleName)),
+                                     as.character(unique(rewet.ctl.ts$SampleName)),
+                                     as.character(unique(rewet.dry.ts$SampleName))))
+pre.14c$ID <- substr(pre.14c$SampleName, 1, 5)
+pre.14c$Type <- ifelse(grepl("G", pre.14c$ID), "G", "F")
+pre.14c$Experiment <- c(rep("arc", unique.id.n[1] + unique.id.n[2]),
+                       rep("rewet", unique.id.n[3] + unique.id.n[4]))
+pre.14c$Treatment <- c(rep("control", unique.id.n[1]),
+                       rep("air-dry + storage", unique.id.n[2]),
+                       rep("control", unique.id.n[3]),
+                       rep("air-dry", unique.id.n[4]))
+pre.14c$Period <- "pre"
+
+# create inc period df as duplicate of pre-inc df, but test that it is the right shape first
+if(nrow(pre.14c) == sum(unique.id.n)) {
+  inc.14c <- pre.14c
+} else {
+  "pre.14c data frame malformed"
+}
+```
+3. Add observational data from timeseries data.
+
+```{r combine soil obs data, echo = FALSE}
+# summarize time and co2 data by experiment, period, and sample name
+ts.epsn.avg <- na.omit(ts) %>%
+  select(Period, SampleName, gC_gS, dw_g, mgCO2.C_gC, time_d, time_d_cmtv)  %>%
+  group_by(Period, SampleName) %>%
+  summarise_all(list(max = max))
+
+
+```
+
+
+4. Add ^14^C data to template.
+
+```{r combine 14C data, echo = FALSE}
+
+
+```
 

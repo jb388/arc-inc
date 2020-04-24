@@ -6,4 +6,7 @@ Contents:
   - CO2 measurements, jar information, measurement schedule, and soil and moisture data for the air-dried samples from the third arc-inc experiment
 Notes:
   - added a summary sheet 'dried-2019-flux' to summarize time series of CO2 fluxes on 21-Apr-2020
+  - 24-Apr-2020:
+    - updated col "Period" in sheet 'dried-2019-flux', as was only displaying "pre" (now displays "pre" or "inc", correspondingly)
+    - updated sheet 'dried-2019-flux' because cmtv time was not being calculated correctly
 References:

@@ -26,7 +26,9 @@
   - created script for bulk ingest of Jena AMS results
   - progress on cleaned Rmd file for data analysis
 
-2020-04-23
+2020-04-24
   - goal for the day is to recreate as many of the key manuscript figures as possible with the new code and new file system!
+  - first need to set up a data frame in a "tidy" format, e.g. each obsv in a unique row
   - still need to make READMEs for the 13C data
-  - 
+  - would be nice to eventually add some tests...
+  - updated error in "Period" col in rewetting raw data summary and corresponding .csv files

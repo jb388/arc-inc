@@ -1,9 +1,16 @@
-Files: "fresh-2019-flux_2020-04-21.csv"
+Files:
+  - "fresh-2019-flux_2020-04-21.csv"
+  - "fresh-2019-flux_2020-04-24.csv"
 Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
 Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
 Date: 21 Apr 2020
 Contents:
   - CO2 fluxes for 2019 incubation of control samples, air-dry experiment (collected 2019)
 Notes:
-  - "save as" .csv version of sheet 'fresh-2019-flux' from data/raw/lab_jena_results-co2_2019-11-12/Archive_Incubations_Rewetting_FRESH.xlsx
+  - fresh-2019-flux_2020-04-21.csv:
+    - "save as" .csv version of sheet 'fresh-2019-flux' from data/raw/lab_jena_results-co2_2019-11-12/Archive_Incubations_Rewetting_FRESH.xlsx
+  - fresh-2019-flux_2020-04-24.csv:
+    - new "save as" .csv version of sheet 'fresh-2019-flux' from data/raw/lab_jena_results-co2_2019-11-12/Archive_Incubations_Rewetting_FRESH.xlsx w/ updated col "Period", as was only displaying "pre" (now displays "pre" or "inc", correspondingly)
+    - also updated sheet 'fresh-2019-flux' in source file to calculate cmtv time properly
+    - also caught and fixed error in CO2 measurements; due to volumes erroneously being entered for samples that were not measured, negative CO2 concentrations were being calculated
 References:
