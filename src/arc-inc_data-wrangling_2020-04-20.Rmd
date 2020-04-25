@@ -227,8 +227,6 @@ ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
 
 # Isotope data
 
-*section in progress*
-
 1. Read in isotope data from various sources. First load helper function 'read_jena_ams_results.R"
 ```{r load ams-jena-ingest fx, echo = FALSE}
 source("./utilities/jena_ams_ingest.R")
@@ -291,11 +289,11 @@ if(nrow(pre.14c) == sum(unique.id.n) & ncol(pre.14c) == 6) {
 } else {
   "pre.14c data frame malformed"
 }
-all.14c <- rbind(pre.14c, inc.14c)
+all.14c.template <- rbind(pre.14c, inc.14c)
 ```
 
 
-4. Add observational data from timeseries data.
+4. Summarize observational data from timeseries data by unique IDs (SampleName).
 ```{r combine soil obs data, echo = FALSE}
 # summarize time and co2 data by experiment, period, and sample name
 ts.epsn.avg <- na.omit(ts) %>%
@@ -304,17 +302,52 @@ ts.epsn.avg <- na.omit(ts) %>%
   summarise_all(list(max = max))
 ```
 
-
-5. Add ^14^C data to template. Note that archived sample $\Delta$^14^C data needs to be corrected for decay since the year of collection. The correction is very small and likely insignificant, but will do this anyway.
+5. Create helper functions for decay correction, converting $\Delta$^14^C to fraction modern, and cleaning up extraneous values in raw ^14^C data. Archived sample $\Delta$^14^C data should to be corrected for decay since the year of collection. (Although the correction is very small and likely insignificant, I will do it anyway).
 * decay correction formula is:
 $$1000 \cdot \left( (FM \cdot e^{\frac{-year_{sampled} + 1950}{8267}}) - 1 \right)$$
-```{r combine 14C data, echo = FALSE}
+```{r 14C helper fxs, echo = FALSE}
 # create decay correction function
 decay.corr.fx <- function(year_sampled, fraction_modern) {
   ifelse(is.na(fraction_modern), NA, 1000*((fraction_modern*exp((-year_sampled + 1950)/8267))-1))
 }
 
-## First add SampleName col and variable columns Treatment, Period, and Experiment to data frames in ams_results_ls 
+# d14C to fraction modern function
+d14c.fm.fx <- function(year_sampled, d14c) {
+  ((d14c / 1000) + 1) / exp(0.00012097 * (1950 - year_sampled))
+  }
+
+# define helper function for stripping out "NA" and non-Exploratories data
+extra.clean.fx <- function(df) {
+  df <- df[which(grepl("HEG", df$Probe) |
+                   grepl("HEW", df$Probe) |
+                   grepl("SEG", df$Probe) |
+                   grepl("SEW", df$Probe)), ]
+  ix <- which(is.na(df$F14C) & is.na(df$`∆14C.(‰)`))
+  if(length(ix) > 1) {
+    df <- df[-ix, ]
+  }
+  return(df)
+}
+```
+
+6. Clean up ^14^C data.
+```{r clean up 14C data, echo = FALSE}
+# First add 14C and 13C data from arc control samples to ams_results_ls
+# Also need to add SampleName col and variable columns Treatment, Period, and Experiment to all data frames in ams_results_ls 
+# note that neither 13C nor 14C was measured for the pre-incubation period for these samples
+arc.ctl.iso <- read.xlsx("../data/external/exploratories_ischoening_14c-co2_2011/170228_14C_Respiration.xlsx")
+# add to ams_results_ls
+results.14c.nms <- names(ams_results_ls$`ams_jena_results-co2_2019-01-28`$`Beem-Miller_9.xlsx`)
+arc_ctl_inc_SN <- as.character(all.14c.template[all.14c.template$Experiment == "arc" & all.14c.template$Treatment == "control" & all.14c.template$Period == "inc", "SampleName"])
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc <- data.frame(matrix(nrow = length(arc_ctl_inc_SN), ncol = length(results.14c.nms))) 
+names(ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc) <- results.14c.nms
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$SampleName <- arc_ctl_inc_SN
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Probe <- arc_ctl_inc_SN
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$`∆14C.(‰)` <- arc.ctl.iso[match(ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$SampleName, arc.ctl.iso$EP_Plotid), "14c_CO2"]
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Treatment <- "control"
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Experiment <- "arc"
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Period <- "inc"
+
 # `ams_jena_results-co2_2019-01-28`
 # `Beem-Miller_9.xlsx`
 # Probe == SampleName
@@ -338,23 +371,11 @@ ams_results_ls$`ams_jena_results-co2_2019-02-25`$Archived_Incubations_30.xlsx$Ex
 # Experiment = arc
 # Treatment = air-dry + storage
 # Period = inc, pre (SEW11-2-2)
-# Probe names do not match SampleNames; extraneous data also present
-# define helper function for stripping out extraneous data
-extra.clean.fx <- function(df) {
-  df[which(grepl("HEG", df$Probe) |
-           grepl("HEW", df$Probe) |
-           grepl("SEG", df$Probe) |
-           grepl("SEW", df$Probe)), ]
-}
-# apply extra.clean.fx
-ams_results_ls$`ams_jena_results-co2_2019-04-30` <- lapply(ams_results_ls$`ams_jena_results-co2_2019-04-30`, extra.clean.fx)
-# generate SampleName column
 ams_results_ls$`ams_jena_results-co2_2019-04-30`$`Rost_31-2.xlsx`$SampleName <- substr(ams_results_ls$`ams_jena_results-co2_2019-04-30`$`Rost_31-2.xlsx`$Probe, 1, 9)
-# add variable columns
 ams_results_ls$`ams_jena_results-co2_2019-04-30`$`Rost_31-2.xlsx`$Treatment <- "air-dry + storage"
 ams_results_ls$`ams_jena_results-co2_2019-04-30`$`Rost_31-2.xlsx`$Experiment <- "arc"
-ams_results_ls$`ams_jena_results-co2_2019-04-30`$`Rost_31-2.xlsx`[1:8, "Period"] <- "inc"
-ams_results_ls$`ams_jena_results-co2_2019-04-30`$`Rost_31-2.xlsx`[9, "Period"] <- "pre"
+ams_results_ls$`ams_jena_results-co2_2019-04-30`$`Rost_31-2.xlsx`[2:9, "Period"] <- "inc"
+ams_results_ls$`ams_jena_results-co2_2019-04-30`$`Rost_31-2.xlsx`[10, "Period"] <- "pre"
 
 # ams_results_ls$`ams_jena_results-co2_2020-02-13`
 # Rost_47.xlsx 
@@ -383,52 +404,53 @@ ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx$Treatment <- "air-
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx$Experiment <- "rewet"
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[pre.ix, "Period"] <- "pre"
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[-pre.ix, "Period"] <- "inc"
+```
 
-# Next, read in 14C and 13C data from arc control samples
-# note that neither 13C nor 14C was measured after the pre-incubation period for these samples
-arc.ctl.iso <- read.xlsx("../data/external/exploratories_ischoening_14c-co2_2011/170228_14C_Respiration.xlsx")
-# add to ams_results_ls
-results.14c.nms <- names(ams_results_ls$`ams_jena_results-co2_2019-01-28`$`Beem-Miller_9.xlsx`)
-arc_ctl_inc_SN <- all.14c[all.14c$Experiment == "arc" & all.14c$Treatment == "control" & all.14c$Period == "inc", "SampleName"]
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc <- data.frame(matrix(nrow = length(arc_ctl_inc_SN), ncol = length(results.14c.nms))) 
-names(ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc) <- results.14c.nms
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$SampleName <- arc_ctl_inc_SN
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Probe <- arc_ctl_inc_SN
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$`∆14C.(‰)` <- arc.ctl.iso[match(ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$SampleName, arc.ctl.iso$EP_Plotid), "14c_CO2"]
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Treatment <- "control"
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Experiment <- "arc"
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Period <- "inc"
-
-# check that names match (needs work)
-unlist(lapply(ams_results_ls[3:7], function(x) unlist(lapply(x, function(y) if(length(which(results.14c.nms %in% names(y))) == 11) {cat("match\n")} else {cat("no match\n")} ))))
-
-# flatten list and remove blanks
+7. Combine data.
+```{r combine 14C soil obs data, echo = FALSE}
+# flatten list and remove AMS blanks, NA samples, and non-Exploratory data
 ams_results_ls2 <- lapply(ams_results_ls[3:7], function(x) bind_rows(x))
 ams_results_exp1_2.df <- bind_rows(lapply(ams_results_ls2, function(x) extra.clean.fx(x)))
-ams_results_exp1_2.df <- ams_results_exp1_2.df[ , c(3:6,8:11)]
-colnames(ams_results_exp1_2.df)[1:4] <- c("fm", "fm_err", "d14c", "d14c_err")
+# cut out non-relevant AMS results columns
+nms.ams.vars <- c("F14C", "err", "∆14C.(‰)", "err.(‰)",
+                 "SampleName", "Treatment", "Period", "Experiment")
+ams_results_exp1_2.df <- ams_results_exp1_2.df[ , nms.ams.vars]
+colnames(ams_results_exp1_2.df) <- c("fm", "fm_err", "d14c", "d14c_err", nms.ams.vars[5:8])
 
 # merge with template
-all.14c <- merge(all.14c, ams_results_exp1_2.df, all.x = TRUE)
+if(nrow(merge(all.14c.template, ams_results_exp1_2.df, all.x = TRUE)) == nrow(all.14c.template)) {
+  all.14c <- merge(all.14c.template, ams_results_exp1_2.df, all.x = TRUE)
+} else {
+  cat("duplicate sample merge error")
+}
 
 # merge soil obs data with 14c data
-all.14c <- merge(all.14c, ts.epsn.avg, by = c("SampleName", "Period"))
+if(nrow(merge(all.14c, ts.epsn.avg, by = c("SampleName", "Period"))) == nrow(all.14c)) {
+  all.14c <- merge(all.14c, ts.epsn.avg, by = c("SampleName", "Period"))
+} else {
+  cat("duplicate sample merge error")
+}
+
+# add YearSampled column
 all.14c$YearSampled <- ifelse(all.14c$Experiment == "arc", 2011, 2019)
+
+# calculate fraction modern from d14C as needed
+all.14c$fm <- ifelse(is.na(all.14c$fm), 
+                     d14c.fm.fx(all.14c$YearSampled, all.14c$d14c),
+                     all.14c$fm)
+
+# correct 2011 treatment samples for decay
+all.14c$d14c_corr <- decay.corr.fx(all.14c$YearSampled, all.14c$fm)
+
+# sort (order) to look at data and convert chr to factor
+all.14c <- all.14c[order(all.14c$Experiment, all.14c$Period, all.14c$Treatment), ]
 
 # *** Need to figure out method for determining that these are outliers *** 
 # # remove outliers
 # all.14c <- all.14c[-which(all.14c$SampleName == "HEW26-1" | all.14c$SampleName == "HEW49-1"),]
 
-# correct 2011 treatment samples for decay
-all.14c$d14c_corr <- decay.corr.fx(all.14c$YearSampled, all.14c$fm)
-all.14c$d14c_corr <- ifelse(all.14c$Experiment == "arc" & all.14c$Treatment == "air-dry + storage",
-                            decay.corr.fx(all.14c$YearSampled, all.14c$fm),
-                            all.14c$d14c)
-
-# sort (order) to look at data
-all.14c <- all.14c[order(all.14c$Experiment, all.14c$Period, all.14c$Treatment), ]
 
 # remove unnecessary objects
-rm(arc.ctl.iso)
+rm(ams_results_ls2, nms.ams.vars)
 ```
 
