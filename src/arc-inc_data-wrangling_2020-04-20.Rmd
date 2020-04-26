@@ -166,20 +166,14 @@ ts$mgCO2.C_gC_d <- ts$mgCO2.C_gC/ts$time_d
 
 # summarize CO2 release data for each timepoint, by experiment, treatment, and type
 # for some reason n() doesn't work when included with the summarize_all syntax, so done separately
-ts.avg <- merge(
-  na.omit(ts) %>%
+ts.avg <- na.omit(ts) %>%
   select(Experiment, Treatment, Type, timepoint_cmtv, mgCO2.C_gC_d, time_d_cmtv)  %>%
   group_by(Experiment, Treatment, Type, timepoint_cmtv) %>%
-  summarise_all(list(mean = mean, sd = sd), na.rm = TRUE),
-  na.omit(ts) %>%
-  select(Experiment, Treatment, Type, timepoint_cmtv, mgCO2.C_gC_d, time_d_cmtv)  %>%
-  group_by(Experiment, Treatment, Type, timepoint_cmtv) %>%
-  summarize(n = n()),
-  by = c("Experiment", "Treatment", "Type", "timepoint_cmtv")
-  )
-ts.avg$se_slope <- ts.avg$mgCO2.C_gC_d_sd/sqrt(ts.avg$n)
-ts.avg$se_slope_l <- ts.avg$mgCO2.C_gC_d_mean - ts.avg$se_slope
-ts.avg$se_slope_u <- ts.avg$mgCO2.C_gC_d_mean + ts.avg$se_slope
+  add_tally() %>%
+  summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+  mutate(se_slope = mgCO2.C_gC_d_sd/sqrt(n_mean),
+         se_slope_l = mgCO2.C_gC_d_mean - se_slope,
+         se_slope_u = mgCO2.C_gC_d_mean + se_slope)
 
 # add timepoint zero data
 tp0.f <- function(df) {
