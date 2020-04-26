@@ -2,6 +2,8 @@
 title: "Archived Soil Incubations Project"
 author: "J. Beem-Miller"
 date: "21 Apr 2020"
+header_includes:
+- \usepackage{textcomp}
 output:
   pdf_document:
     latex_engine: xelatex
@@ -300,6 +302,7 @@ ts.epsn.avg <- na.omit(ts) %>%
   select(Period, SampleName, gC_gS, dw_g, mgCO2.C_gC, time_d, time_d_cmtv)  %>%
   group_by(Period, SampleName) %>%
   summarise_all(list(max = max))
+ts.epsn.avg <- rename_at(ts.epsn.avg, vars(contains('max')), list(~sub("_max", "", .)))
 ```
 
 5. Create helper functions for decay correction, converting $\Delta$^14^C to fraction modern, and cleaning up extraneous values in raw ^14^C data. Archived sample $\Delta$^14^C data should to be corrected for decay since the year of collection. (Although the correction is very small and likely insignificant, I will do it anyway).
@@ -442,8 +445,18 @@ all.14c$fm <- ifelse(is.na(all.14c$fm),
 # correct 2011 treatment samples for decay
 all.14c$d14c_corr <- decay.corr.fx(all.14c$YearSampled, all.14c$fm)
 
-# sort (order) to look at data and convert chr to factor
+# sort (order) to look at data
 all.14c <- all.14c[order(all.14c$Experiment, all.14c$Period, all.14c$Treatment), ]
+
+# calculate mean, min, and max of numeric data, by plot (ID)
+all.14c.sum <- select(all.14c, -SampleName) %>%
+  group_by(ID, Type, Period, Treatment, Experiment, YearSampled) %>%
+  summarise_all(list(mean = mean, max = max, min = min), na.rm = TRUE)
+
+# remove NaN, Inf, and -Inf
+all.14c.sum[which(!is.finite(all.14c.sum$d14c_corr_mean)), "d14c_corr_mean"] <- NA
+all.14c.sum[which(!is.finite(all.14c.sum$d14c_corr_min)), "d14c_corr_min"] <- NA
+all.14c.sum[which(!is.finite(all.14c.sum$d14c_corr_max)), "d14c_corr_max"] <- NA
 
 # *** Need to figure out method for determining that these are outliers *** 
 # # remove outliers
@@ -454,3 +467,197 @@ all.14c <- all.14c[order(all.14c$Experiment, all.14c$Period, all.14c$Treatment),
 rm(ams_results_ls2, nms.ams.vars)
 ```
 
+8. Count number of ^14^C observations for checking plots.
+```{r counts for checking plots, echo = FALSE, include = FALSE}
+# count !is.na(14C) cases by SampleName
+all.14c[-which(is.na(all.14c$d14c_corr)),] %>%
+  group_by(Experiment, Treatment, Period, Type) %>%
+  count()
+# by ID
+all.14c[-which(is.na(all.14c$d14c_corr)),] %>%
+  group_by(Experiment, Treatment, Period, Type) %>%
+  distinct(ID) %>%
+  count()
+```
+
+
+9. Plot pre-incubation period $\Delta$^14^C against equilibrium respiration period $\Delta$^14^C.
+* Relative outlier point is the very negative (mean = -51.1‰) HEW22 pre-incubation control samples from the 2019 air-dry experiment.
+* Data from both experiments plotted together, i.e. "treatment" = air-dry/air-dry + storage
+* Pre-incubation $\Delta$^14^C was not measured for the 2011 control samples.
+* Samples from three of the forest plots of the 2011 treatment samples failed to accumulate enough CO~2~ to measure ^14^C.
+```{r pre vs inc 14c plot, echo = FALSE}
+all.14c.pre.inc <- merge(all.14c.sum[all.14c.sum$Period == "pre", c("ID", "Experiment", "Type", "Treatment", "d14c_corr_mean", "d14c_corr_min", "d14c_corr_max")],
+                         all.14c.sum[all.14c.sum$Period == "inc", c("ID", "Experiment", "Type", "Treatment", "d14c_corr_mean", "d14c_corr_min", "d14c_corr_max")],
+                         by = c("ID", "Experiment", "Type", "Treatment"),
+                         suffixes = c("_pre", "_inc"))
+all.14c.pre.inc$treat.bi <- ifelse(all.14c.pre.inc$Treatment == "control", "control", "treatment")
+
+all.14c.pre.inc %>%
+  ggplot(., aes(d14c_corr_mean_pre, d14c_corr_mean_inc, color = Type, shape = treat.bi)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "gray") +
+  geom_hline(yintercept = 0, color = "gray") +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_min_inc, 
+        ymax = d14c_corr_max_inc, 
+        color = Type), 
+    width = .25) +
+  geom_errorbarh(
+    aes(xmin = d14c_corr_min_pre, 
+        xmax = d14c_corr_max_pre, 
+        color = Type), 
+    height = .9) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = 'Treatment',
+                     values = c("control" = 16,
+                                "treatment" = 1)) +
+  scale_x_continuous(limits = c(-60, 115)) +
+  scale_y_continuous(limits = c(-60, 115)) +
+  xlab(expression('Pre-incubation '*Delta*''^14*'C (per mille)')) +
+  ylab(expression('Equilibrium respiration '*Delta*''^14*'C (per mille)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.key.height=unit(.8, "cm"),
+        aspect.ratio = 1)
+```
+
+10. Plot $\Delta$^14^C against proportion of soil C respired by experiment, land cover, and sampling period.
+* Note that data are first shown averaged by plot (Fig. 1), and then averaged by land use and treatment within sampling periods (Fig. 2)
+* Pre-incubation $\Delta$^14^C was not measured for the 2011 control samples.
+* Outlier data excluded (HEW22 control pre-incubation)
+```{r plot 14c by c resp, echo = FALSE}
+# collapse treatment variable into binary control/treatment
+all.14c.sum$treat.bi <- ifelse(all.14c.sum$Treatment == "control", "control","treatment")
+# remove HEW22 control pre
+
+all.14c.sum %>%
+  mutate(ID.treat = paste(ID, Treatment)) %>%
+  mutate(treat.Period = paste(treat.bi, Period)) %>%
+  mutate(ID.treat.Period = paste(ID, treat.Period)) %>%
+  filter(ID.treat.Period != "HEW22 control pre") %>%
+  ggplot(., aes(mgCO2.C_gC_mean, d14c_corr_mean, color = Type, shape = treat.Period)) +
+  geom_point(size = 3) +
+  geom_path(aes(group = ID.treat)) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_min, 
+        ymax = d14c_corr_max, 
+        color = Type), 
+    width = .25) +
+  geom_errorbarh(
+    aes(xmin = mgCO2.C_gC_min, 
+        xmax = mgCO2.C_gC_max, 
+        color = Type), 
+    height = .9) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = 'Sampling period (treatment)',
+                     values =c(16, 17, 1, 2),
+                     labels = c("control pre" = 'pre-incubation\n(control)', 
+                                "control inc" = 'equilibrium respiration\n(control)',
+                                "treatment pre" = 'pre-incubation\n(air-dry/air-dry + storage)',
+                                "treatment inc" = 'equilibrium respiration\n(air-dry/air-dry + storage)')) +
+  facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
+  xlab(expression('Respired C (mgCO'[2]*'-C'*' g soil C'^-1*')')) +
+  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.key.height=unit(.8, "cm"))
+
+# average control and treatment data
+all.14c.sum2 <- mutate(all.14c, ID.per.exp.trt = paste(ID, Period, Experiment, Treatment)) %>%
+  filter(ID.per.exp.trt != "HEW22 pre rewet control") %>%
+  select(Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
+  group_by(Type, Period, Treatment, Experiment, YearSampled) %>%
+  add_count() %>%
+  summarize_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+  mutate(d14c_corr_se = d14c_corr_sd/n_mean,
+         d14c_corr_u = d14c_corr_mean + d14c_corr_se,
+         d14c_corr_l = d14c_corr_mean - d14c_corr_se,
+         mgCO2.C_gC_se = mgCO2.C_gC_sd/n_mean,
+         mgCO2.C_gC_u = mgCO2.C_gC_mean + mgCO2.C_gC_se,
+         mgCO2.C_gC_l = mgCO2.C_gC_mean - mgCO2.C_gC_se) 
+
+all.14c.sum2$treat.bi <- ifelse(all.14c.sum2$Treatment == "control", "control","treatment")
+all.14c.sum2 %>%
+  mutate(treat.Period = paste(treat.bi, Period)) %>%
+  ggplot(., aes(mgCO2.C_gC_mean, d14c_corr_mean, color = Type, shape = treat.Period)) +
+  geom_point(size = 3) +
+  geom_path(aes(group = Treatment)) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_u, 
+        ymax = d14c_corr_l, 
+        color = Type), 
+    width = .25) +
+  geom_errorbarh(
+    aes(xmin = mgCO2.C_gC_u, 
+        xmax = mgCO2.C_gC_l, 
+        color = Type), 
+    height = .9) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = 'Sampling period (treatment)',
+                     values =c(16, 17, 1, 2),
+                     labels = c("control pre" = 'pre-incubation\n(control)', 
+                                "control inc" = 'equilibrium respiration\n(control)',
+                                "treatment pre" = 'pre-incubation\n(air-dry/air-dry + storage)',
+                                "treatment inc" = 'equilibrium respiration\n(air-dry/air-dry + storage)')) +
+  facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
+  xlab(expression('Respired C (mgCO'[2]*'-C'*' g soil C'^-1*')')) +
+  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.key.height=unit(.8, "cm"))
+```
+
+11. Same plot as in step 10, but including outlier data.
+```{r plot 14c by c resp with outlier, echo = FALSE}
+# average control and treatment data
+all.14c.sum3 <- select(all.14c, Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
+  group_by(Type, Period, Treatment, Experiment, YearSampled) %>%
+  add_count() %>%
+  summarize_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+  mutate(d14c_corr_se = d14c_corr_sd/n_mean,
+         d14c_corr_u = d14c_corr_mean + d14c_corr_se,
+         d14c_corr_l = d14c_corr_mean - d14c_corr_se,
+         mgCO2.C_gC_se = mgCO2.C_gC_sd/n_mean,
+         mgCO2.C_gC_u = mgCO2.C_gC_mean + mgCO2.C_gC_se,
+         mgCO2.C_gC_l = mgCO2.C_gC_mean - mgCO2.C_gC_se) 
+
+all.14c.sum3$treat.bi <- ifelse(all.14c.sum3$Treatment == "control", "control","treatment")
+all.14c.sum3 %>%
+  mutate(treat.Period = paste(treat.bi, Period)) %>%
+  ggplot(., aes(mgCO2.C_gC_mean, d14c_corr_mean, color = Type, shape = treat.Period)) +
+  geom_point(size = 3) +
+  geom_path(aes(group = Treatment)) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_u, 
+        ymax = d14c_corr_l, 
+        color = Type), 
+    width = .25) +
+  geom_errorbarh(
+    aes(xmin = mgCO2.C_gC_u, 
+        xmax = mgCO2.C_gC_l, 
+        color = Type), 
+    height = .9) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = 'Sampling period (treatment)',
+                     values =c(16, 17, 1, 2),
+                     labels = c("control pre" = 'pre-incubation\n(control)', 
+                                "control inc" = 'equilibrium respiration\n(control)',
+                                "treatment pre" = 'pre-incubation\n(air-dry/air-dry + storage)',
+                                "treatment inc" = 'equilibrium respiration\n(air-dry/air-dry + storage)')) +
+  facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
+  xlab(expression('Respired C (mgCO'[2]*'-C'*' g soil C'^-1*')')) +
+  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.key.height=unit(.8, "cm"))
+```
