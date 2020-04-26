@@ -11,6 +11,11 @@ output:
     df_print: paged
   html_notebook: default
 ---
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
+                      fig.align = 'center')
+```
+
 ```{r setup, include = FALSE}
 library(ggplot2)
 library(dplyr)
@@ -18,6 +23,7 @@ library(tidyr)
 library(SoilR)
 library(corrplot)
 library(openxlsx)
+library(ISRaD)
 ```
 # Notes:
 * This workbook is intended to load and prepare the key data for analysis for the archive incubation project.
@@ -26,7 +32,7 @@ library(openxlsx)
 
 # CO~2~ fluxes and soil data 
 1. Load flux data from air-dry + storage control samples, and convert from "wide" to "long" format so as to match other data.
-```{r read wide ts data, echo = FALSE}
+```{r read wide ts data}
 # Read air-dry + storage respiration control data
 archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-20.csv")
 
@@ -88,7 +94,7 @@ rm(archive.ctl.ts.d, archive.ctl.ts.co2, archive.ctl.ts.pre)
 ```
 
 2. Load flux data from air-dry + storage samples and from air-dry experiment (ctl & treatment), C & N data for all the Exploratories samples (measured in 2011), and soil mass and moisture data for all experiments.
-```{r read long ts data, echo = FALSE}
+```{r read long ts data}
 # Read Xplr C and N data
 xplr.cn <- read.csv("../data/external/exploratories_ischoening_soilcn_2011/170407_CN_concentrations_Exploratories_EP_Plots_2011.csv")
 
@@ -109,7 +115,7 @@ rewet.dry.ts <- read.csv("../data/derived/dried-2019-flux/dried-2019-flux_2020-0
 ```
 
 3. Combine and summarize data in long format to calculate respiration rates and plot over time.
-```{r summarize data, echo = FALSE, include = FALSE}
+```{r summarize data, include = FALSE}
 # NB: set "include" to false to suppress bind_rows warning about coercing factor to char
 # remove formula_check columns
 invisible(list2env(lapply(list(archive.arc.ts = archive.arc.ts, 
@@ -191,7 +197,7 @@ ts.avg <- as.data.frame(lapply(ts.avg, type.convert))
 ```
 
 4. Plot of CO~2~ fluxes over time. Note that the final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat.
-```{r CO2 fluxes plots, echo = FALSE}
+```{r CO2 fluxes plots}
 ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
   geom_vline(xintercept = 4, color="gray") +
   geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
@@ -224,13 +230,13 @@ ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
 # Isotope data
 
 1. Read in isotope data from various sources. First load helper function 'read_jena_ams_results.R"
-```{r load ams-jena-ingest fx, echo = FALSE}
+```{r load ams-jena-ingest fx}
 source("./utilities/jena_ams_ingest.R")
 ```
 
 
 2. Next read in data from the appropriate directories in 'data/raw'.
-```{r read iso data, echo = FALSE}
+```{r read iso data}
 # identify subdirectories in 'raw' directory with "ams_jena" in name
 ams_jena_results_dirs <- list.files("../data/raw", pattern = "ams_jena_results", full.names = TRUE)
 ams_results_ls <- lapply(seq_along(ams_jena_results_dirs), function(i) {
@@ -259,7 +265,7 @@ names(ams_results_ls) <- list.files("../data/raw", pattern = "ams_jena_results")
   * h2o_grav (gravimetric water content, percent)
   * h2o_whc_field (percent of water holding capacity, field-moist)
   
-```{r non-timeseries data template, echo = FALSE}
+```{r non-timeseries data template}
 unique.id.n <- c(length(unique(archive.ctl.ts$ID)),
                  length(unique(archive.arc.ts$SampleName)),
                  length(unique(rewet.ctl.ts$SampleName)),
@@ -290,7 +296,7 @@ all.14c.template <- rbind(pre.14c, inc.14c)
 
 
 4. Summarize observational data from timeseries data by unique IDs (SampleName).
-```{r combine soil obs data, echo = FALSE}
+```{r combine soil obs data}
 # summarize time and co2 data by experiment, period, and sample name
 ts.epsn.avg <- na.omit(ts) %>%
   select(Period, SampleName, gC_gS, dw_g, mgCO2.C_gC, time_d, time_d_cmtv)  %>%
@@ -302,7 +308,7 @@ ts.epsn.avg <- rename_at(ts.epsn.avg, vars(contains('max')), list(~sub("_max", "
 5. Create helper functions for decay correction, converting $\Delta$^14^C to fraction modern, and cleaning up extraneous values in raw ^14^C data. Archived sample $\Delta$^14^C data should to be corrected for decay since the year of collection. (Although the correction is very small and likely insignificant, I will do it anyway).
 * decay correction formula is:
 $$1000 \cdot \left( (FM \cdot e^{\frac{-year_{sampled} + 1950}{8267}}) - 1 \right)$$
-```{r 14C helper fxs, echo = FALSE}
+```{r 14C helper fxs}
 # create decay correction function
 decay.corr.fx <- function(year_sampled, fraction_modern) {
   ifelse(is.na(fraction_modern), NA, 1000*((fraction_modern*exp((-year_sampled + 1950)/8267))-1))
@@ -328,7 +334,7 @@ extra.clean.fx <- function(df) {
 ```
 
 6. Clean up ^14^C data.
-```{r clean up 14C data, echo = FALSE}
+```{r clean up 14C data}
 # First add 14C and 13C data from arc control samples to ams_results_ls
 # Also need to add SampleName col and variable columns Treatment, Period, and Experiment to all data frames in ams_results_ls 
 # note that neither 13C nor 14C was measured for the pre-incubation period for these samples
@@ -404,7 +410,7 @@ ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[-pre.ix, "Period"]
 ```
 
 7. Combine data.
-```{r combine 14C soil obs data, echo = FALSE}
+```{r combine 14C soil obs data}
 # flatten list and remove AMS blanks, NA samples, and non-Exploratory data
 ams_results_ls2 <- lapply(ams_results_ls[3:7], function(x) bind_rows(x))
 ams_results_exp1_2.df <- bind_rows(lapply(ams_results_ls2, function(x) extra.clean.fx(x)))
@@ -462,7 +468,7 @@ rm(ams_results_ls2, nms.ams.vars)
 ```
 
 8. Count number of ^14^C observations for checking plots.
-```{r counts for checking plots, echo = FALSE, include = FALSE}
+```{r counts for checking plots, include = FALSE}
 # count !is.na(14C) cases by SampleName
 all.14c[-which(is.na(all.14c$d14c_corr)),] %>%
   group_by(Experiment, Treatment, Period, Type) %>%
@@ -474,13 +480,12 @@ all.14c[-which(is.na(all.14c$d14c_corr)),] %>%
   count()
 ```
 
-
 9. Plot pre-incubation period $\Delta$^14^C against equilibrium respiration period $\Delta$^14^C.
-* Relative outlier point is the very negative (mean = -51.1‰) HEW22 pre-incubation control samples from the 2019 air-dry experiment.
-* Data from both experiments plotted together, i.e. "treatment" = air-dry/air-dry + storage
+* Points are means of duplicate lab reps and error bars are min and max (except for the 2011 control samples, which were not replicated)
 * Pre-incubation $\Delta$^14^C was not measured for the 2011 control samples.
+* Relative outlier point is the very negative (mean = -51.1‰) HEW22 pre-incubation control samples from the 2019 air-dry experiment.
 * Samples from three of the forest plots of the 2011 treatment samples failed to accumulate enough CO~2~ to measure ^14^C.
-```{r pre vs inc 14c plot, echo = FALSE}
+```{r pre vs inc 14c plot}
 all.14c.pre.inc <- merge(all.14c.sum[all.14c.sum$Period == "pre", c("ID", "Experiment", "Type", "Treatment", "d14c_corr_mean", "d14c_corr_min", "d14c_corr_max")],
                          all.14c.sum[all.14c.sum$Period == "inc", c("ID", "Experiment", "Type", "Treatment", "d14c_corr_mean", "d14c_corr_min", "d14c_corr_max")],
                          by = c("ID", "Experiment", "Type", "Treatment"),
@@ -488,7 +493,7 @@ all.14c.pre.inc <- merge(all.14c.sum[all.14c.sum$Period == "pre", c("ID", "Exper
 all.14c.pre.inc$treat.bi <- ifelse(all.14c.pre.inc$Treatment == "control", "control", "treatment")
 
 all.14c.pre.inc %>%
-  ggplot(., aes(d14c_corr_mean_pre, d14c_corr_mean_inc, color = Type, shape = treat.bi)) +
+  ggplot(., aes(d14c_corr_mean_pre, d14c_corr_mean_inc, color = Type, shape = Treatment)) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
   geom_vline(xintercept = 0, color = "gray") +
   geom_hline(yintercept = 0, color = "gray") +
@@ -508,7 +513,8 @@ all.14c.pre.inc %>%
                      labels = c('Forest','Grassland')) +
   scale_shape_manual(name = 'Treatment',
                      values = c("control" = 16,
-                                "treatment" = 1)) +
+                                "air-dry" = 1,
+                                "air-dry + storage" = 0)) +
   scale_x_continuous(limits = c(-60, 115)) +
   scale_y_continuous(limits = c(-60, 115)) +
   xlab(expression('Pre-incubation '*Delta*''^14*'C (per mille)')) +
@@ -523,7 +529,7 @@ all.14c.pre.inc %>%
 * Note that data are first shown averaged by plot (Fig. 1), and then averaged by land use and treatment within sampling periods (Fig. 2)
 * Pre-incubation $\Delta$^14^C was not measured for the 2011 control samples.
 * Outlier data excluded (HEW22 control pre-incubation)
-```{r plot 14c by c resp, echo = FALSE}
+```{r plot 14c by c resp}
 # collapse treatment variable into binary control/treatment
 all.14c.sum$treat.bi <- ifelse(all.14c.sum$Treatment == "control", "control","treatment")
 # remove HEW22 control pre
@@ -563,6 +569,7 @@ all.14c.sum %>%
         legend.key.height=unit(.8, "cm"))
 
 # average control and treatment data
+# note that upper/lower limits = 2xSE
 all.14c.sum2 <- mutate(all.14c, ID.per.exp.trt = paste(ID, Period, Experiment, Treatment)) %>%
   filter(ID.per.exp.trt != "HEW22 pre rewet control") %>%
   select(Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
@@ -570,11 +577,11 @@ all.14c.sum2 <- mutate(all.14c, ID.per.exp.trt = paste(ID, Period, Experiment, T
   add_count() %>%
   summarize_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
   mutate(d14c_corr_se = d14c_corr_sd/n_mean,
-         d14c_corr_u = d14c_corr_mean + d14c_corr_se,
-         d14c_corr_l = d14c_corr_mean - d14c_corr_se,
+         d14c_corr_u = d14c_corr_mean + d14c_corr_se*2,
+         d14c_corr_l = d14c_corr_mean - d14c_corr_se*2,
          mgCO2.C_gC_se = mgCO2.C_gC_sd/n_mean,
-         mgCO2.C_gC_u = mgCO2.C_gC_mean + mgCO2.C_gC_se,
-         mgCO2.C_gC_l = mgCO2.C_gC_mean - mgCO2.C_gC_se) 
+         mgCO2.C_gC_u = mgCO2.C_gC_mean + mgCO2.C_gC_se*2,
+         mgCO2.C_gC_l = mgCO2.C_gC_mean - mgCO2.C_gC_se*2) 
 
 all.14c.sum2$treat.bi <- ifelse(all.14c.sum2$Treatment == "control", "control","treatment")
 all.14c.sum2 %>%
@@ -610,18 +617,18 @@ all.14c.sum2 %>%
 ```
 
 11. Same plot as in step 10, but including outlier data.
-```{r plot 14c by c resp with outlier, echo = FALSE}
+```{r plot 14c by c resp with outlier}
 # average control and treatment data
 all.14c.sum3 <- select(all.14c, Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
   group_by(Type, Period, Treatment, Experiment, YearSampled) %>%
   add_count() %>%
   summarize_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
   mutate(d14c_corr_se = d14c_corr_sd/n_mean,
-         d14c_corr_u = d14c_corr_mean + d14c_corr_se,
-         d14c_corr_l = d14c_corr_mean - d14c_corr_se,
+         d14c_corr_u = d14c_corr_mean + d14c_corr_se*2,
+         d14c_corr_l = d14c_corr_mean - d14c_corr_se*2,
          mgCO2.C_gC_se = mgCO2.C_gC_sd/n_mean,
-         mgCO2.C_gC_u = mgCO2.C_gC_mean + mgCO2.C_gC_se,
-         mgCO2.C_gC_l = mgCO2.C_gC_mean - mgCO2.C_gC_se) 
+         mgCO2.C_gC_u = mgCO2.C_gC_mean + mgCO2.C_gC_se*2,
+         mgCO2.C_gC_l = mgCO2.C_gC_mean - mgCO2.C_gC_se*2) 
 
 all.14c.sum3$treat.bi <- ifelse(all.14c.sum3$Treatment == "control", "control","treatment")
 all.14c.sum3 %>%
@@ -655,3 +662,99 @@ all.14c.sum3 %>%
   theme(panel.grid = element_blank(),
         legend.key.height=unit(.8, "cm"))
 ```
+
+12. Show treatment effects on observed equilibrium period ^14^C.
+* Fig. 1 shows treatment effects with inferential error bars (2x SE)
+* Fig. 2 shows the direction of treatment effects over time in reference to the atmosphere (gray line)
+```{r treatment effects by time}
+# first load atmospheric data from ISRaD and bind future projection
+Datm <- rbind(graven, future14C)
+Datm <- Datm[Datm$Date > 1900, c("Date", "NHc14")]
+
+# # code for plotting data by ID
+# all.14c.sum %>%
+#   filter(Period == "inc") %>%
+#   filter(!grepl("S", ID)) %>%
+#   mutate(year.ID = paste(YearSampled, ID)) %>%
+#   ggplot(., aes(YearSampled, d14c_corr_mean, color = Type)) +
+#   geom_point(aes(shape = Treatment), size = 3) +
+#   geom_path(aes(group = year.ID), 
+#             arrow = arrow(type = "open", length = unit(.1, "inches"), ends = "last"),
+#             show.legend = FALSE) +
+#   geom_path(data = Datm, aes(Date, NHc14), color = "darkgray") +
+#   scale_color_manual(name = 'Land use',
+#                      values =c('F'='#a35513','G'='#1361a3'),
+#                      labels = c('Forest','Grassland')) +
+#   scale_shape_manual(name = 'Treatment',
+#                      values = c("air-dry" = 1, 
+#                                 "air-dry + storage" = 0,
+#                                 "control" = 16)) +
+#   scale_x_continuous(limits = c(2010, 2020), breaks = c(2013, 2016, 2019)) +
+#   scale_y_continuous(limits = c(-15, 100)) +
+#   xlab('Year sampled') +
+#   ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+#   facet_wrap(~ ID, ncol = 3) +
+#   theme_bw() +
+#   theme(panel.grid = element_blank())
+
+# plot as side-by-side means w/ 2xSE
+# will change to 95%CIs at some point, but need to calculate test statistic with appropriate df
+all.14c.sum2 %>%
+  filter(Period == "inc") %>%
+  ggplot(., aes(treat.bi, d14c_corr_mean, color = Type)) +
+  geom_point(aes(shape = Treatment), size = 3) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_u, 
+        ymax = d14c_corr_l, 
+        color = Type), 
+    width = .1) +
+  scale_color_manual(name = 'Land use',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = 'Treatment',
+                     values = c("air-dry" = 1, 
+                                "air-dry + storage" = 0,
+                                "control" = 16)) +
+  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.x = element_blank())
+
+# plot over time, averaged by Type
+all.14c.sum2 %>%
+  filter(Period == "inc") %>%
+  mutate(year.Type = paste(YearSampled, Type)) %>%
+  ggplot(., aes(YearSampled, d14c_corr_mean, color = Type)) +
+  geom_point(aes(shape = Treatment), size = 3) +
+  geom_path(aes(group = year.Type), 
+            arrow = arrow(type = "open", length = unit(.1, "inches"), ends = "last"),
+            show.legend = FALSE) +
+  geom_path(data = Datm, aes(Date, NHc14), color = "darkgray") +
+  scale_color_manual(name = 'Land use',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = 'Treatment',
+                     values = c("air-dry" = 1, 
+                                "air-dry + storage" = 0,
+                                "control" = 16)) +
+  scale_x_continuous(limits = c(2010, 2020), breaks = c(2013, 2016, 2019)) +
+  scale_y_continuous(limits = c(-15, 100)) +
+  xlab('Year sampled') +
+  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  facet_grid(cols = vars(Type)) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+```
+
+13. Create template for external ^14^C data from the second part of the air-dry + storage experiment, i.e. samples for which the control incubations were not performed at MPI-BGC.
+```{r external template}
+
+```
+
+
+14. Show the effect of storage duration by plotting the difference between control and treatment 14C as a function of time archived.
+```{r storage duration}
+
+```
+
