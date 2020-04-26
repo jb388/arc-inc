@@ -664,8 +664,8 @@ all.14c.sum3 %>%
 ```
 
 12. Show treatment effects on observed equilibrium period ^14^C.
-* Fig. 1 shows treatment effects with inferential error bars (2x SE)
-* Fig. 2 shows the direction of treatment effects over time in reference to the atmosphere (gray line)
+* Fig. 1 shows treatment effects as means with inferential error bars (2x SE)
+* Fig. 2 shows the direction of mean treatment effects over time in reference to the atmosphere (gray line)
 ```{r treatment effects by time}
 # first load atmospheric data from ISRaD and bind future projection
 Datm <- rbind(graven, future14C)

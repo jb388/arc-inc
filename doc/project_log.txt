@@ -41,4 +41,7 @@
   - plots to make:
     - 1:1 of treatment/control for all data, bracketed by per mille "confidence lines"
     - multiple time point constraint conceptual figure
-    - box plots by time archived
+    - mean difference +/- 95%CI by time archived
+  - general issues:
+    - how to make figure captions work in pdf output? include special characters?
+    - figure formatting in pdf output
