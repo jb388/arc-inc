@@ -407,6 +407,15 @@ ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx$Treatment <- "air-
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx$Experiment <- "rewet"
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[pre.ix, "Period"] <- "pre"
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[-pre.ix, "Period"] <- "inc"
+
+# extract external data separately
+ext.14c.fx <- function(df) {
+  df$SampleName <- df$Probe
+  df$Treatment <- "air-dry + storage"
+  df$Experiment <- "arc2"
+  df$Period <- "inc"
+  return(df)
+}
 ```
 
 7. Combine data.
@@ -414,13 +423,23 @@ ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[-pre.ix, "Period"]
 # flatten list and remove AMS blanks, NA samples, and non-Exploratory data
 ams_results_ls2 <- lapply(ams_results_ls[3:7], function(x) bind_rows(x))
 ams_results_exp1_2.df <- bind_rows(lapply(ams_results_ls2, function(x) extra.clean.fx(x)))
+
+# flatten external data list
+ams_results_ls[1:2] <- lapply(ams_results_ls[1:2], function(x) lapply(x, ext.14c.fx))
+ext.14c <- bind_rows(lapply(ams_results_ls[1:2], function(x) bind_rows(x)))
+
 # cut out non-relevant AMS results columns
 nms.ams.vars <- c("F14C", "err", "∆14C.(‰)", "err.(‰)",
                  "SampleName", "Treatment", "Period", "Experiment")
 ams_results_exp1_2.df <- ams_results_exp1_2.df[ , nms.ams.vars]
 colnames(ams_results_exp1_2.df) <- c("fm", "fm_err", "d14c", "d14c_err", nms.ams.vars[5:8])
 
-# merge with template
+ext.14c <- ext.14c[ , nms.ams.vars]
+colnames(ext.14c) <- c("fm", "fm_err", "d14c", "d14c_err", nms.ams.vars[5:8])
+ext.14c$ID <- substr(ext.14c$SampleName,1,nchar(ext.14c$SampleName)-2)
+ext.14c$Type <- ifelse(grepl("G", ext.14c$ID), "G", "F")
+
+# merge Exploratories 14C data with template
 if(nrow(merge(all.14c.template, ams_results_exp1_2.df, all.x = TRUE)) == nrow(all.14c.template)) {
   all.14c <- merge(all.14c.template, ams_results_exp1_2.df, all.x = TRUE)
 } else {
@@ -664,8 +683,8 @@ all.14c.sum3 %>%
 ```
 
 12. Show treatment effects on observed equilibrium period ^14^C.
-* Fig. 1 shows treatment effects as means with inferential error bars (2x SE)
-* Fig. 2 shows the direction of mean treatment effects over time in reference to the atmosphere (gray line)
+* Fig. 1 shows the direction of mean treatment effects over time in reference to the atmosphere (gray line)
+* Fig. 2 shows treatment effects as means with inferential error bars (2x SE) [plan to add significance stars]
 ```{r treatment effects by time}
 # first load atmospheric data from ISRaD and bind future projection
 Datm <- rbind(graven, future14C)
@@ -697,30 +716,6 @@ Datm <- Datm[Datm$Date > 1900, c("Date", "NHc14")]
 #   theme_bw() +
 #   theme(panel.grid = element_blank())
 
-# plot as side-by-side means w/ 2xSE
-# will change to 95%CIs at some point, but need to calculate test statistic with appropriate df
-all.14c.sum2 %>%
-  filter(Period == "inc") %>%
-  ggplot(., aes(treat.bi, d14c_corr_mean, color = Type)) +
-  geom_point(aes(shape = Treatment), size = 3) +
-  geom_errorbar(
-    aes(ymin = d14c_corr_u, 
-        ymax = d14c_corr_l, 
-        color = Type), 
-    width = .1) +
-  scale_color_manual(name = 'Land use',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  scale_shape_manual(name = 'Treatment',
-                     values = c("air-dry" = 1, 
-                                "air-dry + storage" = 0,
-                                "control" = 16)) +
-  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
-  facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        axis.title.x = element_blank())
-
 # plot over time, averaged by Type
 all.14c.sum2 %>%
   filter(Period == "inc") %>%
@@ -745,15 +740,43 @@ all.14c.sum2 %>%
   facet_grid(cols = vars(Type)) +
   theme_bw() +
   theme(panel.grid = element_blank())
+
+# plot as side-by-side means w/ 2xSE
+# will change to 95%CIs at some point, but need to calculate test statistic with appropriate df
+all.14c.sum2 %>%
+  filter(Period == "inc") %>%
+  ggplot(., aes(treat.bi, d14c_corr_mean, color = Type)) +
+  geom_point(aes(shape = Treatment), size = 3) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_u, 
+        ymax = d14c_corr_l, 
+        color = Type), 
+    width = .1) +
+  scale_color_manual(name = 'Land use',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = 'Treatment',
+                     values = c("air-dry" = 1, 
+                                "air-dry + storage" = 0,
+                                "control" = 16)) +
+  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title.x = element_blank())
+
 ```
 
-13. Create template for external ^14^C data from the second part of the air-dry + storage experiment, i.e. samples for which the control incubations were not performed at MPI-BGC.
+14. Create template for external ^14^C data from the second part of the air-dry + storage experiment, i.e. samples for which the control incubations were not performed at MPI-BGC.
 ```{r external template}
 
+names(all.14c)
+ext.template <- data.frame(matrix(nrow = 0, ncol = length(names(all.14c))))
+names(ext.template) <- names(all.14c)
 ```
 
 
-14. Show the effect of storage duration by plotting the difference between control and treatment 14C as a function of time archived.
+15. Show the effect of storage duration by plotting the difference between control and treatment 14C as a function of time archived.
 ```{r storage duration}
 
 ```
