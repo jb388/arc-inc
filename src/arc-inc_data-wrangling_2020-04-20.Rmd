@@ -34,7 +34,7 @@ library(ISRaD)
 1. Load flux data from air-dry + storage control samples, and convert from "wide" to "long" format so as to match other data.
 ```{r read wide ts data}
 # Read air-dry + storage respiration control data
-archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-20.csv")
+archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-27.csv")
 
 # Convert time data from wide to long
 archive.ctl.ts.d <- select(archive.ctl.ts.wide, starts_with("inc_time_d")) %>%
@@ -86,8 +86,9 @@ archive.ctl.ts <- bind_rows(
 # rbind preinc and inc data
 archive.ctl.ts <- rbind(archive.ctl.ts.pre, archive.ctl.ts)
 
-# add SampleName column
+# add SampleName column and restore Experiment column
 archive.ctl.ts$SampleName <- archive.ctl.ts$ID
+archive.ctl.ts$Experiment <- archive.ctl.ts.wide[match(archive.ctl.ts$ID, archive.ctl.ts.wide$ID), "Experiment"]
 
 # remove intermediate files
 rm(archive.ctl.ts.d, archive.ctl.ts.co2, archive.ctl.ts.pre)
@@ -131,7 +132,7 @@ invisible(list2env(lapply(list(archive.arc.ts = archive.arc.ts,
 
 # Add Treatment columns to each dataset
 archive.arc.ts$Treatment <- "air-dry + storage (2011)"
-archive.ctl.ts$Treatment <- "control (2011)"
+archive.ctl.ts$Treatment <- ifelse(archive.ctl.ts$Experiment == "2011", "control (2011)", "storage duration")
 rewet.ctl.ts$Treatment <- "control (2019)"
 rewet.dry.ts$Treatment <- "air-dry (2019)"
 
@@ -144,10 +145,12 @@ archive.arc.ts$dw_g <- jarinfo.arc[match(archive.arc.ts$SampleName, jarinfo.arc$
 archive.ctl.ts$dw_g <- archive.ctl.ts.wide[match(archive.ctl.ts$ID, archive.ctl.ts.wide$ID), "dry_soil_wt_corrected_g"]
 rewet.ts <- merge(rewet.ts, jarinfo.rewet[ , c("ID", "Treatment", "dw_g")], by = c("ID", "Treatment"))
 
+# add experiment  and treatment cols to archive.arc.ts
+archive.arc.ts$Experiment <- "2011"
+
 # combine archive data
 archive.ts <- rbind(archive.ctl.ts, 
                     archive.arc.ts[ , names(archive.ctl.ts)])
-archive.ts$Experiment <- "2011"
 
 # Test that required names are present
 nms <- c("SampleName", "ID", "Experiment", "Treatment", "Period", "timepoint_cmtv",  "time_d", "time_d_cmtv", "mgCO2_jar", "dw_g")
@@ -198,7 +201,9 @@ ts.avg <- as.data.frame(lapply(ts.avg, type.convert))
 
 4. Plot of CO~2~ fluxes over time. Note that the final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat.
 ```{r CO2 fluxes plots}
-ggplot(ts.avg, aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
+ts.avg %>% 
+  filter(Experiment != "tme") %>%
+  ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
   geom_vline(xintercept = 4, color="gray") +
   geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
   geom_line(aes(color = Type, linetype = Treatment)) +
@@ -412,7 +417,7 @@ ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[-pre.ix, "Period"]
 ext.14c.fx <- function(df) {
   df$SampleName <- df$Probe
   df$Treatment <- "air-dry + storage"
-  df$Experiment <- "arc2"
+  df$Experiment <- "tme"
   df$Period <- "inc"
   return(df)
 }
@@ -768,7 +773,7 @@ all.14c.sum2 %>%
 ```
 
 14. Create template for external ^14^C data from the second part of the air-dry + storage experiment, i.e. samples for which the control incubations were not performed at MPI-BGC.
-```{r external template}
+```{r external template, include = FALSE}
 
 names(all.14c)
 ext.template <- data.frame(matrix(nrow = 0, ncol = length(names(all.14c))))
