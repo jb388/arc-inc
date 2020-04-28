@@ -8,9 +8,8 @@ Contents:
   - CO2 fluxes for 2018 incubation of duration of storage samples
 Notes:
   - these samples did not undergo a pre-incubation period
-  - archive-flux-t2_2020-04-21.csv:
-    - "save as" .csv version of sheet 'archive-flux-t2' from data/raw/lab_jena_results-co2_2019-02-25/Beem-Miller_archived_incubations_2.xlsx
-  - archive-flux-t2_2020-04-24.csv:
-    - "save as" .csv version of sheet 'archive-flux-t2' from data/raw/lab_jena_results-co2_2019-05-17/Beem-Miller_archived_inkubations2.xlsx
-    - updated sheet 'archive-flux-t2' in source file to calculate cmtv time properly
+  - arc-tme-t2-flux-1_2020-04-27.csv:
+    - "save as" .csv version of sheet 'arc-tme-flux-t2-1' from data/raw/lab_jena_results-co2_2019-05-17/Beem-Miller_archived_inkubations2.xlsx
+  - arc-tme-t2-flux-2_2020-04-27.csv:
+    - "save as" .csv version of sheet 'arc-tme-flux-t2-2' from data/raw/lab_jena_results-co2_2019-05-17/Beem-Miller_archived_inkubations2.xlsx
 References:

@@ -45,3 +45,9 @@
   - general issues:
     - how to make figure captions work in pdf output? include special characters?
     - figure formatting in pdf output
+
+2020-04-28
+  - working on ingesting data from external samples, i.e. experiment 3 on storage duration effects (very time consuming)
+  - not sure how best to include it in the data analysis work flow, as the data are in very different "shape"
+  - current approach is to make a summary sheet with all possible info in the "derived" data directory, while copying source files to the "external" data directory
+  - seem to be missing some data, e.g. fluxes for Sue's data

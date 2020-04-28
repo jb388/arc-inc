@@ -1,0 +1,17 @@
+Files:
+  - "co2Flux_ornl_sum_2020-04-13.xlsx"
+  - "arc-tme-ornl_2020-04-28.csv"
+Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date: 28 Apr 2020
+Contents:
+  - Soil C, fluxes, and isotope (13C, 14C) data for control incubations for Oak Ridge samples (data from M. Cisneros
+Notes:
+  - co2Flux_ornl_sum_2020-04-13.xlsx:
+    - incubation fluxes, soil mass and moisture data, and isotope data from data/external/oakridge_mcisneros_2020-04-09/Incubations_August_2004_samples.xls
+    - C data is from Swanston et al. 2005
+  - arc-tme-ornl_2020-04-28.csv:
+    - "save as" .csv version of sheet 'arc-tme-ornl' in "co2Flux_ornl_sum_2020-04-13" (this directory)
+References:
+  - Cisneros et al. 2005 (doi.org/10.1029/2006JG000197)
+  - Swanston et al. 2005 (doi.org/10.1016/j.geoderma.2004.12.015)

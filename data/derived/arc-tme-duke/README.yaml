@@ -1,0 +1,20 @@
+Files:
+  - "arc-tme-duke.xlsx"
+  - "arc-tme-duke_2020-04-28.csv"
+Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date: 27 Apr 2020
+Contents:
+  - Soil C and N content, fluxes, and isotope (13C, 14C) data for control incubations for samples Du123 and Du120 (data from F. Hopkins)
+Notes:
+  - arc-tme-duke.xlsx:
+    - incubation fluxes and isotope data from data/external/duke_hopkins_2018-04-06/Duke_priming_for_Sue.xlsx
+    - sheet 'arc-tme-duke-ctl' harmonizes flux units with the other flux data and adds C, N, pre-incuabtion duration, and soil moisture data
+    - soil moisture data is from F. Hopkins directly (see data/external/duke_hopkins_2018-04-06/README.yaml)
+    - C and N data is from Table 3 in Lichter et al. 2008
+    - soil mass data and pre-incubation duration data are Hopkins et al. 2012 SI
+  - arc-tme-duke_2020-04-28.csv:
+    - "save as" .csv version of sheet 'arc-tme-duke-ctl' in "arc-tme-duke.xlsx" (this directory)
+References:
+  - Hopkins et al. 2012 (doi.org/10.1073/pnas.1120603109)
+  - Lichter et al. 2008 (doi.org/10.1111/j.1365-2486.2008.01701.x)

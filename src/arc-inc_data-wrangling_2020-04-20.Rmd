@@ -5,11 +5,11 @@ date: "21 Apr 2020"
 header_includes:
 - \usepackage{textcomp}
 output:
-  pdf_document:
-    latex_engine: xelatex
+  html_notebook: default
   html_document:
     df_print: paged
-  html_notebook: default
+  pdf_document:
+    latex_engine: xelatex
 ---
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
@@ -31,7 +31,7 @@ library(ISRaD)
 * all code chunk options are set to "echo = FALSE"; see raw .Rmd file for data wrangling code.
 
 # CO~2~ fluxes and soil data 
-1. Load flux data from air-dry + storage control samples, and convert from "wide" to "long" format so as to match other data.
+1. Load flux data from air-dry + storage (experiment 1) and storage duration (experiment 3) control samples, and convert from "wide" to "long" format so as to match other data.
 ```{r read wide ts data}
 # Read air-dry + storage respiration control data
 archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-27.csv")
@@ -99,11 +99,29 @@ rm(archive.ctl.ts.d, archive.ctl.ts.co2, archive.ctl.ts.pre)
 # Read Xplr C and N data
 xplr.cn <- read.csv("../data/external/exploratories_ischoening_soilcn_2011/170407_CN_concentrations_Exploratories_EP_Plots_2011.csv")
 
-# Read soil mass and moisture info for air-dry + storage data
+# Read Duke C data
+tme.ctl.duk <- read.csv("../data/derived/arc-tme-duke/arc-tme-duke_2020-04-28.csv")
+
+# Read Sierra Nevada (Jun's) C data
+
+# Read Oak Ridge C data
+tme.ctl.ornl <- read.csv("../data/derived/arc-tme-ornl/arc-tme-ornl_2020-04-28.csv")
+
+# Read soil mass and moisture info for storage duration treatment samples
+jarinfo.tme <- read.xlsx("../data/raw/lab_jena_results-co2_2018-07-30/ArcInc_IncData_2018.xlsx",
+                         sheet = 1)
+# remove unit row and convert to appropriate types
+jarinfo.tme <- type.convert(jarinfo.tme[-1, ])
+
+# Read soil mass and moisture info for air-dry + storage treatment samples
 jarinfo.arc <- read.csv("../data/derived/arc-storage-t2-jarInfo/jar_information.csv")
 
 # Read soil mass and moisture info for air-dry data
 jarinfo.rewet <- read.csv("../data/derived/air-dry-2019-whc/air-dry-2019-whc_2020-04-21.csv")
+
+# Read storage duration respiration data
+storage.trt.ts <- rbind(read.csv("../data/derived/arc-tme-t2-flux/arc-tme-t2-flux-1_2020-04-27.csv", stringsAsFactors = FALSE),
+                        read.csv("../data/derived/arc-tme-t2-flux/arc-tme-t2-flux-2_2020-04-27.csv", stringsAsFactors = FALSE))
 
 # Read air-dry + storage respiration data
 archive.arc.ts <- read.csv("../data/derived/arc-storage-t2-flux/archive-flux-t2_2020-04-24.csv")
@@ -121,8 +139,8 @@ rewet.dry.ts <- read.csv("../data/derived/dried-2019-flux/dried-2019-flux_2020-0
 # remove formula_check columns
 invisible(list2env(lapply(list(archive.arc.ts = archive.arc.ts, 
                                rewet.ctl.ts = rewet.ctl.ts, 
-                               rewet.dry.ts = rewet.dry.ts
-                               ),
+                               rewet.dry.ts = rewet.dry.ts,
+                               storage.trt.ts = storage.trt.ts),
                           function(x) {
                             x$formula_check <- NULL
                             return(x)
@@ -132,7 +150,8 @@ invisible(list2env(lapply(list(archive.arc.ts = archive.arc.ts,
 
 # Add Treatment columns to each dataset
 archive.arc.ts$Treatment <- "air-dry + storage (2011)"
-archive.ctl.ts$Treatment <- ifelse(archive.ctl.ts$Experiment == "2011", "control (2011)", "storage duration")
+archive.ctl.ts$Treatment <- ifelse(archive.ctl.ts$Experiment == "2011", "control (2011)", "control (storage duration)")
+storage.trt.ts$Treatment <- "storage duration"
 rewet.ctl.ts$Treatment <- "control (2019)"
 rewet.dry.ts$Treatment <- "air-dry (2019)"
 
@@ -144,27 +163,35 @@ rewet.ts$Experiment <- "2019"
 archive.arc.ts$dw_g <- jarinfo.arc[match(archive.arc.ts$SampleName, jarinfo.arc$Sample), "Soil.dry.weight_.g."]
 archive.ctl.ts$dw_g <- archive.ctl.ts.wide[match(archive.ctl.ts$ID, archive.ctl.ts.wide$ID), "dry_soil_wt_corrected_g"]
 rewet.ts <- merge(rewet.ts, jarinfo.rewet[ , c("ID", "Treatment", "dw_g")], by = c("ID", "Treatment"))
+storage.trt.ts <- merge(storage.trt.ts, jarinfo.tme[ , c("Nr.", "dry.soil")], by.x = "SampleName", by.y = "Nr.")
+colnames(storage.trt.ts)[which(names(storage.trt.ts) == "dry.soil")] <- "dw_g"
 
-# add experiment  and treatment cols to archive.arc.ts
+# add experiment col to archive.arc.ts, storage.trt.ts
 archive.arc.ts$Experiment <- "2011"
+storage.trt.ts$Experiment <- "tme"
 
-# combine archive data
-archive.ts <- rbind(archive.ctl.ts, 
+# combine archive data and storage duration data
+archive.ts <- rbind(archive.ctl.ts[which(archive.ctl.ts$Treatment != "storage duration"), ], 
                     archive.arc.ts[ , names(archive.ctl.ts)])
+storage.ts <- rbind(archive.ctl.ts[which(archive.ctl.ts$Treatment == "storage duration"), ],
+                    storage.trt.ts[ , names(archive.ctl.ts)])
 
 # Test that required names are present
 nms <- c("SampleName", "ID", "Experiment", "Treatment", "Period", "timepoint_cmtv",  "time_d", "time_d_cmtv", "mgCO2_jar", "dw_g")
 invisible(lapply(list(archive.ts = archive.ts,
-                      rewet.ts = rewet.ts),
+                      rewet.ts = rewet.ts,
+                      storage.ts),
        function(x) {
          ifelse(!is.na(match(nms, names(x))), "yes", "no")
        }
        ))
 
 # combine all data
-ts <- bind_rows(archive.ts[ , nms], rewet.ts[ , nms])
+ts <- bind_rows(archive.ts[ , nms], rewet.ts[ , nms], storage.ts[ , nms])
 
 # add C content and Type column
+ts$gC_gS <- xplr.cn[match(ts$ID, xplr.cn$EP_Plotid), "Total_C"]*10^-3
+# sierras, oak ridge, duke
 ts$gC_gS <- xplr.cn[match(ts$ID, xplr.cn$EP_Plotid), "Total_C"]*10^-3
 ts$Type <- ifelse(grepl("G", ts$ID), "G", "F")
 
@@ -174,7 +201,6 @@ ts$mgCO2.C_gC <- (ts$mgCO2_jar*(12/44))/(ts$dw_g*ts$gC_gS)
 ts$mgCO2.C_gC_d <- ts$mgCO2.C_gC/ts$time_d
 
 # summarize CO2 release data for each timepoint, by experiment, treatment, and type
-# for some reason n() doesn't work when included with the summarize_all syntax, so done separately
 ts.avg <- na.omit(ts) %>%
   select(Experiment, Treatment, Type, timepoint_cmtv, mgCO2.C_gC_d, time_d_cmtv)  %>%
   group_by(Experiment, Treatment, Type, timepoint_cmtv) %>%
@@ -199,7 +225,8 @@ ts.avg <- bind_rows(lapply(ts.avg, bind_rows))
 ts.avg <- as.data.frame(lapply(ts.avg, type.convert))
 ```
 
-4. Plot of CO~2~ fluxes over time. Note that the final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat.
+4. Plots of CO~2~ fluxes over time. The final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat. Notes:
+* Daily measurements for the pre-incubation period were not taken for the 2011 control samples, leading to an apparent delay in the timing of the rewetting pulse (Fig 1).
 ```{r CO2 fluxes plots}
 ts.avg %>% 
   filter(Experiment != "tme") %>%
@@ -231,6 +258,85 @@ ts.avg %>%
   theme_bw() +
   theme(panel.grid = element_blank())
 ```
+
+* Plot pre-incubation period as average rate for the first four days for comparability (Fig. 2).
+```{r CO2 flux plots II}
+ts.pre <- ts[ts$Period == "pre", ]
+ts.pre.avg <- ts.pre %>%
+  filter(time_d_cmtv > 3.5) %>%
+  select(Experiment, Treatment, Type, timepoint_cmtv, SampleName, mgCO2.C_gC, time_d_cmtv)  %>%
+  group_by(Experiment, Treatment, Type, timepoint_cmtv, SampleName) %>%
+  summarise_all(list(mean = mean), na.rm = TRUE) %>%
+  mutate(mgCO2.C_gC_d = mgCO2.C_gC_mean/time_d_cmtv_mean) %>%
+  select(-SampleName, -mgCO2.C_gC_mean, Experiment, Treatment, Type, mgCO2.C_gC_d, time_d_cmtv_mean) %>%
+  group_by(Experiment, Treatment, Type) %>%
+  add_tally() %>%
+  summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+  mutate(se_slope = mgCO2.C_gC_d_sd/sqrt(n_mean),
+         se_slope_l = mgCO2.C_gC_d_mean - se_slope,
+         se_slope_u = mgCO2.C_gC_d_mean + se_slope)
+
+ts.inc.avg <- ts %>%
+  filter(Period == "inc") %>%
+  select(Experiment, Treatment, Type, timepoint_cmtv, mgCO2.C_gC_d, time_d_cmtv)  %>%
+  group_by(Experiment, Treatment, Type, timepoint_cmtv) %>%
+  add_tally() %>%
+  summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+  mutate(se_slope = mgCO2.C_gC_d_sd/sqrt(n_mean),
+         se_slope_l = mgCO2.C_gC_d_mean - se_slope,
+         se_slope_u = mgCO2.C_gC_d_mean + se_slope)
+
+colnames(ts.pre.avg)[which(names(ts.pre.avg) %in% c("timepoint_cmtv_mean",
+                       "time_d_cmtv_mean_mean",
+                       "time_d_cmtv_mean_sd"))] <- c("timepoint_cmtv",
+                                                    "time_d_cmtv_mean",
+                                                    "time_d_cmtv_sd")
+
+ts.pre.avg <- ts.pre.avg[ , -which(!names(ts.pre.avg) %in% names(ts.inc.avg))]
+
+ts.avg2 <- rbind(ts.pre.avg, ts.inc.avg)
+ts.avg2 <- ts.avg2[complete.cases(ts.avg2), ]
+
+# add timepoint zero data
+ts.avg2 <- lapply(split(ts.avg2, ts.avg2$Treatment), function(x) {
+  lapply(split(x, x$Type), tp0.f)
+  })
+ts.avg2 <- bind_rows(lapply(ts.avg2, bind_rows))
+
+# restore classes
+ts.avg2 <- as.data.frame(lapply(ts.avg2, type.convert))
+
+ts.avg2 %>% 
+  filter(Experiment != "tme") %>%
+  ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
+  geom_vline(xintercept = 4, color="gray") +
+  geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
+  geom_line(aes(color = Type, linetype = Treatment)) +
+  facet_grid(rows = vars(Experiment)) +
+  scale_x_continuous(limits = c(0,18)) +
+  # scale_y_continuous(limits = c(0,30)) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_fill_manual(name = 'Std. Err.',
+                    values =c('F'='#a35513','G'='#1361a3'),
+                    labels = c('Forest','Grassland')) +
+  scale_alpha_manual(name = 'Treatment',
+                     values = c("air-dry + storage (2011)" = .2, 
+                                "control (2011)" = .4,
+                                "air-dry (2019)" = .2,
+                                "control (2019)" = .4)) +
+  scale_linetype_manual(name = 'Treatment',
+                        values = c("air-dry + storage (2011)" = 'dashed', 
+                                   "control (2011)" ='solid',
+                                   "air-dry (2019)" = "dashed",
+                                   "control (2019)" = "solid")) +
+  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
+  xlab("Time (days)") +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+```
+
 
 # Isotope data
 
@@ -302,11 +408,11 @@ all.14c.template <- rbind(pre.14c, inc.14c)
 
 4. Summarize observational data from timeseries data by unique IDs (SampleName).
 ```{r combine soil obs data}
-# summarize time and co2 data by experiment, period, and sample name
-ts.epsn.avg <- na.omit(ts) %>%
-  select(Period, SampleName, gC_gS, dw_g, mgCO2.C_gC, time_d, time_d_cmtv)  %>%
-  group_by(Period, SampleName) %>%
-  summarise_all(list(max = max))
+# summarize time and co2 data by experiment, period, treatment, and sample name
+ts.epsn.avg <- ts %>%
+  select(Experiment, Period, Treatment, SampleName, gC_gS, dw_g, mgCO2.C_gC, time_d, time_d_cmtv)  %>%
+  group_by(Experiment, Period, Treatment, SampleName) %>%
+  summarise_all(list(max = max), na.rm = TRUE)
 ts.epsn.avg <- rename_at(ts.epsn.avg, vars(contains('max')), list(~sub("_max", "", .)))
 ```
 
@@ -458,6 +564,9 @@ if(nrow(merge(all.14c, ts.epsn.avg, by = c("SampleName", "Period"))) == nrow(all
   cat("duplicate sample merge error")
 }
 
+# need to do this for ext.14c data
+ext.14c.cn <- merge(ext.14c, ts.epsn.avg, by = c("SampleName", "Period"))
+
 # add YearSampled column
 all.14c$YearSampled <- ifelse(all.14c$Experiment == "arc", 2011, 2019)
 
@@ -552,17 +661,17 @@ all.14c.pre.inc %>%
 10. Plot $\Delta$^14^C against proportion of soil C respired by experiment, land cover, and sampling period.
 * Note that data are first shown averaged by plot (Fig. 1), and then averaged by land use and treatment within sampling periods (Fig. 2)
 * Pre-incubation $\Delta$^14^C was not measured for the 2011 control samples.
-* Outlier data excluded (HEW22 control pre-incubation)
+* Limits exclude outlier point (HEW22 control pre-incubation) for improved legibility
 ```{r plot 14c by c resp}
 # collapse treatment variable into binary control/treatment
 all.14c.sum$treat.bi <- ifelse(all.14c.sum$Treatment == "control", "control","treatment")
-# remove HEW22 control pre
 
+# HEW22 control pre point excluded to make figure more readable 
 all.14c.sum %>%
   mutate(ID.treat = paste(ID, Treatment)) %>%
-  mutate(treat.Period = paste(treat.bi, Period)) %>%
-  mutate(ID.treat.Period = paste(ID, treat.Period)) %>%
+  mutate(ID.treat.Period = paste(ID.treat, Period)) %>%
   filter(ID.treat.Period != "HEW22 control pre") %>%
+  mutate(treat.Period = paste(treat.bi, Period)) %>%
   ggplot(., aes(mgCO2.C_gC_mean, d14c_corr_mean, color = Type, shape = treat.Period)) +
   geom_point(size = 3) +
   geom_path(aes(group = ID.treat)) +
@@ -593,9 +702,11 @@ all.14c.sum %>%
         legend.key.height=unit(.8, "cm"))
 
 # average control and treatment data
+# remove HEW22 control pre
 # note that upper/lower limits = 2xSE
-all.14c.sum2 <- mutate(all.14c, ID.per.exp.trt = paste(ID, Period, Experiment, Treatment)) %>%
-  filter(ID.per.exp.trt != "HEW22 pre rewet control") %>%
+all.14c.sum2 <- all.14c %>%
+  mutate(ID.treat.Period = paste(ID, Treatment, Period)) %>%
+  filter(ID.treat.Period != "HEW22 control pre") %>%
   select(Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
   group_by(Type, Period, Treatment, Experiment, YearSampled) %>%
   add_count() %>%
@@ -641,6 +752,7 @@ all.14c.sum2 %>%
 ```
 
 11. Same plot as in step 10, but including outlier data.
+* This seems a bit misleading, as it seems to show upward trend in C resp 
 ```{r plot 14c by c resp with outlier}
 # average control and treatment data
 all.14c.sum3 <- select(all.14c, Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
@@ -688,8 +800,8 @@ all.14c.sum3 %>%
 ```
 
 12. Show treatment effects on observed equilibrium period ^14^C.
-* Fig. 1 shows the direction of mean treatment effects over time in reference to the atmosphere (gray line)
-* Fig. 2 shows treatment effects as means with inferential error bars (2x SE) [plan to add significance stars]
+* Fig. 1 shows the direction of mean treatment effects over time in reference to the atmosphere (gray line). Points are means (n = 12 for 2011 treatment points, n = 9 for 2011 control points; n = 6 for all 2019 points); error bars = 2x std. err. of the mean.
+* Fig. 2 shows treatment effects as means with inferential error bars (2x SE) [Sue and Alison suggest to display this info in tabular form]
 ```{r treatment effects by time}
 # first load atmospheric data from ISRaD and bind future projection
 Datm <- rbind(graven, future14C)
@@ -726,11 +838,19 @@ all.14c.sum2 %>%
   filter(Period == "inc") %>%
   mutate(year.Type = paste(YearSampled, Type)) %>%
   ggplot(., aes(YearSampled, d14c_corr_mean, color = Type)) +
-  geom_point(aes(shape = Treatment), size = 3) +
+  geom_point(aes(shape = Treatment), size = 3, stroke = 1.5) +
   geom_path(aes(group = year.Type), 
-            arrow = arrow(type = "open", length = unit(.1, "inches"), ends = "last"),
-            show.legend = FALSE) +
+            arrow = arrow(type = "open", length = unit(.1, "inches"), ends = "first"),
+            show.legend = FALSE,
+            position = position_dodge(width = 2, preserve = "single"),
+            size = 1.2) +
   geom_path(data = Datm, aes(Date, NHc14), color = "darkgray") +
+  geom_errorbar(
+    aes(ymin = d14c_corr_l, 
+        ymax = d14c_corr_u, 
+        color = Type), 
+    width = .5,
+    alpha = .3) +
   scale_color_manual(name = 'Land use',
                      values =c('F'='#a35513','G'='#1361a3'),
                      labels = c('Forest','Grassland')) +

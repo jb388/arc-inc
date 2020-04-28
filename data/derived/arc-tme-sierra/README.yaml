@@ -1,0 +1,22 @@
+Files:
+  - "arc-tme-sierra.xlsx"
+  - "arc-tme-sierra-flux_2020-04-28.csv"
+  - "arc-tme-sierra-soil_2020-04-28.csv"
+Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date: 28 Apr 2020
+Contents:
+  - Soil C, fluxes, and isotope (13C, 14C) data for control incubations for Sierra Nevada samples (data from J. Koarashi via S. Trumbore)
+Notes:
+  - arc-tme-sierra.xlsx:
+    - incubation fluxes, soil mass and moisture data, and isotope data from data/external/sierranv_strumbore_2018-04-06/Incubation (Jun).xls
+    - samples collected in 2009 the Sierra Nevadas (CA, USA) at sites "Musick" and "Shaver"
+    - MA and SA samples are from A horizons, MB and SB samples are from B horizons
+  - arc-tme-sierra-flux_2020-04-28.csv:
+    - CO2 fluxes and isotope data (13C, 14C) for MA, MB, SA, SB arc-inc samples
+    - "save as" .csv version of sheet 'arc-tme-sierra-flux' in "arc-tme-sierra.xlsx" (this directory)
+  - arc-tme-sierra-soil_2020-04-28.csv:
+    - soil mass and moisture content
+    - "save as" .csv version of sheet 'arc-tme-sierra-soil' in "arc-tme-sierra.xlsx" (this directory)
+References:
+  - Koarashi et al. 2012 (doi:10.1029/2012JG002034)
