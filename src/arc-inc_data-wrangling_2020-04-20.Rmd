@@ -99,10 +99,14 @@ rm(archive.ctl.ts.d, archive.ctl.ts.co2, archive.ctl.ts.pre)
 # Read Xplr C and N data
 xplr.cn <- read.csv("../data/external/exploratories_ischoening_soilcn_2011/170407_CN_concentrations_Exploratories_EP_Plots_2011.csv")
 
-# Read Duke C data
+# Read Duke iso and flux data
 tme.ctl.duk <- read.csv("../data/derived/arc-tme-duke/arc-tme-duke_2020-04-28.csv")
 
-# Read Sierra Nevada (Jun's) C data
+# Read Sierra Nevada (Jun's) flux data
+tme.ctl.flx.sra <- read.csv("../data/derived/arc-tme-sierra/arc-tme-sierra-flux_2020-04-28.csv")
+
+# Read Sierra Nevada (Jun's) soil data
+tme.ctl.soil.sra <- read.csv("../data/derived/arc-tme-sierra/arc-tme-sierra-soil_2020-04-28.csv")
 
 # Read Oak Ridge C data
 tme.ctl.ornl <- read.csv("../data/derived/arc-tme-ornl/arc-tme-ornl_2020-04-28.csv")

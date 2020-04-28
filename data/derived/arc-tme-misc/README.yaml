@@ -1,0 +1,16 @@
+Files:
+  - "arc-tme-misc.xlsx"
+Source: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date: 28 Apr 2020
+Contents:
+  - fluxes and isotope (13C, 14C) data for treatment incubations of miscellaneous samples incubated by S. Trumbore and C. Lawrence
+Notes:
+  - arc-tme-sierra.xlsx:
+    - incubation fluxes, soil mass and moisture data, and isotope data from data/external/trumbore_misc_2020-03-27/Sues_archiveInc_data.xls
+    - "NWN" samples are from the N enrichment experiment at Harvard Forest (MA, USA)
+    - "How" samples are from Howland Experimental Forest (ME, USA)
+    - "TVA" and "WB" samples are from Oak Ridge National Laboratory (TN, USA)
+    - rows 15:19 on sheet 'Sheet 1_copy' are samples incubated by C. Lawrence; remaining samples incubated by S. Trumbore
+    - unclear how the concentrations are calculated (slopes and intercepts from std curve data do not match the values used in the formulae), so currently not reading in the flux data
+References:
