@@ -119,7 +119,7 @@ tme.ctl.duk <- read.csv("../data/derived/arc-tme-duke/arc-tme-duke_2020-04-29.cs
 tme.ctl.soil.sra <- read.csv("../data/derived/arc-tme-sierra/arc-tme-sierra-soil_2020-04-29.csv")
 
 # Read Oak Ridge C data
-tme.ctl.ornl <- read.csv("../data/derived/arc-tme-ornl/arc-tme-ornl_2020-04-29.csv")
+tme.ctl.ornl <- read.csv("../data/derived/arc-tme-ornl/arc-tme-ornl_2020-04-30.csv")
 
 # Read air-dry + storage respiration data
 archive.arc.ts <- read.csv("../data/derived/arc-storage-t2-flux/archive-flux-t2_2020-04-24.csv")
@@ -446,6 +446,7 @@ pre.tme.ctl$Site <- c(rep("Duke", unique.id.tme.n[1]),
                       rep("misc", unique.id.tme.n[4]),
                       rep("Xplr", unique.id.tme.n[5]))
 
+
 # Duke, ORNL, misc, and Xplr IDs
 pre.tme.ctl[pre.tme.ctl$Site == "Duke" | 
             pre.tme.ctl$Site == "ORNL" |
@@ -459,6 +460,12 @@ pre.tme.ctl[pre.tme.ctl$Site == "Duke" |
 # Sierra IDs
 pre.tme.ctl[pre.tme.ctl$Site == "Sierra", "ID"] <-
   substr(pre.tme.ctl[pre.tme.ctl$Site == "Sierra", "SampleName"], 10, 11)
+
+# subdivide ORNL into WB and TVA
+pre.tme.ctl[pre.tme.ctl$Site == "ORNL", "Site"] <- ifelse(grepl("TVA", pre.tme.ctl[pre.tme.ctl$Site == "ORNL", "ID"]), "Tennessee Valley", "Walker Branch")
+
+# subdivide Sierra into Musick and Shaver
+pre.tme.ctl[pre.tme.ctl$Site == "Sierra", "Site"] <- ifelse(grepl("M", pre.tme.ctl[pre.tme.ctl$Site == "Sierra", "ID"]), "Musick", "Shaver")
 
 # add treatment col
 pre.tme.ctl$Treatment <- "control"
@@ -691,11 +698,11 @@ tme.14c.clean <- tme.14c[which(!is.na(tme.14c$d14c) | !is.na(tme.14c$fm)), ]
 # define merge fx
 tme.mrg.fx <- function(x, y) {
   mrg.nms <- c("SampleName", "ID", "Treatment", "Period")
-  var.nms <- c("YearSampled", "d14c", "fm")
+  var.nms <- c("YearSampled", "Site", "Horizon",  "d14c", "fm")
   if(length(grep("fm", names(y))) > 0) {
     df <- merge(x[ , mrg.nms], y[ , c(mrg.nms, var.nms)])
   } else {
-    df <- merge(x[ , mrg.nms], y[ , c(mrg.nms, var.nms[1:2])])
+    df <- merge(x[ , mrg.nms], y[ , c(mrg.nms, var.nms[1:4])])
     df$fm <- NA
   }
   return(df)
@@ -722,12 +729,26 @@ for(i in 1:nrow(tme.14c.clean)) {
   }
 }
 
+# Add Horizon to tme.14c.clean
+tme.14c.clean$Horizon <- ifelse(tme.14c.clean$ID == "MB" | tme.14c.clean$ID == "SB", "B", "A")
+
 # combine tme data
 tme.14c <- bind_rows(tme.14c.clean[ , names(tme.14c.df)], tme.14c.df)
 tme.14c$Experiment <- "tme"
 
+# remove outlier (MA-1)
+# *** Need to clarify method for determining that this is an outlier *** 
+tme.14c <- tme.14c[-which(tme.14c$SampleName == "MA-1" | tme.14c$SampleName == "HEW49-1" | tme.14c$SampleName == "HEW26-1"), ]
+
+
+# Add missing variable columns to all.14c
 # add YearSampled column
 all.14c$YearSampled <- ifelse(all.14c$Experiment == "arc", 2011, 2019)
+
+# add Site and Horizon columns
+all.14c$Site <- ifelse(grepl("HE", all.14c$ID), "Hainich", "Schorfheide")
+all.14c$Horizon <- "A"
+
 
 # combine tme.14c and all.14c into a list and calculate fraction modern from d14C as needed
 all.14c.ls <- lapply(list(tme.14c, all.14c), function(df) {
@@ -740,19 +761,13 @@ all.14c.ls <- lapply(list(tme.14c, all.14c), function(df) {
 
 all.14c.sum <- lapply(all.14c.ls, function(df) {
   df.sum <- select(df, -SampleName) %>%
-    group_by(ID, Type, Period, Treatment, Experiment, YearSampled) %>%
+    group_by(ID, Type, Period, Treatment, Experiment, Site, Horizon, YearSampled) %>%
     summarise_all(list(mean = mean, max = max, min = min), na.rm = TRUE)
   df.sum[mapply(is.infinite, df.sum)] <- NA
   return(df.sum)
 })
 all.14c.sum <- rapply(all.14c.sum, f = function(x) ifelse(is.nan(x), NA , x), how = "replace")
 all.14c.sum.df <- bind_rows(all.14c.sum)
-
-
-# *** Need to figure out method for determining that these are outliers *** 
-# # remove outliers
-# all.14c <- all.14c[-which(all.14c$SampleName == "HEW26-1" | all.14c$SampleName == "HEW49-1"),]
-
 
 # remove unnecessary objects
 ```
@@ -820,6 +835,7 @@ all.14c.pre.inc %>%
 * Note that data are first shown averaged by plot (Fig. 1), and then averaged by land use and treatment within sampling periods (Fig. 2)
 * Pre-incubation $\Delta$^14^C was not measured for the 2011 control samples.
 * Limits exclude outlier point (HEW22 control pre-incubation) for improved legibility
+* Code for plot with outlier data is in second code chunk below, but not is currently included in report
 ```{r plot 14c by c resp}
 # collapse treatment variable into binary control/treatment
 all.14c.sum.df$treat.bi <- ifelse(all.14c.sum.df$Treatment == "control", "control", "treatment")
@@ -910,9 +926,7 @@ all.14c.sum2 %>%
         legend.key.height=unit(.8, "cm"))
 ```
 
-11. Same plot as in step 10, but including outlier data.
-* This seems a bit misleading, as it seems to show upward trend in C resp 
-```{r plot 14c by c resp with outlier}
+```{r plot 14c by c resp with outlier, include = FALSE}
 # average control and treatment data
 all.14c.sum3 <- select(all.14c.ls[[2]], Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
   group_by(Type, Period, Treatment, Experiment, YearSampled) %>%
@@ -1051,17 +1065,90 @@ all.14c.sum2 %>%
 
 ```
 
-14. Create template for external ^14^C data from the second part of the air-dry + storage experiment, i.e. samples for which the control incubations were not performed at MPI-BGC.
-```{r external template, include = FALSE}
 
-names(all.14c)
-ext.template <- data.frame(matrix(nrow = 0, ncol = length(names(all.14c))))
-names(ext.template) <- names(all.14c)
+15. Show overall effect of treatment on whole data set.
+* Control data shown on x-axis, treatment data shown on y-axis
+* Solid line is 1:1, dashed line is a 20 per mille offset, and dot-dash line is a 40 per mille offset (roughly equivalent to the atmospheric decline over five and 10 years respectively for the period 2000 to 2020)
+* Note that the difference between control and treatment points is within a 5 year range for the majority of points
+* Data from all three experiments conducted in this study are shown, as well as a handful of additional data points for which both control and treatment (i.e. after air-drying + storage) incubations were conducted in another laboratory (Harvard points)
+* Only A horizon data are shown here, as only three samples were analyzed for organic and B horizons (respectively) owing to sample availability
+```{r plot ctl vs trt}
+# Filter to "inc", split by binary treatment variable, then merge
+all.14c.ctl <- all.14c.sum.df[all.14c.sum.df$treat.bi == "control" & all.14c.sum.df$Period == "inc", ]
+all.14c.ctl <- rename_at(all.14c.ctl, vars(contains('d14c')), list(~paste0(., "_ctl")))
+all.14c.trt <- all.14c.sum.df[all.14c.sum.df$treat.bi == "treatment" & all.14c.sum.df$Period == "inc", ]
+all.14c.trt <- rename_at(all.14c.trt, vars(contains('d14c')), list(~paste0(., "_trt")))
+all.14c.ctl.trt <- inner_join(data.frame(all.14c.ctl) %>% 
+                                select(ID, Experiment, Type, Site, Horizon, contains("d14c_corr")),
+                              data.frame(all.14c.trt) %>% 
+                                select(ID, Experiment, Type, Site, Horizon, contains("d14c_corr")),
+                              by = c("ID", "Experiment", "Type", "Site", "Horizon"))
+
+# Plot on 1:1 line w/ diagonal lines showing per mille offsets
+# first collapse sites for better visuals
+
+loc <- list(
+    "Duke" = "Duke, NC",
+    "Howland" = "Howland, ME",
+    "Harvard" = "Harvard, MA",
+    "Hainich" = "Central Germany",
+    "Schorfheide" = "Central Germany",
+    "Musick" = "Sierra Nevada, CA",
+    "Shaver" = "Sierra Nevada, CA",
+    "Walker Branch" = "Oak Ridge, TN",
+    "Tennessee Valley" = "Oak Ridge, TN")
+
+all.14c.ctl.trt %>%
+  filter(Horizon == "A") %>%
+  mutate(Location = recode(Site, !!!loc)) %>%
+  ggplot(., aes(d14c_corr_mean_ctl, d14c_corr_mean_trt, color = Type, shape = Location)) +
+  geom_abline(slope = 1, intercept = 0) +
+  geom_abline(slope = 1, intercept = -20, linetype = "dashed") +
+  geom_abline(slope = 1, intercept = 20, linetype = "dashed") +
+    geom_abline(slope = 1, intercept = -40, linetype = "dotdash") +
+  geom_abline(slope = 1, intercept = 40, linetype = "dotdash") +
+  geom_vline(xintercept = 0, color = "gray") +
+  geom_hline(yintercept = 0, color = "gray") +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_min_trt, 
+        ymax = d14c_corr_max_trt, 
+        color = Type), 
+    width = .25) +
+  geom_errorbarh(
+    aes(xmin = d14c_corr_min_ctl, 
+        xmax = d14c_corr_max_ctl, 
+        color = Type), 
+    height = .9) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  xlab(expression('Control '*Delta*''^14*'C (per mille)')) +
+  ylab(expression('Treatment '*Delta*''^14*'C (per mille)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.key.height=unit(.8, "cm"),
+        aspect.ratio = 1)
 ```
 
 
-15. Show the effect of storage duration by plotting the difference between control and treatment 14C as a function of time archived.
-```{r storage duration}
+16. Show the effect of storage duration by plotting the difference between control and treatment ^14^C as a function of storage duration.
+```{r}
+# # Plot storage duration
+# all.14c.sum.df %>% 
+#   filter(Experiment != rewet) %>%
+#   filter(Period == "inc") %>%
+#   mutate(tme = 2018 - YearSampled) %>%
+#   mutate(tme.f = factor(tme)) %>%
+#   group_by(Type, tme, )
+#   add_tally() %>%
+#   summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+#   mutate(d14c_corr_se = d14c_corr_sd/n_mean,
+#          d14c_corr_u = d14c_corr_mean + d14c_corr_se*2,
+#          d14c_corr_l = d14c_corr_mean - d14c_corr_se*2,
+#          mgCO2.C_gC_se = mgCO2.C_gC_sd/n_mean,
+#          mgCO2.C_gC_u = mgCO2.C_gC_mean + mgCO2.C_gC_se*2,
+#          mgCO2.C_gC_l = mgCO2.C_gC_mean - mgCO2.C_gC_se*2) 
 
 ```
 
