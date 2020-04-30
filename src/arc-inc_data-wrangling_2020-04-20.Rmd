@@ -5,11 +5,11 @@ date: "21 Apr 2020"
 header_includes:
 - \usepackage{textcomp}
 output:
-  html_notebook: default
-  html_document:
-    df_print: paged
   pdf_document:
     latex_engine: xelatex
+  html_document:
+    df_print: paged
+  html_notebook: default
 ---
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
@@ -34,7 +34,7 @@ library(ISRaD)
 1. Load flux data from air-dry + storage (experiment 1) and storage duration (experiment 3) control samples, and convert from "wide" to "long" format so as to match other data.
 ```{r read wide ts data}
 # Read air-dry + storage respiration control data
-archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-27.csv")
+archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-29.csv")
 
 # Convert time data from wide to long
 archive.ctl.ts.d <- select(archive.ctl.ts.wide, starts_with("inc_time_d")) %>%
@@ -99,33 +99,27 @@ rm(archive.ctl.ts.d, archive.ctl.ts.co2, archive.ctl.ts.pre)
 # Read Xplr C and N data
 xplr.cn <- read.csv("../data/external/exploratories_ischoening_soilcn_2011/170407_CN_concentrations_Exploratories_EP_Plots_2011.csv")
 
-# Read Duke iso and flux data
-tme.ctl.duk <- read.csv("../data/derived/arc-tme-duke/arc-tme-duke_2020-04-28.csv")
-
-# Read Sierra Nevada (Jun's) flux data
-tme.ctl.flx.sra <- read.csv("../data/derived/arc-tme-sierra/arc-tme-sierra-flux_2020-04-28.csv")
-
-# Read Sierra Nevada (Jun's) soil data
-tme.ctl.soil.sra <- read.csv("../data/derived/arc-tme-sierra/arc-tme-sierra-soil_2020-04-28.csv")
-
-# Read Oak Ridge C data
-tme.ctl.ornl <- read.csv("../data/derived/arc-tme-ornl/arc-tme-ornl_2020-04-28.csv")
-
-# Read soil mass and moisture info for storage duration treatment samples
-jarinfo.tme <- read.xlsx("../data/raw/lab_jena_results-co2_2018-07-30/ArcInc_IncData_2018.xlsx",
-                         sheet = 1)
-# remove unit row and convert to appropriate types
-jarinfo.tme <- type.convert(jarinfo.tme[-1, ])
+# Read Xplr 14C data for control samples ("tme" and "arc" Experiments)
+xplr.ctl.iso <- read.xlsx("../data/external/exploratories_ischoening_14c-co2_2011/170228_14C_Respiration.xlsx")
 
 # Read soil mass and moisture info for air-dry + storage treatment samples
 jarinfo.arc <- read.csv("../data/derived/arc-storage-t2-jarInfo/jar_information.csv")
 
 # Read soil mass and moisture info for air-dry data
-jarinfo.rewet <- read.csv("../data/derived/air-dry-2019-whc/air-dry-2019-whc_2020-04-21.csv")
+jarinfo.rewet <- read.csv("../data/derived/air-dry-2019-whc/air-dry-2019-whc_2020-04-29.csv")
 
-# Read storage duration respiration data
-storage.trt.ts <- rbind(read.csv("../data/derived/arc-tme-t2-flux/arc-tme-t2-flux-1_2020-04-27.csv", stringsAsFactors = FALSE),
-                        read.csv("../data/derived/arc-tme-t2-flux/arc-tme-t2-flux-2_2020-04-27.csv", stringsAsFactors = FALSE))
+# Read soil mass and moisture info for storage duration treatment samples
+# remove unit row and convert to appropriate types
+jarinfo.tme <- type.convert(read.xlsx("../data/raw/lab_jena_results-co2_2018-07-30/ArcInc_IncData_2018.xlsx", sheet = 1)[-1, ])
+
+# Read Duke iso and flux data
+tme.ctl.duk <- read.csv("../data/derived/arc-tme-duke/arc-tme-duke_2020-04-29.csv")
+
+# Read Sierra Nevada (Jun's) soil data
+tme.ctl.soil.sra <- read.csv("../data/derived/arc-tme-sierra/arc-tme-sierra-soil_2020-04-29.csv")
+
+# Read Oak Ridge C data
+tme.ctl.ornl <- read.csv("../data/derived/arc-tme-ornl/arc-tme-ornl_2020-04-29.csv")
 
 # Read air-dry + storage respiration data
 archive.arc.ts <- read.csv("../data/derived/arc-storage-t2-flux/archive-flux-t2_2020-04-24.csv")
@@ -135,6 +129,16 @@ rewet.ctl.ts <- read.csv("../data/derived/fresh-2019-flux/fresh-2019-flux_2020-0
 
 # Read treatment respiration data from 2019 air-dry experiment
 rewet.dry.ts <- read.csv("../data/derived/dried-2019-flux/dried-2019-flux_2020-04-24.csv")
+
+# Read Sierra Nevada (Jun's) flux data
+tme.ctl.flx.sra <- read.csv("../data/derived/arc-tme-sierra/arc-tme-sierra-flux_2020-04-29.csv")
+
+# Read storage duration respiration data
+tme.trt.ts <- rbind(read.csv("../data/derived/arc-tme-t2-flux/arc-tme-t2-flux-1_2020-04-27.csv", stringsAsFactors = FALSE),
+                        read.csv("../data/derived/arc-tme-t2-flux/arc-tme-t2-flux-2_2020-04-27.csv", stringsAsFactors = FALSE))
+
+# Read miscellaneous storage treatment data
+tme.misc <- read.csv("../data/derived/arc-tme-misc/arc-tme-misc-iso_2020-04-29.csv")
 ```
 
 3. Combine and summarize data in long format to calculate respiration rates and plot over time.
@@ -144,7 +148,7 @@ rewet.dry.ts <- read.csv("../data/derived/dried-2019-flux/dried-2019-flux_2020-0
 invisible(list2env(lapply(list(archive.arc.ts = archive.arc.ts, 
                                rewet.ctl.ts = rewet.ctl.ts, 
                                rewet.dry.ts = rewet.dry.ts,
-                               storage.trt.ts = storage.trt.ts),
+                               tme.trt.ts = tme.trt.ts),
                           function(x) {
                             x$formula_check <- NULL
                             return(x)
@@ -153,50 +157,67 @@ invisible(list2env(lapply(list(archive.arc.ts = archive.arc.ts,
           )
 
 # Add Treatment columns to each dataset
-archive.arc.ts$Treatment <- "air-dry + storage (2011)"
-archive.ctl.ts$Treatment <- ifelse(archive.ctl.ts$Experiment == "2011", "control (2011)", "control (storage duration)")
-storage.trt.ts$Treatment <- "storage duration"
-rewet.ctl.ts$Treatment <- "control (2019)"
-rewet.dry.ts$Treatment <- "air-dry (2019)"
+archive.arc.ts$Treatment <- "air-dry + storage"
+archive.ctl.ts$Treatment <- "control"
+tme.trt.ts$Treatment <- "storage duration"
+rewet.ctl.ts$Treatment <- "control"
+rewet.dry.ts$Treatment <- "air-dry"
 
 # combine rewet data
 rewet.ts <- rbind(rewet.ctl.ts, rewet.dry.ts)
-rewet.ts$Experiment <- "2019"
+rewet.ts$Experiment <- "rewet"
 
 # add soil dry wt data
 archive.arc.ts$dw_g <- jarinfo.arc[match(archive.arc.ts$SampleName, jarinfo.arc$Sample), "Soil.dry.weight_.g."]
 archive.ctl.ts$dw_g <- archive.ctl.ts.wide[match(archive.ctl.ts$ID, archive.ctl.ts.wide$ID), "dry_soil_wt_corrected_g"]
 rewet.ts <- merge(rewet.ts, jarinfo.rewet[ , c("ID", "Treatment", "dw_g")], by = c("ID", "Treatment"))
-storage.trt.ts <- merge(storage.trt.ts, jarinfo.tme[ , c("Nr.", "dry.soil")], by.x = "SampleName", by.y = "Nr.")
-colnames(storage.trt.ts)[which(names(storage.trt.ts) == "dry.soil")] <- "dw_g"
+tme.trt.ts <- merge(tme.trt.ts, jarinfo.tme[ , c("Nr.", "dry.soil")], by.x = "SampleName", by.y = "Nr.")
+colnames(tme.trt.ts)[which(names(tme.trt.ts) == "dry.soil")] <- "dw_g"
 
 # add experiment col to archive.arc.ts, storage.trt.ts
-archive.arc.ts$Experiment <- "2011"
-storage.trt.ts$Experiment <- "tme"
+archive.arc.ts$Experiment <- "arc"
+tme.trt.ts$Experiment <- "tme"
 
-# combine archive data and storage duration data
+# combine archive data and Exploratories storage duration data
 archive.ts <- rbind(archive.ctl.ts[which(archive.ctl.ts$Treatment != "storage duration"), ], 
                     archive.arc.ts[ , names(archive.ctl.ts)])
-storage.ts <- rbind(archive.ctl.ts[which(archive.ctl.ts$Treatment == "storage duration"), ],
-                    storage.trt.ts[ , names(archive.ctl.ts)])
+tme.ts <- rbind(archive.ctl.ts[which(archive.ctl.ts$Treatment == "storage duration"), ],
+                tme.trt.ts[ , names(archive.ctl.ts)])
+
+# bind tme.ctl.flx.sra data to tme.ts
+# all other tme.flx data is already summarized
+tme.ctl.flx.sra$Experiment <- "tme"
+tme.ctl.flx.sra$Treatment <- "control"
+tme.ctl.flx.sra$dw_g <- tme.ctl.soil.sra[match(tme.ctl.flx.sra$Jar_ID, tme.ctl.soil.sra$Jar_ID), "dw_g"]
+tme.ts <- rbind(tme.ts, tme.ctl.flx.sra[ , names(tme.ts)])
 
 # Test that required names are present
 nms <- c("SampleName", "ID", "Experiment", "Treatment", "Period", "timepoint_cmtv",  "time_d", "time_d_cmtv", "mgCO2_jar", "dw_g")
 invisible(lapply(list(archive.ts = archive.ts,
                       rewet.ts = rewet.ts,
-                      storage.ts),
+                      tme.ts),
        function(x) {
          ifelse(!is.na(match(nms, names(x))), "yes", "no")
        }
        ))
 
-# combine all data
-ts <- bind_rows(archive.ts[ , nms], rewet.ts[ , nms], storage.ts[ , nms])
+# combine all data and remove time points without CO2 measurements
+ts <- bind_rows(archive.ts[ , nms], rewet.ts[ , nms], tme.ts[ , nms])
+if(length(which(is.na(ts$mgCO2_jar))) > 0) {
+  ts <- ts[-which(is.na(ts$mgCO2_jar)), ]
+}
 
-# add C content and Type column
+# add C content
+# xplr
 ts$gC_gS <- xplr.cn[match(ts$ID, xplr.cn$EP_Plotid), "Total_C"]*10^-3
-# sierras, oak ridge, duke
-ts$gC_gS <- xplr.cn[match(ts$ID, xplr.cn$EP_Plotid), "Total_C"]*10^-3
+# duke
+ts[which(is.na(ts$gC_gS)), "gC_gS"] <- tme.ctl.duk[match(ts[which(is.na(ts$gC_gS)), "ID"], tme.ctl.duk$ID), "C_g_kg"]*10^-3
+# sierras
+ts[which(is.na(ts$gC_gS)), "gC_gS"] <- tme.ctl.soil.sra[match(ts[which(is.na(ts$gC_gS)), "ID"], tme.ctl.soil.sra$ID), "gC_kgS"]*10^-3
+# oak ridge
+ts[which(is.na(ts$gC_gS)), "gC_gS"] <- tme.ctl.ornl[match(ts[which(is.na(ts$gC_gS)), "ID"], tme.ctl.ornl$ID), "C_g_kg"]*10^-3
+
+# add Type
 ts$Type <- ifelse(grepl("G", ts$ID), "G", "F")
 
 # calculate CO2 respiration in mgCO2-C per g soil C
@@ -205,14 +226,14 @@ ts$mgCO2.C_gC <- (ts$mgCO2_jar*(12/44))/(ts$dw_g*ts$gC_gS)
 ts$mgCO2.C_gC_d <- ts$mgCO2.C_gC/ts$time_d
 
 # summarize CO2 release data for each timepoint, by experiment, treatment, and type
-ts.avg <- na.omit(ts) %>%
+ts.avg <- data.frame(na.omit(ts) %>%
   select(Experiment, Treatment, Type, timepoint_cmtv, mgCO2.C_gC_d, time_d_cmtv)  %>%
   group_by(Experiment, Treatment, Type, timepoint_cmtv) %>%
   add_tally() %>%
   summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
   mutate(se_slope = mgCO2.C_gC_d_sd/sqrt(n_mean),
          se_slope_l = mgCO2.C_gC_d_mean - se_slope,
-         se_slope_u = mgCO2.C_gC_d_mean + se_slope)
+         se_slope_u = mgCO2.C_gC_d_mean + se_slope))
 
 # add timepoint zero data
 tp0.f <- function(df) {
@@ -220,7 +241,8 @@ tp0.f <- function(df) {
   tp0[ , -which(names(tp0) == "Experiment" | names(tp0) == "Treatment" | names(tp0) == "Type" | names(tp0) == "n")] <- 0
   rbind(tp0, df)
 }
-ts.avg <- lapply(split(ts.avg, ts.avg$Treatment), function(x) {
+ts.avg$treat.Exp <- paste(ts.avg$Treatment, ts.avg$Experiment)
+ts.avg <- lapply(split(ts.avg, ts.avg$treat.Exp), function(x) {
   lapply(split(x, x$Type), tp0.f)
   })
 ts.avg <- bind_rows(lapply(ts.avg, bind_rows))
@@ -238,7 +260,8 @@ ts.avg %>%
   geom_vline(xintercept = 4, color="gray") +
   geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
   geom_line(aes(color = Type, linetype = Treatment)) +
-  facet_grid(rows = vars(Experiment)) +
+  facet_grid(rows = vars(Experiment),
+             labeller = labeller(Experiment = c("arc" = "2011", "rewet" = "2019"))) +
   scale_x_continuous(limits = c(0,18)) +
   # scale_y_continuous(limits = c(0,30)) +
   scale_color_manual(name = 'Landuse',
@@ -248,15 +271,13 @@ ts.avg %>%
                     values =c('F'='#a35513','G'='#1361a3'),
                     labels = c('Forest','Grassland')) +
   scale_alpha_manual(name = 'Treatment',
-                     values = c("air-dry + storage (2011)" = .2, 
-                                "control (2011)" = .4,
-                                "air-dry (2019)" = .2,
-                                "control (2019)" = .4)) +
+                     values = c("air-dry + storage" = .2, 
+                                "control" = .4,
+                                "air-dry" = .2)) +
   scale_linetype_manual(name = 'Treatment',
-                        values = c("air-dry + storage (2011)" = 'dashed', 
-                                   "control (2011)" ='solid',
-                                   "air-dry (2019)" = "dashed",
-                                   "control (2019)" = "solid")) +
+                        values = c("air-dry + storage" = 'dashed', 
+                                   "control" ='solid',
+                                   "air-dry" = "dashed")) +
   ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
   xlab("Time (days)") +
   theme_bw() +
@@ -298,11 +319,12 @@ colnames(ts.pre.avg)[which(names(ts.pre.avg) %in% c("timepoint_cmtv_mean",
 
 ts.pre.avg <- ts.pre.avg[ , -which(!names(ts.pre.avg) %in% names(ts.inc.avg))]
 
-ts.avg2 <- rbind(ts.pre.avg, ts.inc.avg)
+ts.avg2 <- data.frame(rbind(ts.pre.avg, ts.inc.avg))
 ts.avg2 <- ts.avg2[complete.cases(ts.avg2), ]
 
 # add timepoint zero data
-ts.avg2 <- lapply(split(ts.avg2, ts.avg2$Treatment), function(x) {
+ts.avg2$treat.Exp <- paste(ts.avg2$Treatment, ts.avg2$Experiment)
+ts.avg2 <- lapply(split(ts.avg2, ts.avg2$treat.Exp), function(x) {
   lapply(split(x, x$Type), tp0.f)
   })
 ts.avg2 <- bind_rows(lapply(ts.avg2, bind_rows))
@@ -316,9 +338,9 @@ ts.avg2 %>%
   geom_vline(xintercept = 4, color="gray") +
   geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
   geom_line(aes(color = Type, linetype = Treatment)) +
-  facet_grid(rows = vars(Experiment)) +
+  facet_grid(rows = vars(Experiment),
+             labeller = labeller(Experiment = c("arc" = "2011", "rewet" = "2019"))) +
   scale_x_continuous(limits = c(0,18)) +
-  # scale_y_continuous(limits = c(0,30)) +
   scale_color_manual(name = 'Landuse',
                      values =c('F'='#a35513','G'='#1361a3'),
                      labels = c('Forest','Grassland')) +
@@ -326,15 +348,13 @@ ts.avg2 %>%
                     values =c('F'='#a35513','G'='#1361a3'),
                     labels = c('Forest','Grassland')) +
   scale_alpha_manual(name = 'Treatment',
-                     values = c("air-dry + storage (2011)" = .2, 
-                                "control (2011)" = .4,
-                                "air-dry (2019)" = .2,
-                                "control (2019)" = .4)) +
+                     values = c("air-dry + storage" = .2, 
+                                "control" = .4,
+                                "air-dry" = .2)) +
   scale_linetype_manual(name = 'Treatment',
-                        values = c("air-dry + storage (2011)" = 'dashed', 
-                                   "control (2011)" ='solid',
-                                   "air-dry (2019)" = "dashed",
-                                   "control (2019)" = "solid")) +
+                        values = c("air-dry + storage" = 'dashed', 
+                                   "control" ='solid',
+                                   "air-dry" = "dashed")) +
   ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
   xlab("Time (days)") +
   theme_bw() +
@@ -377,10 +397,10 @@ names(ams_results_ls) <- list.files("../data/raw", pattern = "ams_jena_results")
   * dw_g (dry weight)
   * mgCO2.C_gS (mg CO~2~-C respired g^-1^ soil Period^-1^)
   * time_d (days in incubation period prior to measurement)
-  * h2o_grav (gravimetric water content, percent)
-  * h2o_whc_field (percent of water holding capacity, field-moist)
+  * dH2O_grav (percent change in gravimetric water content due to laboratory moisture adjustment)
+  * dH2O_whc (percent change in water holding capacity due to laboratory moisture adjustment)
   
-```{r non-timeseries data template}
+```{r arc and rewet experiment template}
 unique.id.n <- c(length(unique(archive.ctl.ts$ID)),
                  length(unique(archive.arc.ts$SampleName)),
                  length(unique(rewet.ctl.ts$SampleName)),
@@ -409,13 +429,64 @@ if(nrow(pre.14c) == sum(unique.id.n) & ncol(pre.14c) == 6) {
 all.14c.template <- rbind(pre.14c, inc.14c)
 ```
 
+```{r tme experiment template}
+unique.id.tme.n <- c(length(unique(tme.ctl.duk$SampleName)),
+                     length(unique(tme.ctl.ornl$SampleName)),
+                     length(unique(tme.ctl.flx.sra$SampleName)),
+                     length(unique(tme.misc$SampleName)),
+                     length(unique(archive.ctl.ts.wide[archive.ctl.ts.wide$Experiment == "tme", "ID"])),
+                     length(unique(tme.trt.ts$SampleName)))
+pre.tme.ctl <- data.frame(SampleName = c(as.character(unique(tme.ctl.duk$SampleName)),
+                                         as.character(unique(tme.ctl.ornl$SampleName)),
+                                         as.character(unique(tme.ctl.flx.sra$SampleName)),
+                                         as.character(unique(tme.misc$SampleName)),   as.character(unique(archive.ctl.ts.wide[archive.ctl.ts.wide$Experiment == "tme", "ID"]))))
+pre.tme.ctl$Site <- c(rep("Duke", unique.id.tme.n[1]),
+                      rep("ORNL", unique.id.tme.n[2]),
+                      rep("Sierra", unique.id.tme.n[3]),
+                      rep("misc", unique.id.tme.n[4]),
+                      rep("Xplr", unique.id.tme.n[5]))
+
+# Duke, ORNL, misc, and Xplr IDs
+pre.tme.ctl[pre.tme.ctl$Site == "Duke" | 
+            pre.tme.ctl$Site == "ORNL" |
+            pre.tme.ctl$Site == "misc" |
+            pre.tme.ctl$Site == "Xplr", "ID"] <- as.character(pre.tme.ctl[pre.tme.ctl$Site == "Duke" |
+                                                                            pre.tme.ctl$Site == "ORNL" |
+                                                                            pre.tme.ctl$Site == "misc" |
+            
+                                                                            pre.tme.ctl$Site == "Xplr", "SampleName"])
+
+# Sierra IDs
+pre.tme.ctl[pre.tme.ctl$Site == "Sierra", "ID"] <-
+  substr(pre.tme.ctl[pre.tme.ctl$Site == "Sierra", "SampleName"], 10, 11)
+
+# add treatment col
+pre.tme.ctl$Treatment <- "control"
+
+pre.tme.trt <- data.frame(SampleName = unique(tme.trt.ts$SampleName))
+pre.tme.trt$ID <- substr(pre.tme.trt$SampleName, 1, nchar(as.character(pre.tme.trt$SampleName))-2)
+pre.tme.trt <- rbind(pre.tme.trt, pre.tme.ctl[pre.tme.ctl$Site == "misc", c("ID", "SampleName")])
+pre.tme.trt$Treatment <- "storage duration"
+pre.tme.trt$Site <- pre.tme.ctl[match(pre.tme.trt$ID, pre.tme.ctl$ID), "Site"]
+
+pre.tme.14c <- rbind(pre.tme.ctl, pre.tme.trt)
+pre.tme.14c$Type <- ifelse(grepl("G", pre.tme.14c$SampleName), "G", "F")
+pre.tme.14c$Period <- "pre"
+pre.tme.14c$Experiment <- "tme"
+
+# create inc period df
+inc.tme.14c <- pre.tme.14c
+inc.tme.14c$Period <- "inc"
+tme.14c.template <- rbind(pre.tme.14c, inc.tme.14c)
+```
+
 
 4. Summarize observational data from timeseries data by unique IDs (SampleName).
 ```{r combine soil obs data}
 # summarize time and co2 data by experiment, period, treatment, and sample name
 ts.epsn.avg <- ts %>%
-  select(Experiment, Period, Treatment, SampleName, gC_gS, dw_g, mgCO2.C_gC, time_d, time_d_cmtv)  %>%
-  group_by(Experiment, Period, Treatment, SampleName) %>%
+  select(Experiment, ID, Period, Treatment, SampleName, gC_gS, dw_g, mgCO2.C_gC, time_d, time_d_cmtv)  %>%
+  group_by(Experiment, ID, Period, Treatment, SampleName) %>%
   summarise_all(list(max = max), na.rm = TRUE)
 ts.epsn.avg <- rename_at(ts.epsn.avg, vars(contains('max')), list(~sub("_max", "", .)))
 ```
@@ -424,7 +495,7 @@ ts.epsn.avg <- rename_at(ts.epsn.avg, vars(contains('max')), list(~sub("_max", "
 * decay correction formula is:
 $$1000 \cdot \left( (FM \cdot e^{\frac{-year_{sampled} + 1950}{8267}}) - 1 \right)$$
 ```{r 14C helper fxs}
-# create decay correction function
+# create decay correction function  
 decay.corr.fx <- function(year_sampled, fraction_modern) {
   ifelse(is.na(fraction_modern), NA, 1000*((fraction_modern*exp((-year_sampled + 1950)/8267))-1))
 }
@@ -440,35 +511,87 @@ extra.clean.fx <- function(df) {
                    grepl("HEW", df$Probe) |
                    grepl("SEG", df$Probe) |
                    grepl("SEW", df$Probe)), ]
+  if(length(grep("Experiment", names(df))) > 0) {
+     df <- df[which(df$Experiment != "tme"), ] 
+  }
   ix <- which(is.na(df$F14C) & is.na(df$`∆14C.(‰)`))
   if(length(ix) > 1) {
     df <- df[-ix, ]
   }
   return(df)
 }
+
+# extract storage duration data separately
+tme.14c.fx <- function(df) {
+  df$SampleName <- df$Probe
+  df$Period <- "inc"
+  if(length(grep("Experiment", names(df))) > 0) {
+     df <- df[which(df$Experiment == "tme"), ] 
+  }
+  return(df)
+}
 ```
 
-6. Clean up ^14^C data.
+6. Clean up ^14^C data and add external data points (tme experiment, Xplr control samples)
 ```{r clean up 14C data}
-# First add 14C and 13C data from arc control samples to ams_results_ls
-# Also need to add SampleName col and variable columns Treatment, Period, and Experiment to all data frames in ams_results_ls 
+# Need to add SampleName col and variable columns Treatment, Period, and Experiment to all data frames in ams_results_ls 
+
+# First add 14C and 13C data from Exploratories control samples to ams_results_ls
 # note that neither 13C nor 14C was measured for the pre-incubation period for these samples
-arc.ctl.iso <- read.xlsx("../data/external/exploratories_ischoening_14c-co2_2011/170228_14C_Respiration.xlsx")
-# add to ams_results_ls
+# get names for ams_results data frames
 results.14c.nms <- names(ams_results_ls$`ams_jena_results-co2_2019-01-28`$`Beem-Miller_9.xlsx`)
+# get names for relevant Experiment/Treatment/Period combination
 arc_ctl_inc_SN <- as.character(all.14c.template[all.14c.template$Experiment == "arc" & all.14c.template$Treatment == "control" & all.14c.template$Period == "inc", "SampleName"])
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc <- data.frame(matrix(nrow = length(arc_ctl_inc_SN), ncol = length(results.14c.nms))) 
-names(ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc) <- results.14c.nms
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$SampleName <- arc_ctl_inc_SN
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Probe <- arc_ctl_inc_SN
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$`∆14C.(‰)` <- arc.ctl.iso[match(ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$SampleName, arc.ctl.iso$EP_Plotid), "14c_CO2"]
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Treatment <- "control"
+tme_ctl_inc_xplr_SN <- unlist(lapply(ams_results_ls[1:2], function(x) unlist(lapply(x, "[[", "Probe"))))
+tme_ctl_inc_xplr_SN <- tme_ctl_inc_xplr_SN[grep("HE", tme_ctl_inc_xplr_SN)]
+if(length(tme_ctl_inc_xplr_SN) == 14) {
+  tme_ctl_inc_xplr_SN <- unique(substr(tme_ctl_inc_xplr_SN, 1, nchar(tme_ctl_inc_xplr_SN)-2))
+}
+
+# add sublist for Exploratories 2011 (control) data and data frames for above subsets
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc <- data.frame(matrix(nrow = length(arc_ctl_inc_SN), ncol = length(results.14c.nms)))
+ams_results_ls$exploratories_ischoening_14c.co2_2011$tme_ctl_inc_xplr <- data.frame(matrix(nrow = length(tme_ctl_inc_xplr_SN), ncol = length(results.14c.nms)))
+
+# add names and fill SampleNames for new data frames
+ams_results_ls$exploratories_ischoening_14c.co2_2011 <- lapply(ams_results_ls$exploratories_ischoening_14c.co2_2011, function(x) {
+  names(x) <- results.14c.nms
+  return(x)
+  }) 
+ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc[ , c("SampleName","Probe")] <- arc_ctl_inc_SN
+ams_results_ls$exploratories_ischoening_14c.co2_2011$tme_ctl_inc_xplr[ , c("SampleName","Probe")] <- tme_ctl_inc_xplr_SN
+
+# fill 14C data
+ams_results_ls$exploratories_ischoening_14c.co2_2011 <- lapply(ams_results_ls$exploratories_ischoening_14c.co2_2011, function(df) {
+  df$`∆14C.(‰)` <- xplr.ctl.iso[match(df$Probe, xplr.ctl.iso$EP_Plotid), "14c_CO2"]
+  df$Treatment <- "control"
+  df$Period <- "inc"
+  return(df)
+})
+
+# add Experiment
 ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Experiment <- "arc"
-ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc$Period <- "inc"
+ams_results_ls$exploratories_ischoening_14c.co2_2011$tme_ctl_inc_xplr$Experiment <- "tme"
+
+
+# `ams_jena_results-co2_2018-10-12` and `ams_jena_results-co2_2018-11-09`
+# `Beem-Miller_4.xlsx`, `Beem-Miller_5.xlsx`; `Beem-Miller_6.xlsx`, `Beem-Miller_7.xlsx`
+# Add treatment, experiment, period cols
+# Experiment = tme
+# Treatment = storage duration
+# Period = inc
+ams_results_ls[1:2] <- lapply(ams_results_ls[1:2], function(ls) lapply(ls, function(df) {
+  df$Experiment <- "tme"
+  df$Treatment <- "storage duration"
+  df$Period <- "inc"
+  return(df)
+  })
+)
 
 # `ams_jena_results-co2_2019-01-28`
 # `Beem-Miller_9.xlsx`
-# Probe == SampleName
+# Experiment = arc
+# Treatment = air-dry + storage
+# Period = pre
 ams_results_ls$`ams_jena_results-co2_2019-01-28`$`Beem-Miller_9.xlsx`$SampleName <- ams_results_ls$`ams_jena_results-co2_2019-01-28`$`Beem-Miller_9.xlsx`$Probe
 ams_results_ls$`ams_jena_results-co2_2019-01-28`$`Beem-Miller_9.xlsx`$Treatment <- "air-dry + storage"
 ams_results_ls$`ams_jena_results-co2_2019-01-28`$`Beem-Miller_9.xlsx`$Period <- "pre"
@@ -522,78 +645,109 @@ ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx$Treatment <- "air-
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx$Experiment <- "rewet"
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[pre.ix, "Period"] <- "pre"
 ams_results_ls$`ams_jena_results-co2_2020-02-13`$Rost_52.xlsx[-pre.ix, "Period"] <- "inc"
-
-# extract external data separately
-ext.14c.fx <- function(df) {
-  df$SampleName <- df$Probe
-  df$Treatment <- "air-dry + storage"
-  df$Experiment <- "tme"
-  df$Period <- "inc"
-  return(df)
-}
 ```
 
 7. Combine data.
 ```{r combine 14C soil obs data}
 # flatten list and remove AMS blanks, NA samples, and non-Exploratory data
-ams_results_ls2 <- lapply(ams_results_ls[3:7], function(x) bind_rows(x))
-ams_results_exp1_2.df <- bind_rows(lapply(ams_results_ls2, function(x) extra.clean.fx(x)))
+ams_results_arc_rewet <- lapply(ams_results_ls[3:7], function(x) bind_rows(x))
+ams_results_arc_rewet.df <- bind_rows(lapply(ams_results_arc_rewet, function(x) extra.clean.fx(x)))
 
 # flatten external data list
-ams_results_ls[1:2] <- lapply(ams_results_ls[1:2], function(x) lapply(x, ext.14c.fx))
-ext.14c <- bind_rows(lapply(ams_results_ls[1:2], function(x) bind_rows(x)))
+ams_results_tme <- lapply(ams_results_ls[c(1:2,7)], function(x) lapply(x, tme.14c.fx))
+ams_results_tme.df <- bind_rows(lapply(ams_results_tme, function(x) bind_rows(x)))
 
 # cut out non-relevant AMS results columns
 nms.ams.vars <- c("F14C", "err", "∆14C.(‰)", "err.(‰)",
                  "SampleName", "Treatment", "Period", "Experiment")
-ams_results_exp1_2.df <- ams_results_exp1_2.df[ , nms.ams.vars]
-colnames(ams_results_exp1_2.df) <- c("fm", "fm_err", "d14c", "d14c_err", nms.ams.vars[5:8])
+ams_results_arc_rewet.df <- ams_results_arc_rewet.df[ , nms.ams.vars]
+colnames(ams_results_arc_rewet.df) <- c("fm", "fm_err", "d14c", "d14c_err", nms.ams.vars[5:8])
 
-ext.14c <- ext.14c[ , nms.ams.vars]
-colnames(ext.14c) <- c("fm", "fm_err", "d14c", "d14c_err", nms.ams.vars[5:8])
-ext.14c$ID <- substr(ext.14c$SampleName,1,nchar(ext.14c$SampleName)-2)
-ext.14c$Type <- ifelse(grepl("G", ext.14c$ID), "G", "F")
+ams_results_tme.df <- ams_results_tme.df[ , nms.ams.vars]
+colnames(ams_results_tme.df) <- c("fm", "fm_err", "d14c", "d14c_err", nms.ams.vars[5:8])
+ams_results_tme.df$ID <- substr(ams_results_tme.df$SampleName, 1, nchar(ams_results_tme.df$SampleName)-2)
+ams_results_tme.df$Type <- ifelse(grepl("G", ams_results_tme.df$ID), "G", "F")
 
-# merge Exploratories 14C data with template
-if(nrow(merge(all.14c.template, ams_results_exp1_2.df, all.x = TRUE)) == nrow(all.14c.template)) {
-  all.14c <- merge(all.14c.template, ams_results_exp1_2.df, all.x = TRUE)
+# merge arc and rewet 14C data with template
+if(nrow(merge(all.14c.template, ams_results_arc_rewet.df, all.x = TRUE)) == nrow(all.14c.template)) {
+  all.14c <- merge(all.14c.template, ams_results_arc_rewet.df, all.x = TRUE)
 } else {
   cat("duplicate sample merge error")
 }
 
 # merge soil obs data with 14c data
 if(nrow(merge(all.14c, ts.epsn.avg, by = c("SampleName", "Period"))) == nrow(all.14c)) {
-  all.14c <- merge(all.14c, ts.epsn.avg, by = c("SampleName", "Period"))
+  all.14c <- merge(all.14c, ts.epsn.avg, all.x = TRUE)
 } else {
   cat("duplicate sample merge error")
 }
 
-# need to do this for ext.14c data
-ext.14c.cn <- merge(ext.14c, ts.epsn.avg, by = c("SampleName", "Period"))
+# merge tme 14C data with template and ts.epsn.avg
+tme.14c <- merge(tme.14c.template, ams_results_tme.df, all.x = TRUE)
+
+# add ctl sample 14C data to tme.14c
+# first remove NA values
+tme.14c.clean <- tme.14c[which(!is.na(tme.14c$d14c) | !is.na(tme.14c$fm)), ]
+# define merge fx
+tme.mrg.fx <- function(x, y) {
+  mrg.nms <- c("SampleName", "ID", "Treatment", "Period")
+  var.nms <- c("YearSampled", "d14c", "fm")
+  if(length(grep("fm", names(y))) > 0) {
+    df <- merge(x[ , mrg.nms], y[ , c(mrg.nms, var.nms)])
+  } else {
+    df <- merge(x[ , mrg.nms], y[ , c(mrg.nms, var.nms[1:2])])
+    df$fm <- NA
+  }
+  return(df)
+}
+
+tme.14c.df <- bind_rows(lapply(list(tme.ctl.duk,
+                               tme.ctl.flx.sra[which(!is.na(tme.ctl.flx.sra$d14c)), ],
+                               tme.ctl.ornl,
+                               tme.misc), function(i) tme.mrg.fx(tme.14c, i)))
+
+# add storage duration data for treatment samples analyzed externally
+tme.14c.df$Type <- "F"
+
+# add YearSampled for tme.14c.clean samples
+for(i in 1:nrow(tme.14c.clean)) {
+  if(tme.14c.clean[i, "Site"] == "Duke") {
+    tme.14c.clean[i, "YearSampled"] <- 2008
+  } else if(tme.14c.clean[i, "Site"] == "Xplr") {
+    tme.14c.clean[i, "YearSampled"] <- 2011
+  } else if(tme.14c.clean[i, "Site"] == "Sierra") {
+    tme.14c.clean[i, "YearSampled"] <- 2009
+  } else {
+    tme.14c.clean[i, "YearSampled"] <- 2004
+  }
+}
+
+# combine tme data
+tme.14c <- bind_rows(tme.14c.clean[ , names(tme.14c.df)], tme.14c.df)
+tme.14c$Experiment <- "tme"
 
 # add YearSampled column
 all.14c$YearSampled <- ifelse(all.14c$Experiment == "arc", 2011, 2019)
 
-# calculate fraction modern from d14C as needed
-all.14c$fm <- ifelse(is.na(all.14c$fm), 
-                     d14c.fm.fx(all.14c$YearSampled, all.14c$d14c),
-                     all.14c$fm)
+# combine tme.14c and all.14c into a list and calculate fraction modern from d14C as needed
+all.14c.ls <- lapply(list(tme.14c, all.14c), function(df) {
+  df$fm <- ifelse(is.na(df$fm),
+                  d14c.fm.fx(df$YearSampled, df$d14c),
+                  df$fm)
+  df$d14c_corr <- decay.corr.fx(df$YearSampled, df$fm)
+  return(df)
+})
 
-# correct 2011 treatment samples for decay
-all.14c$d14c_corr <- decay.corr.fx(all.14c$YearSampled, all.14c$fm)
+all.14c.sum <- lapply(all.14c.ls, function(df) {
+  df.sum <- select(df, -SampleName) %>%
+    group_by(ID, Type, Period, Treatment, Experiment, YearSampled) %>%
+    summarise_all(list(mean = mean, max = max, min = min), na.rm = TRUE)
+  df.sum[mapply(is.infinite, df.sum)] <- NA
+  return(df.sum)
+})
+all.14c.sum <- rapply(all.14c.sum, f = function(x) ifelse(is.nan(x), NA , x), how = "replace")
+all.14c.sum.df <- bind_rows(all.14c.sum)
 
-# sort (order) to look at data
-all.14c <- all.14c[order(all.14c$Experiment, all.14c$Period, all.14c$Treatment), ]
-
-# calculate mean, min, and max of numeric data, by plot (ID)
-all.14c.sum <- select(all.14c, -SampleName) %>%
-  group_by(ID, Type, Period, Treatment, Experiment, YearSampled) %>%
-  summarise_all(list(mean = mean, max = max, min = min), na.rm = TRUE)
-
-# remove NaN, Inf, and -Inf
-all.14c.sum[which(!is.finite(all.14c.sum$d14c_corr_mean)), "d14c_corr_mean"] <- NA
-all.14c.sum[which(!is.finite(all.14c.sum$d14c_corr_min)), "d14c_corr_min"] <- NA
-all.14c.sum[which(!is.finite(all.14c.sum$d14c_corr_max)), "d14c_corr_max"] <- NA
 
 # *** Need to figure out method for determining that these are outliers *** 
 # # remove outliers
@@ -601,7 +755,6 @@ all.14c.sum[which(!is.finite(all.14c.sum$d14c_corr_max)), "d14c_corr_max"] <- NA
 
 
 # remove unnecessary objects
-rm(ams_results_ls2, nms.ams.vars)
 ```
 
 8. Count number of ^14^C observations for checking plots.
@@ -623,13 +776,14 @@ all.14c[-which(is.na(all.14c$d14c_corr)),] %>%
 * Relative outlier point is the very negative (mean = -51.1‰) HEW22 pre-incubation control samples from the 2019 air-dry experiment.
 * Samples from three of the forest plots of the 2011 treatment samples failed to accumulate enough CO~2~ to measure ^14^C.
 ```{r pre vs inc 14c plot}
-all.14c.pre.inc <- merge(all.14c.sum[all.14c.sum$Period == "pre", c("ID", "Experiment", "Type", "Treatment", "d14c_corr_mean", "d14c_corr_min", "d14c_corr_max")],
-                         all.14c.sum[all.14c.sum$Period == "inc", c("ID", "Experiment", "Type", "Treatment", "d14c_corr_mean", "d14c_corr_min", "d14c_corr_max")],
+all.14c.pre.inc <- merge(all.14c.sum.df[all.14c.sum.df$Period == "pre", c("ID", "Experiment", "Type", "Treatment", "d14c_corr_mean", "d14c_corr_min", "d14c_corr_max")],
+                         all.14c.sum.df[all.14c.sum.df$Period == "inc", c("ID", "Experiment", "Type", "Treatment", "d14c_corr_mean", "d14c_corr_min", "d14c_corr_max")],
                          by = c("ID", "Experiment", "Type", "Treatment"),
                          suffixes = c("_pre", "_inc"))
 all.14c.pre.inc$treat.bi <- ifelse(all.14c.pre.inc$Treatment == "control", "control", "treatment")
 
 all.14c.pre.inc %>%
+  filter(Experiment != "tme") %>%
   ggplot(., aes(d14c_corr_mean_pre, d14c_corr_mean_inc, color = Type, shape = Treatment)) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
   geom_vline(xintercept = 0, color = "gray") +
@@ -668,10 +822,11 @@ all.14c.pre.inc %>%
 * Limits exclude outlier point (HEW22 control pre-incubation) for improved legibility
 ```{r plot 14c by c resp}
 # collapse treatment variable into binary control/treatment
-all.14c.sum$treat.bi <- ifelse(all.14c.sum$Treatment == "control", "control","treatment")
+all.14c.sum.df$treat.bi <- ifelse(all.14c.sum.df$Treatment == "control", "control", "treatment")
 
 # HEW22 control pre point excluded to make figure more readable 
-all.14c.sum %>%
+all.14c.sum.df %>%
+  filter(Experiment != "tme") %>%
   mutate(ID.treat = paste(ID, Treatment)) %>%
   mutate(ID.treat.Period = paste(ID.treat, Period)) %>%
   filter(ID.treat.Period != "HEW22 control pre") %>%
@@ -708,7 +863,7 @@ all.14c.sum %>%
 # average control and treatment data
 # remove HEW22 control pre
 # note that upper/lower limits = 2xSE
-all.14c.sum2 <- all.14c %>%
+all.14c.sum2 <- all.14c.ls[[2]] %>%
   mutate(ID.treat.Period = paste(ID, Treatment, Period)) %>%
   filter(ID.treat.Period != "HEW22 control pre") %>%
   select(Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
@@ -759,7 +914,7 @@ all.14c.sum2 %>%
 * This seems a bit misleading, as it seems to show upward trend in C resp 
 ```{r plot 14c by c resp with outlier}
 # average control and treatment data
-all.14c.sum3 <- select(all.14c, Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
+all.14c.sum3 <- select(all.14c.ls[[2]], Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
   group_by(Type, Period, Treatment, Experiment, YearSampled) %>%
   add_count() %>%
   summarize_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%

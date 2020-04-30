@@ -6,6 +6,7 @@ Contents:
   - soil dry weights and jar information for first round of archived soil incubations
 Notes:
   - accompanies CO2 release data in lab_jena_results-co2_2019-02-25 directory
+  - added soil mass data for the second set of these initial incubations as it was missing from the source file
   - samples analyzed:
     - MA-1
     - MA-2
