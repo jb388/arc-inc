@@ -1,19 +1,20 @@
 ---
 title: "Archived Soil Incubations Project"
 author: "J. Beem-Miller"
-date: "21 Apr 2020"
-header_includes:
-- \usepackage{textcomp}
+date: "30 Apr 2020"
 output:
   pdf_document:
     latex_engine: xelatex
-  html_document:
-    df_print: paged
-  html_notebook: default
+  html_notebook:
+    toc: yes
+    toc_depth: 2
+header_includes:
+  - \usepackage[utf8]{inputenc}
+  - \usepackage{float}
 ---
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
-                      fig.align = 'center')
+                      fig.align = 'center', dev = 'cairo_pdf')
 ```
 
 ```{r setup, include = FALSE}
@@ -25,13 +26,172 @@ library(corrplot)
 library(openxlsx)
 library(ISRaD)
 ```
-# Notes:
+# Notes
 * This workbook is intended to load and prepare the key data for analysis for the archive incubation project.
 * in general, this is an updated version of script "./src/arc_inc_master.R"
 * all code chunk options are set to "echo = FALSE"; see raw .Rmd file for data wrangling code.
 
+# Introduction
+The laboratory soil incubation is a commonly used technique for understanding soil carbon dynamics. Soil carbon is a heterogeneous mixture of organic matter, some of which persists in the soil for months or years, while some persists for centuries or millenia. The persistence of soil carbon can be understood through the concept of different "pools" of carbon that are defined by the mechanism by which they persist in the soil and are characterized by distinct age distributions. 
+
+Natural abundance radiocarbon provides information about carbon dynamics on the scale of centuries to millenia, while insight into decadal scale dynamics can be gained from tracing the pulse of radiocarbon introduced into the biosphere from nuclear weapons testing ("bomb-C") in the mid-20^th^ century. The bomb-C pulse peaked in the atmosphere in the 1950s (Fig. 1), but due to differential rates of abiotic incorporation and biological processing, the peak is offset forward in time in soils. The relative enrichment in bomb-C in different pools of soil carbon is a useful tool for inferring the relative rate at which carbon enters and leaves the pool, and for a homogenous pool it is functionally equivalent to the intrinsic decomposition rate.
+
+Extracting and measuring the radiocarbon content of specific soil carbon pools is hampered by spatial and temporal heterogeneity of the mechanisms that lead to soil carbon persistence, such as physical occlusion in aggregates, association with minerals, or thermodynamics. Defining soil carbon pools empirically with techniques such as density, size, or resistance to chemical attack can be useful, but these methods also introduce artifacts and likely result in mixtures of pools with different age distributions. In contrast, although they also introduce artifacts due to disturbance and potential alteration of the microbial community, laboratory soil incubations make use of the same fractionation agent as is found *in situ*: the microbial community. Measuring the radiocarbon signal of CO^2^ ($\Delta$^14^C-CO~2~) released in laboratory incubations of bulk soils is a powerful tool for understanding the relative processing rate of carbon in soil (or transit time) as it provides an integrated measure of the weighted contribution to the release flux from pools of soil carbon with distinct processing rates. 
+
+Interpreting $\Delta$^14^C-CO~2~ from laboratory soil incubations requires the use of a model. However, parameterizing these models is challenging, both due to the uncertainty of the persistence mechanisms themselves as well as a lack of observational constraints. Radiocarbon observations at a single point in time are very useful, but due to the curvature of the bomb-C peak there are two points in time with the same atmospheric radiocarbon value, leading to multiple model solutions. Adding additional observations of $\Delta$^14^C-CO~2~ at multiple points in time can greatly reduce model uncertainty.
+
+Soil archives have already proven to be a valuable source of data for constraining soil carbon models by providing time series of the change in soil carbon ^14^C content. The promise of improving models further by obtaining ^14^C-CO~2~ measurements from archived soils is tantalizing, but first the possible effects of air-drying and rewetting, as well as the effect of the duration of storage, must be quantified.
+
+We designed an experiment to assess these effects, preliminary results of which are presented in the following report.
+
+# Conceptual understanding
+If the null hypothesis is disproved, i.e. air-drying and rewetting (air-dry) or air-drying, rewetting, and storage (air-dry + storage) have a significant effect on $\Delta$^14^C-CO~2~ relative to control samples, there are two possible outcomes: enrichment of the respiration flux or depletion. 
+
+In a simple two-pool soil carbon model, the treatment effect can be conceptualized as a relative change in the contribution of "slower" or "faster" cycling carbon to the respiration flux observed in control samples.
+
+Trajectories of the change in $\Delta$^14^C over time for "slow" and "fast" soil carbon pools are shown below (Fig. 1) in relationship to the $\Delta$^14^C of the atmosphere and respired CO~2~ for a theoretical model system.
+```{r conceptual-model-calcs, include = FALSE}
+# initial parameter set
+Datm <- rbind(graven, future14C)
+Datm <- Datm[Datm$Date > 1900, c("Date", "NHc14")]
+yrs <- Datm$Date
+
+# helper fxs
+lambda <- (1/8267)
+
+k <- function(Fm) {
+  (Fm*lambda)/(1-Fm)
+}
+fm <- function(k){
+  k/(k+lambda)
+}
+fm_14c <- function(fm, date) {
+  (fm*exp(lambda*(1950 - date)) - 1)*1000
+}
+
+# forests
+f.c <- 38.96104 # forest C pool, total (mean Hainich forest C  = 24 g kg^-1); nb @ ss = sum(-1*solve(A)%*%c(f.in*f.gam, f.in*(1-f.gam)))
+f.in <- 1 # inputs (12.5=mean equilibrium C flux, annual extrapolation, gC yr-1, 2011 incubation data); try much less...
+f.frc <- .1 # C-stock partitioning coefficient (from Schrumpf 2013, Hainich 0-5, free light)
+f.Cfast <- f.frc*f.c
+f.Cslow <- f.c-f.Cfast
+f.kfast <- 1/6 # unknown
+f.kslow <- 1/100 # unknown
+f.fast.fm <- fm(f.kfast)
+f.slow.fm <- fm(f.kslow)
+f.F0_Delta14C <- fm_14c(c(f.fast.fm, f.slow.fm), date = c(1900, 1900))
+f.gam <- (f.c*f.Cfast*f.kfast)/(f.c*f.Cfast*f.kfast+f.c*f.Cslow*f.kslow) # input partitioning coefficient (proportion to fast pool, function of ks)
+  
+# grasslands
+g.c <- 42 # C pool, total (mean Hainich grassland C g kg^-1)
+g.in <- 63.4 # inputs (mean equilibrium C flux, annual extrapolation, 2011 incubation data)
+g.frc <- .3 # C-stock partitioning coefficient (from Schrumpf 2013, average of Lacqueville, Easter Bush, Bugac, 0-5, free light)
+g.Cfast <- g.frc*g.c
+g.Cslow <- g.c-g.Cfast
+g.kfast <- 1/10 # unknown
+g.kslow <- 1/100 # unknown
+g.fast.fm <- fm(g.kfast)
+g.slow.fm <- fm(g.kslow)
+g.F0_Delta14C <- fm_14c(c(g.fast.fm, g.slow.fm), date = c(1900, 1900))
+g.gam <- (g.c*g.Cfast*g.kfast)/(g.c*g.Cfast*g.kfast+g.c*g.Cslow*g.kslow) # input partitioning coefficient (proportion to fast pool, function of ks)
+
+# 2pool parallel model
+f.2p <- TwopParallelModel14(t = yrs,
+                            ks = c(f.kfast, f.kslow),
+                            C0 = c(f.Cfast, f.Cslow),
+                            F0_Delta14C = f.F0_Delta14C,
+                            In = f.in,
+                            gam = f.gam,
+                            inputFc = Datm)
+
+f.2p.C14 <- getF14(f.2p)
+f.2p.HR <- getF14R(f.2p)
+f.2p.Ctot <- getC(f.2p)
+
+# solve for steady-state C stocks
+A <- -1*diag(c(f.kfast, f.kslow))
+sum(-1*solve(A)%*%c(f.in*f.gam, f.in*(1-f.gam)))
+
+f.2p.C14.df <- data.frame(
+  years = rep(Datm$Date, 4),
+  d14C = c(f.2p.C14[,1], f.2p.C14[,2], f.2p.HR, Datm$NHc14),
+  pool = rep(c("fast", "slow", "respiration", "atm"), each = nrow(f.2p.C14))
+  )
+
+# # Plot C stocks to confirm flat
+# plot(yrs, xlim = c(1900,2022), ylim = c(0,60))
+# lines(yrs, f.2p.Ctot[, 1], col = 2)
+# lines(yrs, f.2p.Ctot[, 2], col = 4)
+
+# calculate resp flux points at 1991 and 2019 and put in data frame
+obs.pts <- data.frame(pool = rep("respiration", 6),
+                      years = rep(c(1991,2019),3),
+                      d14c = c(mean(f.2p.C14.df[f.2p.C14.df$years > 1990 & f.2p.C14.df$years < 1992 & f.2p.C14.df$pool == "respiration", "d14C"]),
+                               mean(f.2p.C14.df[f.2p.C14.df$years > 2018 & f.2p.C14.df$years < 2020 & f.2p.C14.df$pool == "respiration", "d14C"]),
+                               150, 60,
+                               190, 30),
+                      Observation = rep(c("control",
+                                          "increased slow contribution",
+                                          "increased fast contribution"),
+                                        each = 2))
+obs.pts.r <- obs.pts[obs.pts$Observation == "control", ]
+```
+
+```{r conceptual-model-fig1a}
+ggplot(f.2p.C14.df, aes(years, d14C, color = pool)) +
+  geom_path() +
+  scale_color_manual(
+    name = "Model pool",
+    values = c("atm" = 8,
+               "fast" = "#D81B60", 
+               "respiration" = "#FFC107", 
+               "slow" = "#1E88E5"),
+    labels = c("atm" = "atmosphere",
+               "fast" = "fast",
+               "slow" = "slow")) +
+  scale_x_continuous(limits = c(1950, 2022)) +
+  xlab("Year") +
+  ylab(expression(''*Delta*''^14*'C (‰)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+```
+
+
+The simplest two-pool model is a parallel system: one in which carbon entering the soil is partitioned between the two pools without any transfers from one pool to the other. However, even in this simple system, the same treatment effect can result in either enrichment or depletion depending on the year the sample was collected. The direction of change willl be dependent on system dynamics, specifically the intrinsic decomposition rates of the slow and fast pools, while in more complicated sytems the amount of mixing between the pools will play a role as well. Potential treatment effects for the same parallel two-pool model system shown in Fig. 1 are shown below at two points in time (Fig. 2).
+```{r conceptual-model-fig1b}
+# zoom (w/ atm, to 2022)
+f.2p.C14.df %>% 
+  filter(years > 1987) %>%
+  filter(pool != "atm") %>%
+  ggplot(., aes(years, d14C)) +
+  geom_path(aes(color = pool)) +
+  geom_point(data = obs.pts, aes(years, d14c, shape = Observation), color = "#FFC107", stroke = 1, size = 3) +
+  scale_color_manual(
+    name = "Model pool",
+    values = c("atm" = 8,
+               "fast" = "#D81B60", 
+               "respiration" = "#FFC107", 
+               "slow" = "#1E88E5"),
+    labels = c("atm" = "atmosphere",
+               "fast" = "fast",
+               "slow" = "slow")) +
+  scale_shape_manual(
+    name = "Observed respiration",
+    values = c("control" = 16,
+               "increased slow contribution" = 0,
+               "increased fast contribution" = 1)) +
+  scale_y_continuous(limits = c(0, 265)) +
+  xlab("Year") +
+  ylab(expression(''*Delta*''^14*'C (‰)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+```
+
+In the above plot (Fig. 2), increased contribution from the slow pool leads to depletion in $\Delta$^14^C of respiration relative to the control observation in 1991 but relative enrichment in 2019.
+
+
 # CO~2~ fluxes and soil data 
-1. Load flux data from air-dry + storage (experiment 1) and storage duration (experiment 3) control samples, and convert from "wide" to "long" format so as to match other data.
+1. Load flux data from air-dry + storage (experiment 1) and storage duration (experiment 3) control samples, and convert from "wide" to "long" format so as to match other data. 
 ```{r read wide ts data}
 # Read air-dry + storage respiration control data
 archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-29.csv")
@@ -251,41 +411,11 @@ ts.avg <- bind_rows(lapply(ts.avg, bind_rows))
 ts.avg <- as.data.frame(lapply(ts.avg, type.convert))
 ```
 
-4. Plots of CO~2~ fluxes over time. The final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat. Notes:
-* Daily measurements for the pre-incubation period were not taken for the 2011 control samples, leading to an apparent delay in the timing of the rewetting pulse (Fig 1).
-```{r CO2 fluxes plots}
-ts.avg %>% 
-  filter(Experiment != "tme") %>%
-  ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
-  geom_vline(xintercept = 4, color="gray") +
-  geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
-  geom_line(aes(color = Type, linetype = Treatment)) +
-  facet_grid(rows = vars(Experiment),
-             labeller = labeller(Experiment = c("arc" = "2011", "rewet" = "2019"))) +
-  scale_x_continuous(limits = c(0,18)) +
-  # scale_y_continuous(limits = c(0,30)) +
-  scale_color_manual(name = 'Landuse',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  scale_fill_manual(name = 'Std. Err.',
-                    values =c('F'='#a35513','G'='#1361a3'),
-                    labels = c('Forest','Grassland')) +
-  scale_alpha_manual(name = 'Treatment',
-                     values = c("air-dry + storage" = .2, 
-                                "control" = .4,
-                                "air-dry" = .2)) +
-  scale_linetype_manual(name = 'Treatment',
-                        values = c("air-dry + storage" = 'dashed', 
-                                   "control" ='solid',
-                                   "air-dry" = "dashed")) +
-  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
-  xlab("Time (days)") +
-  theme_bw() +
-  theme(panel.grid = element_blank())
-```
 
-* Plot pre-incubation period as average rate for the first four days for comparability (Fig. 2).
-```{r CO2 flux plots II}
+4. Plots of CO~2~ fluxes over time. The final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat. 
+* While daily measurements were made during the pre-incubation period for the majority of samples, only the cumulative pre-incubation flux was measued for the 2011 control samples
+* Consequently, the respiration rate for the pre-incubation period was calculated cumulatively for all samples (Fig. 1)
+```{r CO2-flux-plots}
 ts.pre <- ts[ts$Period == "pre", ]
 ts.pre.avg <- ts.pre %>%
   filter(time_d_cmtv > 3.5) %>%
@@ -361,6 +491,38 @@ ts.avg2 %>%
   theme(panel.grid = element_blank())
 ```
 
+
+* However, daily measurements made for the remaining samples shows that the initial rewetting pulse was much substantially greater for the treatment samples in both 2011 and 2019 (Fig. 2)
+```{r CO2 fluxes plots}
+ts.avg %>% 
+  filter(Experiment != "tme") %>%
+  ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
+  geom_vline(xintercept = 4, color="gray") +
+  geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
+  geom_line(aes(color = Type, linetype = Treatment)) +
+  facet_grid(rows = vars(Experiment),
+             labeller = labeller(Experiment = c("arc" = "2011", "rewet" = "2019"))) +
+  scale_x_continuous(limits = c(0,18)) +
+  # scale_y_continuous(limits = c(0,30)) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_fill_manual(name = 'Std. Err.',
+                    values =c('F'='#a35513','G'='#1361a3'),
+                    labels = c('Forest','Grassland')) +
+  scale_alpha_manual(name = 'Treatment',
+                     values = c("air-dry + storage" = .2, 
+                                "control" = .4,
+                                "air-dry" = .2)) +
+  scale_linetype_manual(name = 'Treatment',
+                        values = c("air-dry + storage" = 'dashed', 
+                                   "control" ='solid',
+                                   "air-dry" = "dashed")) +
+  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
+  xlab("Time (days)") +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+```
 
 # Isotope data
 
@@ -800,7 +962,7 @@ all.14c.pre.inc$treat.bi <- ifelse(all.14c.pre.inc$Treatment == "control", "cont
 all.14c.pre.inc %>%
   filter(Experiment != "tme") %>%
   ggplot(., aes(d14c_corr_mean_pre, d14c_corr_mean_inc, color = Type, shape = Treatment)) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  geom_abline(slope = 1, intercept = 0) +
   geom_vline(xintercept = 0, color = "gray") +
   geom_hline(yintercept = 0, color = "gray") +
   geom_point(size = 3) +
@@ -823,8 +985,8 @@ all.14c.pre.inc %>%
                                 "air-dry + storage" = 0)) +
   scale_x_continuous(limits = c(-60, 115)) +
   scale_y_continuous(limits = c(-60, 115)) +
-  xlab(expression('Pre-incubation '*Delta*''^14*'C (per mille)')) +
-  ylab(expression('Equilibrium respiration '*Delta*''^14*'C (per mille)')) +
+  xlab(expression('Pre-incubation '*Delta*''^14*'C (‰)')) +
+  ylab(expression('Equilibrium respiration '*Delta*''^14*'C (‰)')) +
   theme_bw() +
   theme(panel.grid = element_blank(),
         legend.key.height=unit(.8, "cm"),
@@ -832,10 +994,9 @@ all.14c.pre.inc %>%
 ```
 
 10. Plot $\Delta$^14^C against proportion of soil C respired by experiment, land cover, and sampling period.
-* Note that data are first shown averaged by plot (Fig. 1), and then averaged by land use and treatment within sampling periods (Fig. 2)
-* Pre-incubation $\Delta$^14^C was not measured for the 2011 control samples.
+* First figure shows data averaged by plot
+* (Note that pre-incubation $\Delta$^14^C was not measured for the 2011 control samples)
 * Limits exclude outlier point (HEW22 control pre-incubation) for improved legibility
-* Code for plot with outlier data is in second code chunk below, but not is currently included in report
 ```{r plot 14c by c resp}
 # collapse treatment variable into binary control/treatment
 all.14c.sum.df$treat.bi <- ifelse(all.14c.sum.df$Treatment == "control", "control", "treatment")
@@ -871,11 +1032,14 @@ all.14c.sum.df %>%
                                 "treatment inc" = 'equilibrium respiration\n(air-dry/air-dry + storage)')) +
   facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
   xlab(expression('Respired C (mgCO'[2]*'-C'*' g soil C'^-1*')')) +
-  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  ylab(expression('mean '*Delta*''^14*'C (‰)')) +
   theme_bw() +
   theme(panel.grid = element_blank(),
         legend.key.height=unit(.8, "cm"))
+```
 
+* Second figure shows data averaged by land use and treatment within sampling periods
+```{r plot C resp vs 14C averaged by land use and treatment}
 # average control and treatment data
 # remove HEW22 control pre
 # note that upper/lower limits = 2xSE
@@ -920,12 +1084,13 @@ all.14c.sum2 %>%
                                 "treatment inc" = 'equilibrium respiration\n(air-dry/air-dry + storage)')) +
   facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
   xlab(expression('Respired C (mgCO'[2]*'-C'*' g soil C'^-1*')')) +
-  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  ylab(expression('mean '*Delta*''^14*'C (‰)')) +
   theme_bw() +
   theme(panel.grid = element_blank(),
         legend.key.height=unit(.8, "cm"))
 ```
 
+* Code for a third plot with outlier data is in code chunk below, but not is currently included in report
 ```{r plot 14c by c resp with outlier, include = FALSE}
 # average control and treatment data
 all.14c.sum3 <- select(all.14c.ls[[2]], Type, Period, Treatment, Experiment, YearSampled, d14c_corr, mgCO2.C_gC) %>%
@@ -966,15 +1131,15 @@ all.14c.sum3 %>%
                                 "treatment inc" = 'equilibrium respiration\n(air-dry/air-dry + storage)')) +
   facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
   xlab(expression('Respired C (mgCO'[2]*'-C'*' g soil C'^-1*')')) +
-  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  ylab(expression('mean '*Delta*''^14*'C (‰)')) +
   theme_bw() +
   theme(panel.grid = element_blank(),
         legend.key.height=unit(.8, "cm"))
 ```
 
+
 12. Show treatment effects on observed equilibrium period ^14^C.
 * Fig. 1 shows the direction of mean treatment effects over time in reference to the atmosphere (gray line). Points are means (n = 12 for 2011 treatment points, n = 9 for 2011 control points; n = 6 for all 2019 points); error bars = 2x std. err. of the mean.
-* Fig. 2 shows treatment effects as means with inferential error bars (2x SE) [Sue and Alison suggest to display this info in tabular form]
 ```{r treatment effects by time}
 # first load atmospheric data from ISRaD and bind future projection
 Datm <- rbind(graven, future14C)
@@ -1001,7 +1166,7 @@ Datm <- Datm[Datm$Date > 1900, c("Date", "NHc14")]
 #   scale_x_continuous(limits = c(2010, 2020), breaks = c(2013, 2016, 2019)) +
 #   scale_y_continuous(limits = c(-15, 100)) +
 #   xlab('Year sampled') +
-#   ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+#   ylab(expression('mean '*Delta*''^14*'C (‰)')) +
 #   facet_wrap(~ ID, ncol = 3) +
 #   theme_bw() +
 #   theme(panel.grid = element_blank())
@@ -1034,11 +1199,14 @@ all.14c.sum2 %>%
   scale_x_continuous(limits = c(2010, 2020), breaks = c(2013, 2016, 2019)) +
   scale_y_continuous(limits = c(-15, 100)) +
   xlab('Year sampled') +
-  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  ylab(expression('mean '*Delta*''^14*'C (‰)')) +
   facet_grid(cols = vars(Type)) +
   theme_bw() +
   theme(panel.grid = element_blank())
+```
 
+* Code below plots treatment effects as means with inferential error bars (2x SE), but is not included in the report.
+```{r side-by-side plot, include = FALSE}
 # plot as side-by-side means w/ 2xSE
 # will change to 95%CIs at some point, but need to calculate test statistic with appropriate df
 all.14c.sum2 %>%
@@ -1057,7 +1225,7 @@ all.14c.sum2 %>%
                      values = c("air-dry" = 1, 
                                 "air-dry + storage" = 0,
                                 "control" = 16)) +
-  ylab(expression('mean '*Delta*''^14*'C (per mille)')) +
+  ylab(expression('mean '*Delta*''^14*'C (‰)')) +
   facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
   theme_bw() +
   theme(panel.grid = element_blank(),
@@ -1067,11 +1235,16 @@ all.14c.sum2 %>%
 
 
 15. Show overall effect of treatment on whole data set.
-* Control data shown on x-axis, treatment data shown on y-axis
-* Solid line is 1:1, dashed line is a 20 per mille offset, and dot-dash line is a 40 per mille offset (roughly equivalent to the atmospheric decline over five and 10 years respectively for the period 2000 to 2020)
-* Note that the difference between control and treatment points is within a 5 year range for the majority of points
-* Data from all three experiments conducted in this study are shown, as well as a handful of additional data points for which both control and treatment (i.e. after air-drying + storage) incubations were conducted in another laboratory (Harvard points)
-* Only A horizon data are shown here, as only three samples were analyzed for organic and B horizons (respectively) owing to sample availability
+* Notes:
+    + Control data shown on x-axis, treatment data shown on y-axis
+    + Solid line is 1:1, dashed line is a 20 ‰ offset, and dotted line is a 40‰ offset (roughly equivalent to the atmospheric decline over five and 10 years respectively for the period 2000 to 2020)
+    + Data from all three experiments conducted in this study are shown, as well as a handful of additional data points for which both control and treatment (i.e. after air-drying + storage) incubations were conducted in another laboratory (Harvard points)
+    + Only A horizon data are shown here, as owing to sample availabilityonly three samples were analyzed for organic and B horizons (respectively) 
+    + Points are means of replicates and error bars are min and max of replicates (number of replicates varies from 1 to 3); note that error bars are not visible at this scale for most points 
+* Key messages:
+    + Difference between control and treatment samples is within a 5 year range for the majority of points
+    + Grassland samples tend to be above 1:1 line, forest samples below, regardless of site
+    + The three German forest samples above 1:1 line were analyzed in 2019 (air-dry only treatment, this study), lending support to the interpretation that slow and fast soil C pool curves for northern hemisphere forest samples have only recently crossed or may have yet to cross.
 ```{r plot ctl vs trt}
 # Filter to "inc", split by binary treatment variable, then merge
 all.14c.ctl <- all.14c.sum.df[all.14c.sum.df$treat.bi == "control" & all.14c.sum.df$Period == "inc", ]
@@ -1084,7 +1257,7 @@ all.14c.ctl.trt <- inner_join(data.frame(all.14c.ctl) %>%
                                 select(ID, Experiment, Type, Site, Horizon, contains("d14c_corr")),
                               by = c("ID", "Experiment", "Type", "Site", "Horizon"))
 
-# Plot on 1:1 line w/ diagonal lines showing per mille offsets
+# Plot on 1:1 line w/ diagonal lines showing ‰ offsets
 # first collapse sites for better visuals
 
 loc <- list(
@@ -1101,54 +1274,142 @@ loc <- list(
 all.14c.ctl.trt %>%
   filter(Horizon == "A") %>%
   mutate(Location = recode(Site, !!!loc)) %>%
-  ggplot(., aes(d14c_corr_mean_ctl, d14c_corr_mean_trt, color = Type, shape = Location)) +
+  ggplot(., aes(d14c_corr_mean_ctl, d14c_corr_mean_trt, color = Location, shape = Type)) +
   geom_abline(slope = 1, intercept = 0) +
   geom_abline(slope = 1, intercept = -20, linetype = "dashed") +
   geom_abline(slope = 1, intercept = 20, linetype = "dashed") +
-    geom_abline(slope = 1, intercept = -40, linetype = "dotdash") +
-  geom_abline(slope = 1, intercept = 40, linetype = "dotdash") +
+  geom_abline(slope = 1, intercept = -40, linetype = "dotted") +
+  geom_abline(slope = 1, intercept = 40, linetype = "dotted") +
   geom_vline(xintercept = 0, color = "gray") +
   geom_hline(yintercept = 0, color = "gray") +
   geom_point(size = 3) +
   geom_errorbar(
     aes(ymin = d14c_corr_min_trt, 
         ymax = d14c_corr_max_trt, 
-        color = Type), 
+        color = Location), 
     width = .25) +
   geom_errorbarh(
     aes(xmin = d14c_corr_min_ctl, 
         xmax = d14c_corr_max_ctl, 
-        color = Type), 
+        color = Location), 
     height = .9) +
-  scale_color_manual(name = 'Landuse',
-                     values =c('F'='#a35513','G'='#1361a3'),
+  scale_color_manual(values = c('Duke, NC' = '#01BB97',
+                                'Sierra Nevada, CA' = '#FFC107',
+                                'Central Germany' = 'black',
+                                'Harvard, MA' = '#1E88E5',
+                                'Oak Ridge, TN' = '#D81B60')) +
+  scale_shape_manual(name = 'Land use',
+                     values = c('F'= 17,'G' = 16),
                      labels = c('Forest','Grassland')) +
-  xlab(expression('Control '*Delta*''^14*'C (per mille)')) +
-  ylab(expression('Treatment '*Delta*''^14*'C (per mille)')) +
+  xlab(expression('Control '*Delta*''^14*'C (‰)')) +
+  ylab(expression('Treatment '*Delta*''^14*'C (‰)')) +
   theme_bw() +
   theme(panel.grid = element_blank(),
         legend.key.height=unit(.8, "cm"),
         aspect.ratio = 1)
+
+# for plotting with color = Type (currently suppressed)
+# all.14c.ctl.trt %>%
+#   filter(Horizon == "A") %>%
+#   mutate(Location = factor(recode(Site, !!!loc), exclude = TRUE)) %>%
+#   ggplot(., aes(d14c_corr_mean_ctl, d14c_corr_mean_trt, color = Type, shape = Location)) +
+#   geom_abline(slope = 1, intercept = 0) +
+#   geom_abline(slope = 1, intercept = -20, linetype = "dashed") +
+#   geom_abline(slope = 1, intercept = 20, linetype = "dashed") +
+#   geom_abline(slope = 1, intercept = -40, linetype = "dotdash") +
+#   geom_abline(slope = 1, intercept = 40, linetype = "dotdash") +
+#   geom_vline(xintercept = 0, color = "gray") +
+#   geom_hline(yintercept = 0, color = "gray") +
+#   geom_point(size = 3) +
+#   geom_errorbar(
+#     aes(ymin = d14c_corr_min_trt, 
+#         ymax = d14c_corr_max_trt, 
+#         color = Type), 
+#     width = .25) +
+#   geom_errorbarh(
+#     aes(xmin = d14c_corr_min_ctl, 
+#         xmax = d14c_corr_max_ctl, 
+#         color = Type), 
+#     height = .9) +
+#   scale_color_manual(name = 'Land use',
+#                      values =c('F'='#a35513','G'='#1361a3'),
+#                      labels = c('Forest','Grassland')) +
+#   xlab(expression('Control '*Delta*''^14*'C (‰)')) +
+#   ylab(expression('Treatment '*Delta*''^14*'C (‰)')) +
+#   theme_bw() +
+#   theme(panel.grid = element_blank(),
+#         legend.key.height=unit(.8, "cm"),
+#         aspect.ratio = 1)
 ```
 
 
-16. Show the effect of storage duration by plotting the difference between control and treatment ^14^C as a function of storage duration.
+16. Show the effect of storage duration by plotting the difference between control and treatment ^14^C as a function of storage duration. However, the expected Ctl-Trt difference would also likely have a trend over time. Perhaps plot an expected trend...? Not sure how much this matters.
+* As previously, dashed and dotted lines are plotted to give a sense of error introduced by the treatment by showing a difference of 20‰ and 40‰ (roughly equivalent to the atmospheric decline over five and 10 years respectively for the period 2000 to 2020)
+* Position of points jittered to avoid overplotting; storage duration has been rounded down to the nearest whole year
+* In general, the trend in the differences due to treatment for the highly enriched samples from Oak Ridge, TN suggest losses of the most recently fixed carbon over the duration of storage
+    + These samples were included primarily because it was assumed that they would be more sensitive to potential losses of recently fixed carbon, as the label should only be present in this pool of soil C
+    + However, in contrast, there does not seem to be evidence for a storage duration effect in the samples that only contain bomb-C
 ```{r}
-# # Plot storage duration
-# all.14c.sum.df %>% 
-#   filter(Experiment != rewet) %>%
-#   filter(Period == "inc") %>%
-#   mutate(tme = 2018 - YearSampled) %>%
-#   mutate(tme.f = factor(tme)) %>%
-#   group_by(Type, tme, )
-#   add_tally() %>%
-#   summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
-#   mutate(d14c_corr_se = d14c_corr_sd/n_mean,
-#          d14c_corr_u = d14c_corr_mean + d14c_corr_se*2,
-#          d14c_corr_l = d14c_corr_mean - d14c_corr_se*2,
-#          mgCO2.C_gC_se = mgCO2.C_gC_sd/n_mean,
-#          mgCO2.C_gC_u = mgCO2.C_gC_mean + mgCO2.C_gC_se*2,
-#          mgCO2.C_gC_l = mgCO2.C_gC_mean - mgCO2.C_gC_se*2) 
+# First add YearSampled and YearMeasured columns
+all.14c.ctl.trt$YearSampled <- unlist(all.14c.sum.df[match(all.14c.ctl.trt$ID, all.14c.sum.df$ID), "YearSampled"])
+# correct archive sample YearSampled
+all.14c.ctl.trt[all.14c.ctl.trt$Experiment == "arc" & all.14c.ctl.trt$Site == "Hainich", "YearSampled"] <- 2011
 
+# add year measured column, modify for tme.misc samples, rewet samples
+all.14c.ctl.trt$YearMeasured <- 2018
+all.14c.ctl.trt[all.14c.ctl.trt$Experiment == "rewet", "YearMeasured"] <- 2019
+all.14c.ctl.trt[which(all.14c.ctl.trt$ID %in% tme.misc$ID), "YearMeasured"] <- 2009
+
+# calculate storage duration numerically and as factor
+all.14c.ctl.trt$tme <- unlist(all.14c.ctl.trt$YearMeasured - all.14c.ctl.trt$YearSampled)
+all.14c.ctl.trt$tme.f <- factor(all.14c.ctl.trt$tme)
+
+# add difference column
+# (expressed as difference of means)
+all.14c.ctl.trt$ctl.trt.d14 <- all.14c.ctl.trt$d14c_corr_mean_ctl - all.14c.ctl.trt$d14c_corr_mean_trt
+
+# # add atm 14C for year sampled and calculate delta-delta
+# all.14c.ctl.trt$atm.yr.sampled <- Datm[match(all.14c.ctl.trt$YearSampled, floor(Datm$Date)), "NHc14"]
+# all.14c.ctl.trt$dd.ctl <- all.14c.ctl.trt$d14c_corr_mean_ctl - all.14c.ctl.trt$atm.yr.sampled
+# all.14c.ctl.trt$dd.trt <- all.14c.ctl.trt$d14c_corr_mean_trt - all.14c.ctl.trt$atm.yr.sampled
+# all.14c.ctl.trt$ctl.trt.dd14 <- all.14c.ctl.trt$dd.ctl - all.14c.ctl.trt$dd.trt
+
+# Plot storage duration
+all.14c.ctl.trt %>%
+  filter(Horizon == "A") %>%
+  filter(Experiment != "rewet") %>%
+  select(Type, tme.f, Site, ctl.trt.d14, tme) %>%
+  group_by(Type, tme.f, Site) %>%
+  add_tally() %>%
+  summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+  mutate(dif_se = ctl.trt.d14_sd/n_mean,
+         dif_u = ctl.trt.d14_mean + dif_se*2,
+         dif_l = ctl.trt.d14_mean - dif_se*2) %>%
+  mutate(Location = factor(recode(Site, !!!loc), exclude = TRUE)) %>%
+  ggplot(., aes(tme_mean, ctl.trt.d14_mean, color = Location, shape = Type)) +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = -20, linetype = "dashed") +
+  geom_hline(yintercept = 20, linetype = "dashed") +
+  geom_hline(yintercept = 40, linetype = "dotted") +
+  geom_hline(yintercept = -40, linetype = "dotted") +
+  geom_point(size = 3, position = position_dodge2(width = .7, preserve = "single")) +
+  geom_errorbar(
+    aes(ymin = dif_l,
+        ymax = dif_u, 
+        color = Location),
+    width = .7,
+    position = position_dodge2(width = .7, preserve = "single")) +
+  scale_color_manual(values = c('Duke, NC' = '#01BB97',
+                                'Sierra Nevada, CA' = '#FFC107',
+                                'Central Germany' = 'black',
+                                'Harvard, MA' = '#1E88E5',
+                                'Oak Ridge, TN' = '#D81B60')) +
+  scale_shape_manual(name = 'Land use',
+                     values = c('F'= 17,'G' = 16),
+                     labels = c('Forest','Grassland')) +
+  ylab(expression('Control - Treatment '*Delta*''^14*'C (‰)')) +
+  xlab("Storage duration (years)") +
+  theme_bw() +
+  theme(panel.grid = element_blank())
 ```
 
