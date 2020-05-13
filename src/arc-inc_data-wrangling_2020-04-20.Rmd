@@ -131,13 +131,13 @@ obs.pts <- data.frame(pool = rep("respiration", 6),
                                150, 60,
                                190, 30),
                       Observation = rep(c("control",
-                                          "increased slow contribution",
-                                          "increased fast contribution"),
+                                          "increased slow pool contribution",
+                                          "increased fast pool contribution"),
                                         each = 2))
 obs.pts.r <- obs.pts[obs.pts$Observation == "control", ]
 ```
 
-```{r conceptual-model-fig1a}
+```{r conceptual-model-fig1}
 ggplot(f.2p.C14.df, aes(years, d14C, color = pool)) +
   geom_path() +
   scale_color_manual(
@@ -178,8 +178,8 @@ f.2p.C14.df %>%
   scale_shape_manual(
     name = "Observed respiration",
     values = c("control" = 16,
-               "increased slow contribution" = 0,
-               "increased fast contribution" = 1)) +
+               "increased slow pool contribution" = 0,
+               "increased fast pool contribution" = 1)) +
   scale_y_continuous(limits = c(0, 265)) +
   xlab("Year") +
   ylab(expression(''*Delta*''^14*'C (‰)')) +
