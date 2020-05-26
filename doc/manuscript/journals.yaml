@@ -1,0 +1,71 @@
+List of target journals
+
+1. Soil Biology and Biochemistry
+  - publisher: Elsevier
+  - impact: 5.290
+  - scope:
+    - "scientific research articles of international significance which describe and explain fundamental biological and biochemical features and processes occurring in soil systems"
+
+    - "The emphasis is on original research which substantively advances or directs our understanding of the mechanistic basis of how soils function. Articles may involve applications of basic knowledge to applied issues if they provide distinct insight into the role of soil biology and biochemistry in regulating soil functions. Some examples of major topics include:
+      - The ecology of all soil organisms (including viruses)
+      - How soil biology interacts with soil physical and chemical properties and processes to regulate belowground functions
+      - Relationships and functional interactions between soil biota and plants
+      - The effects of soil organisms on ecosystem dynamics across spatial and temporal scales "
+  - length: NA
+  - open access:
+    - "Gold" (additional fee)
+  - format: (numbered)
+    - Introduction
+    - Materials and Methods
+    - Results
+    - Discussion
+
+2. Journal of Geophysical Processes Biogeosciences
+  - publisher: Wiley (AGU)
+  - impact: 3.62
+  - scope:
+    - "JGR: Biogeosciences focuses on biogeosciences of the Earth system in the past, present, and future and the extension of this research to planetary studies. The emerging field of biogeosciences spans the intellectual interface between biology and the geosciences and attempts to understand the functions of the Earth system across multiple spatial and temporal scales. Studies in biogeosciences may use multiple lines of evidence drawn from diverse fields to gain a holistic understanding of terrestrial, freshwater, and marine ecosystems and extreme environments. Specific topics within the scope of the section include process-based theoretical, experimental, and field studies of biogeochemistry, biogeophysics, atmosphere-, land-, and ocean-ecosystem interactions, biomineralization, life in extreme environments, astrobiology, microbial processes, geomicrobiology, and evolutionary geobiology."
+  - length:
+  - open access: Yes
+  - format: NA (?)
+
+3. Biogeochemistry
+  - publisher: Springer
+  - impact: 3.406
+  - scope:
+    - "original and synthetic papers dealing with biotic controls on the chemistry of the environment, or with the geochemical control of the structure and function of ecosystems. Cycles are considered, either of individual elements or of specific classes of natural or anthropogenic compounds in ecosystems. Particular emphasis is given to coupled interactions of element cycles. The journal spans from the molecular to global scales to elucidate the mechanisms driving patterns in biogeochemical cycles through space and time. Studies on both natural and artificial ecosystems are published when they contribute to a general understanding of biogeochemistry"
+  - length: 4000 to 12000 words
+  - open access:
+    - "open choice" (by agreement)
+  - format: NA (?)
+
+4. Global Change Biology (technical advances)
+  - publisher: Wiley
+  - impact: 8.88
+  - scope:
+    - "Global Change Biology exists to promote new understanding of the interface between biological systems and all aspects of environmental change that affects a substantial part of the globe. Studies must concern biological systems, regardless of whether they are aquatic or terrestrial, and managed or natural environments. Both biological responses and feedbacks to change are included, and may be considered at any level of organization from molecular to biome. Studies may employ theoretical, modeling, analytical, experimental, observational, and historical approaches and should be exploratory rather than confirmatory. GCB publishes primary research articles, technical advances, research reviews, commentaries and letters."
+    - subcategory: Technical Advances
+      - "Technical Advances present exciting new research tools, methods, and techniques, including new modelling approaches, and should include a detailed description of the methodological design and discussion of how this technique improves the study of global change biology. GCB has a wide readership; accordingly the technical advance must be broadly applicable. Papers describing methods that apply to one species or system are unlikely to meet our criteria unless authors are able to show that their methods can be generalized. The main body word limit is 4000 words (Introduction, Materials and Methods, Results & Discussion, and Acknowledgements). Formatting is standard (see Formatting Instructions, below) except that Results and Discussion may be combined. These are peer reviewed. Decisions are made by the Editors."
+  - length: 4000 words (body text)
+  - open access:
+    - "OnlineOpen" (note MPI has an agreement)
+  - format:
+    - Introduction
+    - Materials and Methods
+    - Results
+    - Discussion
+
+5. European Journal of Soil Science
+  - publisher: Wiley
+  - impact: 2.818
+  - scope:
+    - "The European Journal of Soil Science (EJSS) is an international journal that publishes outstanding papers in soil science that advance the theoretical and mechanistic understanding of physical, chemical and biological processes and their interactions in soils acting from molecular to continental scales in natural and managed environments."
+  - length: NA
+
+6. SOIL
+  - publisher: Copernicus
+  - impact: 1.943
+  - scope:
+    - "SOIL is at the interface between the atmosphere, lithosphere, hydrosphere, and biosphere. SOIL publishes scientific research that contributes to understanding the soil system and its interaction with humans and the entire Earth system. The scope of the journal includes all topics that fall within the study of soil science as a discipline, with an emphasis on studies that integrate soil science with other sciences (hydrology, agronomy, socio-economics, health sciences, atmospheric sciences, etc.)."
+    - "The following manuscript types can be considered for publication in SOIL: original research articles, review articles, short communications, forum articles, and letters to the editors."
+  - length: NA
