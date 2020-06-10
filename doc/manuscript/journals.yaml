@@ -26,6 +26,8 @@ List of target journals
   - scope:
     - "JGR: Biogeosciences focuses on biogeosciences of the Earth system in the past, present, and future and the extension of this research to planetary studies. The emerging field of biogeosciences spans the intellectual interface between biology and the geosciences and attempts to understand the functions of the Earth system across multiple spatial and temporal scales. Studies in biogeosciences may use multiple lines of evidence drawn from diverse fields to gain a holistic understanding of terrestrial, freshwater, and marine ecosystems and extreme environments. Specific topics within the scope of the section include process-based theoretical, experimental, and field studies of biogeochemistry, biogeophysics, atmosphere-, land-, and ocean-ecosystem interactions, biomineralization, life in extreme environments, astrobiology, microbial processes, geomicrobiology, and evolutionary geobiology."
   - length:
+    - 12 publication units
+      - PU = 500 words OR 1 figure OR 1 table
   - open access: Yes
   - format: NA (?)
 

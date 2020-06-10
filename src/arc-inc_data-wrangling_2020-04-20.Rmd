@@ -87,20 +87,20 @@ f.slow.fm <- fm(f.kslow)
 f.F0_Delta14C <- fm_14c(c(f.fast.fm, f.slow.fm), date = c(1900, 1900))
 f.gam <- (f.c*f.Cfast*f.kfast)/(f.c*f.Cfast*f.kfast+f.c*f.Cslow*f.kslow) # input partitioning coefficient (proportion to fast pool, function of ks)
   
-# grasslands
-g.c <- 42 # C pool, total (mean Hainich grassland C g kg^-1)
-g.in <- 63.4 # inputs (mean equilibrium C flux, annual extrapolation, 2011 incubation data)
-g.frc <- .3 # C-stock partitioning coefficient (from Schrumpf 2013, average of Lacqueville, Easter Bush, Bugac, 0-5, free light)
-g.Cfast <- g.frc*g.c
-g.Cslow <- g.c-g.Cfast
-g.kfast <- 1/10 # unknown
-g.kslow <- 1/100 # unknown
-g.fast.fm <- fm(g.kfast)
-g.slow.fm <- fm(g.kslow)
-g.F0_Delta14C <- fm_14c(c(g.fast.fm, g.slow.fm), date = c(1900, 1900))
-g.gam <- (g.c*g.Cfast*g.kfast)/(g.c*g.Cfast*g.kfast+g.c*g.Cslow*g.kslow) # input partitioning coefficient (proportion to fast pool, function of ks)
+# # grasslands
+# g.c <- 42 # C pool, total (mean Hainich grassland C g kg^-1)
+# g.in <- 63.4 # inputs (mean equilibrium C flux, annual extrapolation, 2011 incubation data)
+# g.frc <- .3 # C-stock partitioning coefficient (from Schrumpf 2013, average of Lacqueville, Easter Bush, Bugac, 0-5, free light)
+# g.Cfast <- g.frc*g.c
+# g.Cslow <- g.c-g.Cfast
+# g.kfast <- 1/10 # unknown
+# g.kslow <- 1/100 # unknown
+# g.fast.fm <- fm(g.kfast)
+# g.slow.fm <- fm(g.kslow)
+# g.F0_Delta14C <- fm_14c(c(g.fast.fm, g.slow.fm), date = c(1900, 1900))
+# g.gam <- (g.c*g.Cfast*g.kfast)/(g.c*g.Cfast*g.kfast+g.c*g.Cslow*g.kslow) # input partitioning coefficient (proportion to fast pool, function of ks)
 
-# 2pool parallel model
+# 2pool parallel model, forests
 f.2p <- TwopParallelModel14(t = yrs,
                             ks = c(f.kfast, f.kslow),
                             C0 = c(f.Cfast, f.Cslow),
@@ -161,7 +161,7 @@ ggplot(f.2p.C14.df, aes(years, d14C, color = pool)) +
   theme(panel.grid = element_blank())
 ```
 
->**Fig `r {(fig.n <- 1)}`. Modeled trajectories of $\Delta$^14^C over time in soil carbon pools (fast, slow, respiration flux) in relationship to observed atmospheric $\Delta$^14^C**
+>**Fig `r {(fig.n <- 1)}`a. Modeled trajectories of $\Delta$^14^C over time in soil carbon pools (fast, slow, respiration flux) in relationship to observed atmospheric $\Delta$^14^C**
 
 >*Caption:* Modeled curves derived from a conceptual two-pool parallel model system in which inputs are partitioned between faster and more slowly cycling pools without any tranfers between the pools. Carbon stocks and pool sizes are based on density fraction data for the Hainich Forest (Schrumpf et al. 2013); decomposition rates are chosen to be realistic but are arbitrary. Atmospheric $\Delta$^14^C data up to the year 2015 are from Graven et al. (2017), while data points beyond 2015 use the extrapolation method from Sierra (2018). All atmospheric data is for the northern hemisphere (zone 2).
 
@@ -196,7 +196,7 @@ f.2p.C14.df %>%
   theme(panel.grid = element_blank())
 ```
 
->**Fig `r {(fig.n + 1)}`. Potential shifts in $\Delta$^14^C of respired CO~2~ in response to air-drying and rewetting, or air-drying and rewetting + storage**
+>**Fig `r {(fig.n)}`b. Potential shifts in $\Delta$^14^C of respired CO~2~ in response to air-drying and rewetting, or air-drying and rewetting + storage**
 
 >*Caption:* Blue and magenta lines show modeled trajectories of $\Delta$^14^C in fast and slow cycling soil carbon pools (same model as Fig 1), and $\Delta$^14^C of respired CO~2~ is shown in yellow. Solid circles show hypothetical observations of ^14^C or respired CO~2~ from control incubations, while the open symbols represent two possible scenarios in which ^14^C-CO~2~ shifts due to increased contribution from the fast pool (open circles), or shifts due to increassed contribution from the slow pool (open squares). Due to the crossing of the blue and magenta lines in 2009, increased contribution of the slow pool to respiration following treatment leads to relative depletion of ^14^C-CO~2~ in 1991, but relative enrichment of ^14^C-CO~2~ in 2019, while the opposite is observed for increased fast pool contribution.
 
@@ -529,7 +529,7 @@ ts.avg %>%
   theme(panel.grid = element_blank())
 ```
 
->**Fig. `r {(fig.n + 2)}`. Respiration rates for Experiment 1 (air-dry + storage treatment) and Experiment 2 (air-dry only treatment)**
+>**Fig. `r {(fig.n + 1)}`. Respiration rates for Experiment 1 (air-dry + storage treatment) and Experiment 2 (air-dry only treatment)**
 
 >*Caption:* Top panel shows data from Experiment 1 (air-dry + storage treatment), bottom panel shows data from Experiment 2 (air-dry only treatment). Vertical gray line demarcates the pre-incubation period from the equilibrium respiration period. Points show measurements and lines show trends in mean respiration rates. Shaded ribbons represent the standard error. The final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons. Respiration rates for those samples remained flat. Note that CO~2~ concentrations for control sample incubations in Experiment 1 were only measured once during the pre-incubation period, so rates are shown as the cumulative average. For purposes of comparison, Supplemental Figure 1 shows all data plotted with pre-incubation respiration rates calculated as a cumulative average.
 
@@ -991,6 +991,13 @@ all.14c.sum.df <- bind_rows(all.14c.sum)
 # remove unnecessary objects
 ```
 
+```{r read-calc-13c}
+# 13C data is not as standardized as 14C data, so need to read in individually
+# since data is .xls format, data is first converted to .csv
+
+```
+
+
 ```{r counts for checking plots, include = FALSE}
 # 8. Count number of ^14^C observations for checking plots.
 # count !is.na(14C) cases by SampleName
@@ -1048,7 +1055,7 @@ all.14c.pre.inc %>%
         legend.key.height=unit(.8, "cm"),
         aspect.ratio = 1)
 ```
->**Fig. `r {fig.n + 3}`. Pre-incubation period $\Delta$^14^C against equilibrium respiration period $\Delta$^14^C**
+>**Fig. `r {fig.n + 2}`. Pre-incubation period $\Delta$^14^C against equilibrium respiration period $\Delta$^14^C**
 
 >*Caption:* Points are means of laboratory duplicates and error bars are the min and max (except for Experiment 1 control samples, which were not replicated). Note that pre-incubation $\Delta$^14^C was not measured for the Experiment 1 control samples; additionally samples from three of the forest plots of the Experiment 1 treatment samples (air-dry + storage) failed to accumulate enough CO~2~ during the pre-incubation period to measure ^14^C. The outlier point with the substantially depleted pre-incubation $\Delta$^14^C is from Experiment 2 (control).
 
@@ -1133,7 +1140,7 @@ trt.ctl.df$dif.se <- sapply(split(trt.ctl.df, 1:nrow(trt.ctl.df)), function(x) {
 
 Relative to the controls the air-dry + storage treatment (Experiment 1, open squares in **Fig. 5**) led to enrichment in grassland samples, but depletion in forest samples. In contrast, the air-dry only treatment (Experiment 2, open circles, **Fig. 5**) led to enrichment for both forest and grassland samples (2019 points). Treatment effects on ^14^C-CO~2~ were signifcant for both forests and grassland soils in Experiment 1 (2011 points, **Fig 5**), and significant for grassland samples but not forest samples in Experiment 2 (2019 points, **Fig. 5**). The absolute mean difference in ^14^C-CO~2~ between control and treatment samples was greater in grassland samples (`r {round(mean(abs(trt.ctl.df[trt.ctl.df$Type == "G", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Type == "G", "d14c_corr_mean.trt"])), 1)}`‰) than in forest samples (`r {round(mean(abs(trt.ctl.df[trt.ctl.df$Type == "F", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Type == "F", "d14c_corr_mean.trt"])), 1)}`‰) for both experiments. 
 
-$\Delta$^14^C of respired CO~2~ was enriched relative to the atmosphere for all samples in both experiments. However ^14^C-CO~2~ respired from grassland soils was generally closer to the atmosphere than that from forest soils.
+Mean ^14^C-CO~2~ showed enrichment relative to the atmosphere for all samples in both experiments. Control sample ^14^C-CO~2~ respired from grassland soils was generally closer to the atmosphere than that from forest soil controls, but the difference from the atmosphere ($\Delta$$\Delta$^14^C) increased slightly between 2011 and 2019 in grassland soils while it stayed about the same in forest soils. 
 
 ```{r treatment effects by time}
 # first load atmospheric data from ISRaD and bind future projection
@@ -1200,8 +1207,17 @@ all.14c.sum2 %>%
   theme(panel.grid = element_blank())
 # Fig. 1 shows the direction of mean treatment effects over time in reference to the atmosphere (gray line). Points are means (n = 12 for 2011 treatment points, n = 9 for 2011 control points; n = 6 for all 2019 points); error bars = 2x std. err. of the mean.
 
+# calc delta delta
+all.14c.sum2$atm14c <- ifelse(all.14c.sum2$YearSampled == 2011,
+                              Datm[which(Datm$Date == 2011.5), "NHc14"],
+                              Datm[which(Datm$Date == 2019.5), "NHc14"])
+all.14c.sum2$dd14c <- all.14c.sum2$d14c_corr_mean - all.14c.sum2$atm14c
+# all.14c.sum2 %>%
+#   filter(Period == "inc") %>%
+#   group_by(Experiment, Treatment, Type) %>%
+#   summarise(mean = mean(dd14c))
 ```
->**Fig `r {fig.n + 4}`. Treatment effect on observed $\Delta$^14^C-CO~2~ over time (Experiments 1 and 2)**
+>**Fig `r {fig.n + 3}`. Treatment effect on observed $\Delta$^14^C-CO~2~ over time (Experiments 1 and 2)**
 
 >*Caption:* Filled circles show ^14^C-CO~2~ observed for control samples, while open symbols show ^14^C-CO~2~ observed for treament samples (open squares = air-dry + storage treatment, Experiment 1; open circles = air-dry only treatment, Experiment 2). Arrows show the direction of change in ^14^C-CO~2~ relative to the controls. Points are means and error bars show 2x standard error. The gray line shows $\Delta$^14^C of the atmosphere.
 
@@ -1417,6 +1433,52 @@ Difference between control and treatment samples from all experiments show that 
 
 Grassland samples tend to be above 1:1 line, while forest samples are generally below, regardless of origin. One exception to this trend is the three German forest samples that are above 1:1 line, which were analyzed in 2019 (air-dry only treatment).
 ```{r plot ctl vs trt}
+# Filter data to "inc", split by binary treatment variable, then merge
+all.14c.ctl <- all.14c.sum.df[all.14c.sum.df$treat.bi == "control" & all.14c.sum.df$Period == "inc", ]
+all.14c.ctl <- rename_at(all.14c.ctl, vars(contains('d14c')), list(~paste0(., "_ctl")))
+all.14c.trt <- all.14c.sum.df[all.14c.sum.df$treat.bi == "treatment" & all.14c.sum.df$Period == "inc", ]
+all.14c.trt <- rename_at(all.14c.trt, vars(contains('d14c')), list(~paste0(., "_trt")))
+all.14c.ctl.trt <- inner_join(data.frame(all.14c.ctl) %>% 
+                                select(ID, Experiment, Type, Site, Horizon, contains("d14c_corr")),
+                              data.frame(all.14c.trt) %>% 
+                                select(ID, Experiment, Type, Site, Horizon, contains("d14c_corr")),
+                              by = c("ID", "Experiment", "Type", "Site", "Horizon"))
+
+# First add YearSampled and YearMeasured columns
+all.14c.ctl.trt$YearSampled <- unlist(all.14c.sum.df[match(all.14c.ctl.trt$ID, all.14c.sum.df$ID), "YearSampled"])
+# correct archive sample YearSampled
+all.14c.ctl.trt[all.14c.ctl.trt$Experiment == "arc" & all.14c.ctl.trt$Site == "Hainich", "YearSampled"] <- 2011
+
+# add year measured column, modify for tme.misc samples, rewet samples
+all.14c.ctl.trt$YearMeasured <- 2018
+all.14c.ctl.trt[all.14c.ctl.trt$Experiment == "rewet", "YearMeasured"] <- 2019
+all.14c.ctl.trt[which(all.14c.ctl.trt$ID %in% tme.misc$ID), "YearMeasured"] <- 2009
+
+# calculate storage duration numerically and as factor
+all.14c.ctl.trt$tme <- unlist(all.14c.ctl.trt$YearMeasured - all.14c.ctl.trt$YearSampled)
+all.14c.ctl.trt$tme.f <- factor(all.14c.ctl.trt$tme)
+
+# add difference column
+# (expressed as difference of means)
+all.14c.ctl.trt$ctl.trt.d14 <- all.14c.ctl.trt$d14c_corr_mean_ctl - all.14c.ctl.trt$d14c_corr_mean_trt
+
+# list of locations for recoding
+loc <- list(
+    "Duke" = "Duke, NC",
+    "Howland" = "Howland, ME",
+    "Harvard" = "Harvard, MA",
+    "Hainich" = "Central Germany",
+    "Schorfheide" = "Central Germany",
+    "Musick" = "Sierra Nevada, CA",
+    "Shaver" = "Sierra Nevada, CA",
+    "Walker Branch" = "Oak Ridge, TN",
+    "Tennessee Valley" = "Oak Ridge, TN")
+
+# # add atm 14C for year sampled and calculate delta-delta
+# all.14c.ctl.trt$atm.yr.sampled <- Datm[match(all.14c.ctl.trt$YearSampled, floor(Datm$Date)), "NHc14"]
+# all.14c.ctl.trt$dd.ctl <- all.14c.ctl.trt$d14c_corr_mean_ctl - all.14c.ctl.trt$atm.yr.sampled
+# all.14c.ctl.trt$dd.trt <- all.14c.ctl.trt$d14c_corr_mean_trt - all.14c.ctl.trt$atm.yr.sampled
+# all.14c.ctl.trt$ctl.trt.dd14 <- all.14c.ctl.trt$dd.ctl - all.14c.ctl.trt$dd.trt
 # Plot on 1:1 line w/ diagonal lines showing ‰ offsets
 # first collapse sites for better visuals
 all.14c.ctl.trt %>%
@@ -1489,66 +1551,14 @@ all.14c.ctl.trt %>%
 #         legend.key.height=unit(.8, "cm"),
 #         aspect.ratio = 1)
 ```
->**Fig. `r {fig.n + 6}`. Effect of air-drying and rewetting + storage on ^14^C-CO~2~**
+>**Fig. `r {fig.n + 4}`. Effect of air-drying and rewetting + storage on ^14^C-CO~2~**
 
->*Caption:* Data from Experiment 1 (air-dry + storage treatment) and Experiment 3 (duration of storage). Points are the mean of laboratory replicates; error bars are 2x standard error of the mean. Solid line is 1:1, while the dashed and dotted lines show differences of ±20‰ and ±$40‰, equivalent to the decline in atmospheric CO~2~ over 5 and 10 years respectively during the period of 2000 to the present.
+>*Caption:* Points show data from all three experiments. Points are the mean of laboratory replicates (for replicated samples); error bars are 2x standard error of the mean. Solid line is 1:1, while the dashed and dotted lines show differences of ±20‰ and ±$40‰, equivalent to the decline in atmospheric CO~2~ over 5 and 10 years respectively during the period of 2000 to 2020.
 
 ## Storage duration effect on ^14^C-CO~2~ (Experiment 3)
 
-16. Show the effect of storage duration by plotting the difference between control and treatment ^14^C as a function of storage duration. However, the expected Ctl-Trt difference would also likely have a trend over time. Perhaps plot an expected trend...? Not sure how much this matters.
-* As previously, dashed and dotted lines are plotted to give a sense of error introduced by the treatment by showing a difference of 20‰ and 40‰ (roughly equivalent to the atmospheric decline over five and 10 years respectively for the period 2000 to 2020)
-* Position of points jittered to avoid overplotting; storage duration has been rounded down to the nearest whole year
-* In general, the trend in the differences due to treatment for the highly enriched samples from Oak Ridge, TN suggest losses of the most recently fixed carbon over the duration of storage
-    + These samples were included primarily because it was assumed that they would be more sensitive to potential losses of recently fixed carbon, as the label should only be present in this pool of soil C
-    + However, in contrast, there does not seem to be evidence for a storage duration effect in the samples that only contain bomb-C
-```{r}
-# Filter data to "inc", split by binary treatment variable, then merge
-all.14c.ctl <- all.14c.sum.df[all.14c.sum.df$treat.bi == "control" & all.14c.sum.df$Period == "inc", ]
-all.14c.ctl <- rename_at(all.14c.ctl, vars(contains('d14c')), list(~paste0(., "_ctl")))
-all.14c.trt <- all.14c.sum.df[all.14c.sum.df$treat.bi == "treatment" & all.14c.sum.df$Period == "inc", ]
-all.14c.trt <- rename_at(all.14c.trt, vars(contains('d14c')), list(~paste0(., "_trt")))
-all.14c.ctl.trt <- inner_join(data.frame(all.14c.ctl) %>% 
-                                select(ID, Experiment, Type, Site, Horizon, contains("d14c_corr")),
-                              data.frame(all.14c.trt) %>% 
-                                select(ID, Experiment, Type, Site, Horizon, contains("d14c_corr")),
-                              by = c("ID", "Experiment", "Type", "Site", "Horizon"))
-
-# First add YearSampled and YearMeasured columns
-all.14c.ctl.trt$YearSampled <- unlist(all.14c.sum.df[match(all.14c.ctl.trt$ID, all.14c.sum.df$ID), "YearSampled"])
-# correct archive sample YearSampled
-all.14c.ctl.trt[all.14c.ctl.trt$Experiment == "arc" & all.14c.ctl.trt$Site == "Hainich", "YearSampled"] <- 2011
-
-# add year measured column, modify for tme.misc samples, rewet samples
-all.14c.ctl.trt$YearMeasured <- 2018
-all.14c.ctl.trt[all.14c.ctl.trt$Experiment == "rewet", "YearMeasured"] <- 2019
-all.14c.ctl.trt[which(all.14c.ctl.trt$ID %in% tme.misc$ID), "YearMeasured"] <- 2009
-
-# calculate storage duration numerically and as factor
-all.14c.ctl.trt$tme <- unlist(all.14c.ctl.trt$YearMeasured - all.14c.ctl.trt$YearSampled)
-all.14c.ctl.trt$tme.f <- factor(all.14c.ctl.trt$tme)
-
-# add difference column
-# (expressed as difference of means)
-all.14c.ctl.trt$ctl.trt.d14 <- all.14c.ctl.trt$d14c_corr_mean_ctl - all.14c.ctl.trt$d14c_corr_mean_trt
-
-# # add atm 14C for year sampled and calculate delta-delta
-# all.14c.ctl.trt$atm.yr.sampled <- Datm[match(all.14c.ctl.trt$YearSampled, floor(Datm$Date)), "NHc14"]
-# all.14c.ctl.trt$dd.ctl <- all.14c.ctl.trt$d14c_corr_mean_ctl - all.14c.ctl.trt$atm.yr.sampled
-# all.14c.ctl.trt$dd.trt <- all.14c.ctl.trt$d14c_corr_mean_trt - all.14c.ctl.trt$atm.yr.sampled
-# all.14c.ctl.trt$ctl.trt.dd14 <- all.14c.ctl.trt$dd.ctl - all.14c.ctl.trt$dd.trt
-
-# list of locations for recoding
-loc <- list(
-    "Duke" = "Duke, NC",
-    "Howland" = "Howland, ME",
-    "Harvard" = "Harvard, MA",
-    "Hainich" = "Central Germany",
-    "Schorfheide" = "Central Germany",
-    "Musick" = "Sierra Nevada, CA",
-    "Shaver" = "Sierra Nevada, CA",
-    "Walker Branch" = "Oak Ridge, TN",
-    "Tennessee Valley" = "Oak Ridge, TN")
-
+There does not seem to be evidence for a storage duration effect in the samples that only contain bomb-C, although the trend in the differences due to treatment for the highly enriched samples from Oak Ridge, TN suggest losses of the most recently fixed carbon over the duration of storage. These samples were included primarily because it was assumed that they would be more sensitive to potential losses of recently fixed carbon, as the label should only be present in this pool of soil C. 
+```{r plot-dur-stor}
 # Plot storage duration
 suppressWarnings(
   all.14c.ctl.trt %>%
@@ -1590,9 +1600,9 @@ suppressWarnings(
   )
 ```
 
->**Fig. `r {fig.n + 7}`. Change in ^14^C-CO~2~ in relation to storage duration**
+>**Fig. `r {fig.n + 5}`. Change in ^14^C-CO~2~ in relation to storage duration**
 
->*Caption:* Dashed and dotted lines show a difference of 20‰ and 40‰, equivalent to the atmospheric decline over five and 10 years respectively for the period 2000 to 2020. Position of points jittered to avoid overplotting; storage duration has been rounded down to the nearest whole year
+>*Caption:* Points show data from both Experiment 1 (in black) and Experiment 3 (all other points). Dashed and dotted lines show a difference of 20‰ and 40‰, equivalent to the atmospheric decline over five and 10 years respectively for the period 2000 to 2020. Position of points jittered to avoid overplotting; storage duration has been rounded down to the nearest whole year.
 
 The trend in the differences due to treatment for the highly enriched samples from Oak Ridge, TN suggest losses of the most recently fixed carbon over the duration of storage. The TN samples were included primarily because it was assumed that they would be more sensitive to potential losses of recently fixed carbon, as the label should only be present in this pool of soil C. However, in contrast, there does not seem to be evidence for a storage duration effect in the samples that only contain bomb-C.
 
@@ -1602,10 +1612,22 @@ The trend in the differences due to treatment for the highly enriched samples fr
 *Random notes here...*
 
 *Effect of C respired*
+```{r som-14c-calcs, include = FALSE}
+# read 14C SOM data
+exp.som14c <- read.xlsx("../data/external/exploratories_ischoening_14c-som_2011/170228_14C_SOM.xlsx")
+exp.som14c %>% 
+  filter(Exploratory != "A") %>%
+  group_by(Exploratory, Type) %>%
+  summarize(mean = mean(`14C_SOM`))
+```
 
-Several studies have shown that the radiocarbon signature of respired CO~2~ changes over the duration of an incubation in relationship to the amount of carbon respired (Bol et al. 2003; Cusack et al. 2010; Schimel et al. 2011; Mueller et al. 2014). Incubations in this study were controlled so that the amount of the total soil C pool respired as CO~2~ in treatment incubations was as close as possible to what was respired in control incubations, but as respiration rates were much higher in treatment sample incubations, this was only partially feasible.
 
-While both the air-dry + storage (Experiment 1) and air-dry (Experiment 2) treatments had a significant effect on $\Delta$^14^C-CO~2~, these changes were not driven by differences in the amount of carbon respired (**Fig 7**). 
+What is the effect of 13C? Can we explain the patterns in 14C or the differences between grasslands and forests with 13C data?
 
-re: fig 7
-lending support to the interpretation that slow and fast soil C pool curves for northern hemisphere forest samples have only recently crossed or may have yet to cross.
+Note that 13C can give insight into the type of compound, as well as the degree of processing, cf. Buzek et al 2009. Oxidation of microbial CH~4~ to CO~2~ can lead to extremely negative $\delta$^13^C. CO~2~ derived from unprocessed material should have $\delta$^13^C values closer to that of plants, while highly processed material would be heavier.
+
+
+```{r stats-13c}
+
+```
+

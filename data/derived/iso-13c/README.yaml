@@ -1,0 +1,20 @@
+Files:
+  - "13C_archivecInc_Pre_20181207-141691-141751.csv"
+  - "13C_archivedInc_20190116-142012-142072.csv"
+  - "20190122-ManuelRost-142082-141553.csv"
+  - "20190213-ManuelRost-143192-143294.csv"
+  - "20190905-Jeffrey_Beem-Miller-13496-13541.csv"
+  - "20190909-2Wh-Jeffrey_Beem-Miller-13613-13658.csv"
+  - "20190910-Jeffrey_Beem-Miller-13664-13702.csv"
+  - "20191106-MRost-16925-16952.csv"
+  - "20191126-MRost-BeemMiller-17509-17555.csv"
+  - "ArcInc_dry_13C.csv"
+Source: M. Rost <mrost@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date:
+Contents:
+  - 13C data from ISO lab (converted from .xls to .csv). Raw data in "raw" dir
+Notes:
+  - .csv files regularized to facilitate batched ingest, i.e. non-square rows and columns deleted (ex. row 2, comment rows below data, post hoc calculation columns on right side of matrix)
+  - file names unchanged from raw .xls (just extension)
+References:
