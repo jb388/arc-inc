@@ -8,15 +8,18 @@ Date: 27 Apr 2020
 Contents:
   - CO2 fluxes for time 1 of archive + storage treatment samples from both experiment 1 (air-dry + storage, "arc") and experiment 3 (storage duration, "tme")
 Notes:
-  - "arc-inc_xplr_arc-storage-t1-flux_2020-04-27.xlsx"
+  - "arc-inc_xplr_arc-storage-t1-flux_2020-07-03.xlsx"
     - Sheet 'Jar_Information_copy' contains flux data copied verbatim from data/external/exploratories_ischoening_co2_2011/data file incubations.xlsx sheet 'Jar_information'
     - Sheet 't1_fluxes' contains the extracted raw CO2 flux data
     - Sheet 't1_fluxes' column D ("water_holding_capacity_60_factor") values are the percent increase in weight relative to the dry soil at a water holding capacity (WHC) of 60%. Note that incubation samples were moistened to 60% WHC from field-moisture status; soil WHC was determined on a separate subsample.
     - Sheet 't1_fluxes' column E ("dry_soil_wt_corrected_g") values for samples missing data were calculated using the water holding capacity factor (SEW11, SEW34, SEW43).
     - Sheet 'ctl-2011-flux' contains long version of wide data in 't1_fluxes'
     - file was updated on 27-Apr-2020 to include the samples from the initial round of archived incubations (experiment 3, "tme")
+    - file was updated on 03-Jul-2020 to include gravimetric water content
   - "arc-inc_xplr_arc-storage-t1-flux_2020-04-20.csv"
     - "save as" csv version of sheet 't1_fluxes' from "arc-inc_xplr_arc-storage-t1-flux_2020-04-20.xlsx" (earlier version of excel file no longer exists)
   - "arc-inc_xplr_arc-storage-t1-flux_2020-04-27.csv"
-    - "save as" csv version of sheet 't1_fluxes' from "arc-inc_xplr_arc-storage-t1-flux_2020-04-27.xlsx"
+    - "save as" csv version of sheet 't1_fluxes' from "arc-inc_xplr_arc-storage-t1-flux_2020-04-27.xlsx" (earlier version of excel file no longer exists)
+  - "arc-inc_xplr_arc-storage-t1-flux_2020-07-03.csv"
+    - "save as" csv version of sheet 't1_fluxes' from "arc-inc_xplr_arc-storage-t1-flux_2020-07-03.xlsx"
 References:

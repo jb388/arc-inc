@@ -256,7 +256,7 @@ tme.14c.fx <- function(df) {
 ```{r read wide ts data}
 # 1. Load flux data from air-dry + storage (experiment 1) and storage duration (experiment 3) control samples, and convert from "wide" to "long" format so as to match other data. 
 # Read air-dry + storage respiration control data
-archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-04-29.csv")
+archive.ctl.ts.wide <- read.csv("../data/derived/arc-storage-t1-flux/arc-inc_xplr_arc-storage-t1-flux_2020-07-03.csv")
 
 # Convert time data from wide to long
 archive.ctl.ts.d <- select(archive.ctl.ts.wide, starts_with("inc_time_d")) %>%
@@ -328,7 +328,7 @@ xplr.ctl.iso <- read.xlsx("../data/external/exploratories_ischoening_14c-co2_201
 jarinfo.arc <- read.csv("../data/derived/arc-storage-t2-jarInfo/jar_information.csv")
 
 # Read soil mass and moisture info for air-dry data
-jarinfo.rewet <- read.csv("../data/derived/air-dry-2019-whc/air-dry-2019-whc_2020-04-29.csv")
+jarinfo.rewet <- read.csv("../data/derived/air-dry-2019-whc/air-dry-2019-whc_2020-07-03.csv")
 
 # Read soil mass and moisture info for storage duration treatment samples
 # remove unit row and convert to appropriate types
@@ -493,6 +493,12 @@ Among the air-dry + storage samples, respiration rates were more than twice as h
 
 Respiration rates for the air-dry only treatment samples showed a similarly dramatic increase in comparison to the controls as was observed for the air-dry + storage treatment samples in Experiment 1. However, unlike the air-dry + storage treatment, peak respiration rates were not significantly different (p > 0.05) between forest and grassland soils in Experiment 2, peaking at `r {round(max(ts.avg2[ts.avg2$Experiment == "rewet" & ts.avg2$Treatment == "air-dry" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"]),1)}`.0 and `r {round(max(ts.avg2[ts.avg2$Experiment == "rewet" & ts.avg2$Treatment == "air-dry" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^ after `r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "rewet" & ts.avg2$Treatment == "air-dry" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h for grassland and forest soils, respectively **(Fig. 3)**.
 
+*Experiment 3 (storage duration)*
+
+Samples were only incubated for a single enclosure period for this experiment, instead of two (pre-incubation followed by equilibrium respiration). Grassland soils from the storage duration treatment group responded rapidly to rewetting and reached target CO~2~ levels after just `r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "storage duration" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h of incubation. Only a single observation was made for the grassland treament samples due to the rapid respiration rates, which peaked at `r {round(max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "storage duration" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^. The mean peak respiration rate for forest treatment samples was lower and lagged in comparison to the grassland soils, reaching `r {round(max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "storage duration" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^ after `r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "storage duration" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h.
+
+Conditions for control incubations varied. Grassland control samples were incubated in 2011 under the same conditions as the control samples from Experiment 1, i.e. 96 h pre-incubation period followed by 14 d of equilibrium respiration. Respiration rates peaked after the pre-incubation period (`r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "control" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h), at `r {round(max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "control" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^. Forest control samples were pre-incubated under various conditions, but respiration rates were only measured during the pre-incubation period for two samples from the Sierra Nevada mountains (USA). In general, respiration rates for forest control samples in Experiment 3 were much lower than in the treatment incubations, peaking at `r {round(max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "control" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^ after `r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "control" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h.
+
 ```{r CO2-resp-rates}
 # plotted as measured
 ts.avg %>%
@@ -523,6 +529,41 @@ ts.avg %>%
                      values = c("air-dry + storage" = 1,
                                 "control" = 16,
                                 "air-dry" = 1)) +
+  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
+  xlab("Time (days)") +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+
+# plot all three experiments
+ts.avg %>%
+  ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
+  geom_vline(xintercept = 4, color="gray") +
+  geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
+  geom_point(aes(color = Type, shape = Treatment)) +
+  geom_line(aes(color = Type, linetype = Treatment)) +
+  facet_grid(rows = vars(Experiment)) +
+  scale_x_continuous(limits = c(0,18)) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_fill_manual(name = 'Std. Err.',
+                    values =c('F'='#a35513','G'='#1361a3'),
+                    labels = c('Forest','Grassland')) +
+  scale_alpha_manual(name = 'Treatment',
+                     values = c("air-dry + storage" = .2,
+                                "control" = .4,
+                                "air-dry" = .2,
+                                "storage duration" = .2)) +
+  scale_linetype_manual(name = 'Treatment',
+                        values = c("air-dry + storage" = 'dashed',
+                                   "control" ='solid',
+                                   "air-dry" = "dashed",
+                                   "storage duration" = "dashed")) +
+  scale_shape_manual(name = 'Treatment',
+                     values = c("air-dry + storage" = 1,
+                                "control" = 16,
+                                "air-dry" = 1,
+                                "storage duration" = 1)) +
   ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
   xlab("Time (days)") +
   theme_bw() +
@@ -1136,9 +1177,34 @@ trt.ctl.df$dif.se <- sapply(split(trt.ctl.df, 1:nrow(trt.ctl.df)), function(x) {
   sqrt(sum((x$d14c_corr_sd.ctl)^2/sqrt(x$n_mean.ctl),
       (x$d14c_corr_sd.trt)^2/sqrt(x$n_mean.trt)))
   })
+trt.ctl.df$dif.sd <- sapply(split(trt.ctl.df, 1:nrow(trt.ctl.df)), function(x) {
+  sqrt(sum(x$d14c_corr_sd.ctl^2/x$n_mean.ctl,
+           x$d14c_corr_sd.trt^2/x$n_mean.trt))
+  })
+
+# calculate differences within treatment groups, i.e. ctl 2011 - ctl 2019, etc.
+# forests
+f.ctl.dif <- trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "F", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "F", "d14c_corr_mean.ctl"]
+f.ctl.dif.sd <- sqrt(trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "F", "d14c_corr_sd.ctl"]^2/trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "F", "n_mean.ctl"] + trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "F", "d14c_corr_sd.ctl"]^2/trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "F", "n_mean.ctl"])
+f.trt.dif <- trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "F", "d14c_corr_mean.trt"] - trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "F", "d14c_corr_mean.trt"]
+f.trt.dif.sd <- sqrt(trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "F", "d14c_corr_sd.trt"]^2/trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "F", "n_mean.trt"] + trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "F", "d14c_corr_sd.trt"]^2/trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "F", "n_mean.trt"])
+
+# grasslands
+g.ctl.dif <- trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "G", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "G", "d14c_corr_mean.ctl"]
+g.ctl.dif.sd <- sqrt(trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "G", "d14c_corr_sd.ctl"]^2/trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "G", "n_mean.ctl"] + trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "G", "d14c_corr_sd.ctl"]^2/trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "G", "n_mean.ctl"])
+g.trt.dif <- trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "G", "d14c_corr_mean.trt"] - trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "G", "d14c_corr_mean.trt"]
+g.trt.dif.sd <- sqrt(trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "G", "d14c_corr_sd.trt"]^2/trt.ctl.df[trt.ctl.df$Experiment == "arc" & trt.ctl.df$Type == "G", "n_mean.trt"] + trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "G", "d14c_corr_sd.trt"]^2/trt.ctl.df[trt.ctl.df$Experiment == "rewet" & trt.ctl.df$Type == "G", "n_mean.trt"])
+
+# atm
+atm.dif <- Datm[Datm$Date == 2011.5, "NHc14"] - Datm[Datm$Date == 2019.5, "NHc14"]
+
+dif.time.df <- data.frame(dif = c(f.ctl.dif, f.trt.dif, g.ctl.dif, g.trt.dif, atm.dif),
+                          sd = c(f.ctl.dif.sd, f.trt.dif.sd, g.ctl.dif.sd, g.trt.dif.sd, NA),
+                          Type = c(rep(c("F","G"), each = 2), "atm"),
+                          Treatment = c(rep(c("Ctl","Trt"), 2), "NA"))
 ```
 
-Relative to the controls the air-dry + storage treatment (Experiment 1, open squares in **Fig. 5**) led to enrichment in grassland samples, but depletion in forest samples. In contrast, the air-dry only treatment (Experiment 2, open circles, **Fig. 5**) led to enrichment for both forest and grassland samples (2019 points). Treatment effects on ^14^C-CO~2~ were signifcant for both forests and grassland soils in Experiment 1 (2011 points, **Fig 5**), and significant for grassland samples but not forest samples in Experiment 2 (2019 points, **Fig. 5**). The absolute mean difference in ^14^C-CO~2~ between control and treatment samples was greater in grassland samples (`r {round(mean(abs(trt.ctl.df[trt.ctl.df$Type == "G", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Type == "G", "d14c_corr_mean.trt"])), 1)}`‰) than in forest samples (`r {round(mean(abs(trt.ctl.df[trt.ctl.df$Type == "F", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Type == "F", "d14c_corr_mean.trt"])), 1)}`‰) for both experiments. 
+Relative to the controls the air-dry + storage treatment (Experiment 1, open squares in **Fig. 4**) led to enrichment in grassland samples, but depletion in forest samples. In contrast, the air-dry only treatment (Experiment 2, open circles, **Fig. 4**) led to enrichment for both forest and grassland samples (2019 points). Treatment effects on ^14^C-CO~2~ were signifcant for both forests and grassland soils in Experiment 1 (2011 points, **Fig. 4**), and significant for grassland samples but not forest samples in Experiment 2 (2019 points, **Fig. 4**). The absolute mean difference in ^14^C-CO~2~ between control and treatment samples was greater in grassland samples (`r {round(mean(abs(trt.ctl.df[trt.ctl.df$Type == "G", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Type == "G", "d14c_corr_mean.trt"])), 1)}`‰) than in forest samples (`r {round(mean(abs(trt.ctl.df[trt.ctl.df$Type == "F", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Type == "F", "d14c_corr_mean.trt"])), 1)}`‰) for both experiments. 
 
 Mean ^14^C-CO~2~ showed enrichment relative to the atmosphere for all samples in both experiments. Control sample ^14^C-CO~2~ respired from grassland soils was generally closer to the atmosphere than that from forest soil controls, but the difference from the atmosphere ($\Delta$$\Delta$^14^C) increased slightly between 2011 and 2019 in grassland soils while it stayed about the same in forest soils. 
 
@@ -1206,16 +1272,6 @@ all.14c.sum2 %>%
   theme_bw() +
   theme(panel.grid = element_blank())
 # Fig. 1 shows the direction of mean treatment effects over time in reference to the atmosphere (gray line). Points are means (n = 12 for 2011 treatment points, n = 9 for 2011 control points; n = 6 for all 2019 points); error bars = 2x std. err. of the mean.
-
-# calc delta delta
-all.14c.sum2$atm14c <- ifelse(all.14c.sum2$YearSampled == 2011,
-                              Datm[which(Datm$Date == 2011.5), "NHc14"],
-                              Datm[which(Datm$Date == 2019.5), "NHc14"])
-all.14c.sum2$dd14c <- all.14c.sum2$d14c_corr_mean - all.14c.sum2$atm14c
-# all.14c.sum2 %>%
-#   filter(Period == "inc") %>%
-#   group_by(Experiment, Treatment, Type) %>%
-#   summarise(mean = mean(dd14c))
 ```
 >**Fig `r {fig.n + 3}`. Treatment effect on observed $\Delta$^14^C-CO~2~ over time (Experiments 1 and 2)**
 
@@ -1461,6 +1517,8 @@ all.14c.ctl.trt$tme.f <- factor(all.14c.ctl.trt$tme)
 # add difference column
 # (expressed as difference of means)
 all.14c.ctl.trt$ctl.trt.d14 <- all.14c.ctl.trt$d14c_corr_mean_ctl - all.14c.ctl.trt$d14c_corr_mean_trt
+# trt-ctl makes Fig. 4 (1:1 line) and Fig. 5 (storage duration) more compatible
+all.14c.ctl.trt$trt.ctl.d14 <- all.14c.ctl.trt$d14c_corr_mean_trt - all.14c.ctl.trt$d14c_corr_mean_ctl
 
 # list of locations for recoding
 loc <- list(
@@ -1564,15 +1622,15 @@ suppressWarnings(
   all.14c.ctl.trt %>%
   filter(Horizon == "A") %>%
   filter(Experiment != "rewet") %>%
-  select(Type, tme.f, Site, ctl.trt.d14, tme) %>%
+  select(Type, tme.f, Site, trt.ctl.d14, tme) %>%
   group_by(Type, tme.f, Site) %>%
   add_tally() %>%
   summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
-  mutate(dif_se = ctl.trt.d14_sd/n_mean,
-         dif_u = ctl.trt.d14_mean + dif_se*2,
-         dif_l = ctl.trt.d14_mean - dif_se*2) %>%
+  mutate(dif_se = trt.ctl.d14_sd/n_mean,
+         dif_u = trt.ctl.d14_mean + dif_se*2,
+         dif_l = trt.ctl.d14_mean - dif_se*2) %>%
   mutate(Location = factor(recode(Site, !!!loc), exclude = TRUE)) %>%
-  ggplot(., aes(tme_mean, ctl.trt.d14_mean, color = Location, shape = Type)) +
+  ggplot(., aes(tme_mean, trt.ctl.d14_mean, color = Location, shape = Type)) +
   geom_hline(yintercept = 0) +
   geom_hline(yintercept = -20, linetype = "dashed") +
   geom_hline(yintercept = 20, linetype = "dashed") +
@@ -1593,7 +1651,8 @@ suppressWarnings(
   scale_shape_manual(name = 'Land use',
                      values = c('F'= 17,'G' = 16),
                      labels = c('Forest','Grassland')) +
-  ylab(expression('Control - Treatment '*Delta*''^14*'C (‰)')) +
+  scale_x_continuous(breaks = seq(5,13,2)) +
+  ylab(expression('Treatment - Control '*Delta*''^14*'C (‰)')) +
   xlab("Storage duration (years)") +
   theme_bw() +
   theme(panel.grid = element_blank())
@@ -1629,5 +1688,163 @@ Note that 13C can give insight into the type of compound, as well as the degree 
 
 ```{r stats-13c}
 
+```
+
+# Within rep variability
+
+Compare the variability in $\Delta$^14^C among laboratory replicates to that between treatment and control.
+
+Calculate by site, by ecosystem. Note that means and standard errors for the Experiment 2 samples ("rewet") are calculated as the mean of the mean differences observed for control duplicates and for treatment duplicates, and the standard error is equal to the square root of the sum of the variances for each set.
+
+```{r rep-var}
+# calc difference between reps and compare to dif between ctl and treat
+e12.d14 <- all.14c.ls[[2]]
+e12.d14.inc <- e12.d14[e12.d14$Period == "inc", ]
+
+# calculate dd14c
+dd14c.sum <- e12.d14.inc
+dd14c.sum$atm14c <- ifelse(dd14c.sum$YearSampled == 2011,
+                             Datm[which(Datm$Date == 2011.5), "NHc14"],
+                             Datm[which(Datm$Date == 2019.5), "NHc14"])
+dd14c.sum$dd14c <- dd14c.sum$d14c_corr - dd14c.sum$atm14c
+dd14c.sum <- dd14c.sum %>% 
+  select(Experiment, Treatment, Type, dd14c) %>%
+  group_by(Experiment, Treatment, Type) %>%
+  add_tally() %>%
+  summarize_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+  mutate(dd14c_se = dd14c_sd/n_mean)
+
+dd14c.sum %>%
+  mutate(treat.bi = ifelse(Treatment != "control", "treatment", "control"),
+         dd14c_min = dd14c_mean - dd14c_se*2,
+         dd14c_max = dd14c_mean + dd14c_se*2) %>%
+  ggplot(., aes(Experiment, dd14c_mean, color = Type)) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = dd14c_min, 
+        ymax = dd14c_max, 
+        color = Type), 
+    width = .1) +
+  scale_color_manual(name = 'Landuse',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  facet_grid(cols = vars(treat.bi)) + 
+  theme_bw() +
+  theme(panel.grid.minor = element_blank())
+
+# split by Experiment and Type to compare with ctl-trt difs
+e12.d14.inc.ls <- lapply(split(e12.d14.inc, e12.d14.inc$Experiment), function(x) {
+    lapply(split(x, x$Type), function(y) {
+      y <- lapply(split(y, y$Treatment), function(z) {
+        z <- lapply(split(z, z$ID), function(m) {
+          if(nrow(m) > 1) {
+            m <- abs(m[2, "d14c"] - m[1, "d14c"])
+          } else {
+            m <- NA
+          }
+        })
+        mean <- mean(unlist(z))
+        sd <- sd(unlist(z))
+        var <- var(unlist(z))
+        n <- length(z)
+        z.ls <- list(mean = mean,
+                     sd = sd,
+                     var = var,
+                     n = n,
+                     se = sd/sqrt(n))
+        })
+  })
+})
+
+# reduce list
+var.names <- c("Experiment", "Type", "Treatment", "dispersion")
+values <- unlist(e12.d14.inc.ls)
+e12.d14.sdif.mat <- matrix(ncol = length(var.names) + 1, 
+                           nrow = length(values),
+                           dimnames = list(NULL, c(var.names, "value")))
+for(i in seq_along(var.names)) {
+  e12.d14.sdif.mat[, i] <- unlist(lapply(strsplit(names(values), "\\."), "[[", i))
+}
+
+e12.d14.sdif <- data.frame(e12.d14.sdif.mat)
+e12.d14.sdif$value <- values
+ 
+# widen and remove NAs
+e12.d14.sdif <- pivot_wider(e12.d14.sdif,
+                            names_from = "dispersion",
+                            values_from = "value")
+e12.d14.sdif <- e12.d14.sdif[!is.na(e12.d14.sdif$mean), ]
+
+# make further reduced df (collapse treatment)
+e12.d14.sdif2 <- data.frame(Experiment = rep(c("arc", "rewet"), each = 2),
+                            Type = rep(c("F", "G"), 2))
+e12.d14.sdif2$mean <- unlist(c(e12.d14.sdif[e12.d14.sdif$Experiment == "arc" &e12.d14.sdif$Type == "F", "mean"],
+                        e12.d14.sdif[e12.d14.sdif$Experiment == "arc" &e12.d14.sdif$Type == "G", "mean"],
+                        mean(unlist(e12.d14.sdif[e12.d14.sdif$Experiment == "rewet" &e12.d14.sdif$Type == "F", "mean"])),
+                        mean(unlist(e12.d14.sdif[e12.d14.sdif$Experiment == "rewet" &e12.d14.sdif$Type == "G", "mean"]))))
+
+# function for calculating std err of difs
+std.err.dif <- function(sds, ns) {sqrt(sds[1]^2/ns[1] + sds[2]^2/ns[2])}
+# function for calculating mean std dev
+std.dev.mean <- function(vars) {sqrt(mean(vars))}
+
+e12.d14.sdif2$se <- unlist(c(e12.d14.sdif[e12.d14.sdif$Experiment == "arc" &e12.d14.sdif$Type == "F", "se"],
+                        e12.d14.sdif[e12.d14.sdif$Experiment == "arc" &e12.d14.sdif$Type == "G", "se"],
+                      std.err.dif(unlist(e12.d14.sdif[e12.d14.sdif$Experiment == "rewet" &e12.d14.sdif$Type == "F", "sd"]),
+                                  unlist(e12.d14.sdif[e12.d14.sdif$Experiment == "rewet" &e12.d14.sdif$Type == "F", "n"])),
+                      std.err.dif(unlist(e12.d14.sdif[e12.d14.sdif$Experiment == "rewet" &e12.d14.sdif$Type == "G", "sd"]),
+                                  unlist(e12.d14.sdif[e12.d14.sdif$Experiment == "rewet" &e12.d14.sdif$Type == "G", "n"]))))
+
+# calc mean variance
+e12.d14.sdif2$var <- unlist(c(e12.d14.sdif[e12.d14.sdif$Experiment == "arc" &e12.d14.sdif$Type == "F", "var"],
+                        e12.d14.sdif[e12.d14.sdif$Experiment == "arc" &e12.d14.sdif$Type == "G", "var"],
+                      mean(unlist(e12.d14.sdif[e12.d14.sdif$Experiment == "rewet" &e12.d14.sdif$Type == "F", "var"])),
+                      mean(unlist(e12.d14.sdif[e12.d14.sdif$Experiment == "rewet" &e12.d14.sdif$Type == "G", "var"]))))
+
+# mean std dev for forests
+std.dev.mean(c(e12.d14.sdif2[e12.d14.sdif2$Type == "F", "var"]))
+# mean std dev for grasslands
+std.dev.mean(c(e12.d14.sdif2[e12.d14.sdif2$Type == "G", "var"]))
+
+# compare to ctl treat dif
+e12.14c.ctl.trt <- all.14c.ctl.trt %>%
+  select(Experiment, Type, ctl.trt.d14) %>%
+  group_by(Experiment, Type) %>%
+  add_tally() %>%
+  summarize_all(list(mean = mean, sd = sd, var = var), na.rm = TRUE) %>%
+  mutate(ctl.trt.se = ctl.trt.d14_sd/n_mean)
+
+# combine
+var.cf <- cbind.data.frame(e12.14c.ctl.trt[1:4, ], e12.d14.sdif2[ , c("mean", "se")])
+knitr::kable(var.cf[, c("Experiment", "Type", "ctl.trt.d14_mean", "ctl.trt.se", "mean", "se")],
+             col.names = c("Experiment", "Type", "Ctl-Trt mean dif", "Ctl-Trt SE", "Replicate mean dif", "Replicate SE"),
+             caption = "Comparison of treatment differences versus variability among replicates",
+             align = "c",
+             digits = 1)
+```
+
+# Change in soil moisture content with moisture adjustment
+
+The main treatment effect in all three experiments is the degree of moisture adjustment of the soil sample prior to incubation. In the case of the control samples the change in moisture content is less extreme than the treatment samples since the samples are still field-moist rather than air-dried. The magnitude of the treatment effect may therefore depend on what the field moisture content of the control soils was.
+
+```{r delta-moisture-calc}
+# compare the change in moisture with control samples versus treatment samples
+whcFresh <- merge(archive.ctl.ts.wide[archive.ctl.ts.wide$Experiment == "arc", c("ID", "whcFresh")],
+                  jarinfo.rewet[jarinfo.rewet$Treatment == "control", c("ID", "whcFresh")],
+                  by = "ID",
+                  all.x = TRUE,
+                  suffixes = c("_2011", "_2019"))
+whcFresh$deltaWHC_2011 <- .6-whcFresh$whcFresh_2011
+whcFresh$deltaWHC_2019 <- .6-whcFresh$whcFresh_2019
+whcFresh$Type <- ifelse(grepl("G", whcFresh$ID), "G", "F")
+
+# sumamrize
+whcFresh_sum <- whcFresh %>%
+  select(Type, deltaWHC_2011, deltaWHC_2019) %>%
+  group_by(Type) %>%
+  add_tally() %>%
+  summarize_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+  mutate(se_11 = deltaWHC_2011_sd/n_mean,
+         se_19 = deltaWHC_2019_sd/n_mean)
 ```
 
