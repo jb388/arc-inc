@@ -1,33 +1,35 @@
-Files:
-  - "20190905-Jeffrey_Beem-Miller-13496-13541.xls"
-  - "20190909-2Wh-Jeffrey_Beem-Miller-13613-13658.xls"
+Files: "20190909-2Wh-Jeffrey_Beem-Miller-13613-13658.xls"
 Source: Manuel Rost <mrost@bgc-jena.mpg.de>
 Curator: J. Beem-Miller
 Date received:
 Contents:
-  - 13C data from second round of archive incubations project
+  - 13C data from rewet (Experiment 2) control samples from archive incubations project, pre-inc
 Notes:
   - 20190909-2Wh-Jeffrey_Beem-Miller-13613-13658.xls:
-    - samples analyzed:
-      - HEW22-2_Pre_moist
-      - HEW41-1_Pre_moist
-      - HEW41-2_Pre_moist
-      - HEW42-1_Pre_moist
-      - HEW42-2_Pre_moist
-      - HEG10-1_Pre_moist
-      - HEG10-2_Pre_moist
-  - 20190905-Jeffrey_Beem-Miller-13496-13541.xls:
+    - note that this is the second set of 13C measurements for these samples as, as there was an issue with the first set of data (old data file "20190905-Jeffrey_Beem-Miller-13496-13541.xls")
     - samples analyzed:
       - HEW22-1_Pre_moist
+      - HEW22-1_Pre_moist
+      - HEW22-2_Pre_moist
       - HEW22-2_Pre_moist
       - HEW41-1_Pre_moist
+      - HEW41-1_Pre_moist
+      - HEW41-2_Pre_moist
       - HEW41-2_Pre_moist
       - HEW42-1_Pre_moist
+      - HEW42-1_Pre_moist
+      - HEW42-2_Pre_moist
       - HEW42-2_Pre_moist
       - HEG10-1_Pre_moist
+      - HEG10-1_Pre_moist
+      - HEG10-2_Pre_moist
       - HEG10-2_Pre_moist
       - HEG32-1_Pre_moist
+      - HEG32-1_Pre_moist
+      - HEG32-2_Pre_moist
       - HEG32-2_Pre_moist
       - HEG48-1_Pre_moist
+      - HEG48-1_Pre_moist
+      - HEG48-2_Pre_moist
       - HEG48-2_Pre_moist
 References:

@@ -30,7 +30,14 @@ read_jena_ams_results <- function(jena_ams_dir, template_file) {
   
   # read in files
   data_ls <- lapply(seq_along(data_files), function(i) {
-    read.xlsx(data_files[i], startRow = 27)
+    df <- read.xlsx(data_files[i], startRow = 27)
+    df <- data.frame(
+      mapply(FUN = as, 
+             df,
+             sapply(template, class),
+             SIMPLIFY = FALSE),
+      stringsAsFactors = FALSE)
+    return(df)
   })
   
   names(data_ls) <- grep(list.files(jena_ams_dir, pattern = "\\.xlsx"),pattern='\\~\\$', inv=T, value=T)

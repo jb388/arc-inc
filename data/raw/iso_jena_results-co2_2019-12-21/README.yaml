@@ -11,4 +11,57 @@ Date received:
 Contents:
   - 13C data
 Notes:
+  - 20190213-ManuelRost-143192-143294.xls:
+    - air-dry + storage samples, arc experiment (#1), equilibrium respiration period
+    - samples:
+      - SEW11-2-1_17122018
+      - SEW11-2-1_17122018
+      - SEW11-2-2_17122018
+      - SEW11-2-2_17122018
+      - SEW34-2-1_21012019
+      - SEW34-2-1_21012019
+      - SEW34-2-2_21012019
+      - SEW34-2-2_21012019
+      - SEW43-2-1_17122018
+      - SEW43-2-1_17122018
+      - SEW43-2-2_17122018
+      - SEW43-2-2_17122018
+  - 20191106-MRost-16925-16952.xls:
+    - control samples, rewet experiment (#2), equilibrium respiration period
+    - samples:
+      - HEW41-1_Inc_moist_13092019
+      - HEW41-1_Inc_moist_13092019
+      - HEW41-2_Inc_moist_13092019
+      - HEW41-2_Inc_moist_13092019
+      - HEW42-1_Inc_moist_08102019
+      - HEW42-1_Inc_moist_08102019
+      - HEW42-2_Inc_moist_30092019
+      - HEW42-2_Inc_moist_30092019
+  - ArcInc_dry_13C.xls:
+    - air-dry only samples, rewet experiment (#2), pre-incubation period
+    - samples:
+      - 27_HEW22-1_dry_15112019
+      - 27_HEW22-1_dry_15112019
+      - 28_HEW22-2_dry_15112019
+      - 28_HEW22-2_dry_15112019
+      - 29_HEW41-1_dry_15112019
+      - 29_HEW41-1_dry_15112019
+      - 30_HEW41-2_dry_15112019
+      - 30_HEW41-2_dry_15112019
+      - 31_HEW42-1_dry_15112019
+      - 31_HEW42-1_dry_15112019
+      - 32_HEW42-2_dry_15112019
+      - 32_HEW42-2_dry_15112019
+      - 33_HEG10-1_dry_15112019
+      - 33_HEG10-1_dry_15112019
+      - 34_HEG10-2_dry_15112019
+      - 34_HEG10-2_dry_15112019
+      - 35_HEG32-1_dry_15112019
+      - 35_HEG32-1_dry_15112019
+      - 36_HEG32-2_dry_15112019
+      - 36_HEG32-2_dry_15112019
+      - 37_HEG48-1_dry_15112019
+      - 37_HEG48-1_dry_15112019
+      - 38_HEG48-2_dry_15112019
+      - 38_HEG48-2_dry_15112019
 References:

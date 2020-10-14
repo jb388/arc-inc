@@ -1,0 +1,9 @@
+Files: "iso_jena_template.xlsx"
+Source: Petra Linke <plinke@bgc-jena.mpg.de>
+Curator: J. Beem-Miller <jbeem@bgc-jena.mpg.de>
+Date: 27-Jul-2020
+Contents:
+  - template for Iso results (13C) from Jena facility
+Notes:
+  - used to check inputs for automated file reading script when ingesting Jena iso data
+References:
