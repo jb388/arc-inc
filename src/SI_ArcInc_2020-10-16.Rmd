@@ -1,15 +1,34 @@
 ---
-title: "Impacts of Drying and Rewetting on the Radiocarbon Signature of Respired CO~2~ and Implications for Incubating Archived Soils"
-subtitle: "Supplemental Figures"
-author: "J. Beem-Miller"
-date: "11 Sep 2020"
+title: |
+  ![](aguLogo.png){width=3.5in,height=0.67in}
+subtitle: |
+  | *JGR Biogeosciences*
+  | 
+  | Supporting Information for:
+  | 
+  | **Impacts of Drying and Rewetting on the Radiocarbon Signature of Respired CO~2~ and Implications for Incubating Archived Soils**
+author: 
+  - Jeffrey Beem-Miller^1^
+  - Marion Schrumpf^1^
+  - Alison Hoyt^1,2^
+  - Georg Guggenberger^3^
+  - Susan Trumbore^1,4^
+date: $^1$Max Planck Institute for Biogeochemistry, Jena, Germany \newline
+      $^2$Lawrence Berkeley National Laboratory, Berkeley, CA, USA \newline
+      $^3$Institute of Soil Science, Leibniz Universität Hannover, Hannover, Germany \newline
+      $^4$Department of Earth System Sciences, University of California, Irvine, CA, USA \newline
+    \newline    
+    \newline
+    \textit{\today}
 output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: yes
+    toc_depth: 3
   html_document:
     df_print: paged
     toc: yes
     toc_depth: '2'
-  pdf_document:
-    latex_engine: xelatex
   html_notebook:
     css: "custom.css"
     toc: yes
@@ -18,6 +37,7 @@ header_includes:
 - \usepackage[utf8]{inputenc}
 - \usepackage{float}
 ---
+
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
                       fig.align = 'center', dev = c('cairo_pdf', 'png'), fig.width = 6.5)
@@ -387,58 +407,16 @@ ts.avg %>%
   theme(panel.grid = element_blank())
 ```
 
-## Supplemental respiration rates figures
-
-*Experiment 3 (storage duration)*
-
+## Respiration rates
+### Figure S1
 ```{r CO2-flux-plots-SI-1}
-# respiration rates for experiment 3
-ts.avg %>%
-  filter(Experiment == "tme") %>%
-  ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
-  geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
-  geom_point(aes(color = Type, shape = Treatment)) +
-  geom_line(aes(color = Type, linetype = Treatment)) +
-  facet_grid(rows = vars(Experiment)) +
-  scale_x_continuous(limits = c(0,18)) +
-  scale_color_manual(name = 'Ecosystem',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  scale_fill_manual(name = 'Std. Err.',
-                    values =c('F'='#a35513','G'='#1361a3'),
-                    labels = c('Forest','Grassland')) +
-  scale_alpha_manual(name = 'Treatment',
-                     values = c("air-dry + storage" = .2,
-                                "control" = .4,
-                                "air-dry" = .2,
-                                "storage duration" = .2)) +
-  scale_linetype_manual(name = 'Treatment',
-                        values = c("air-dry + storage" = 'dashed',
-                                   "control" ='solid',
-                                   "air-dry" = "dotted",
-                                   "storage duration" = "dashed")) +
-  scale_shape_manual(name = 'Treatment',
-                     values = c("air-dry + storage" = 1,
-                                "control" = 16,
-                                "air-dry" = 1,
-                                "storage duration" = 1)) +
-  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
-  xlab("Time (days)") +
-  theme_bw() +
-  theme(panel.grid = element_blank())
-```
->**Supplemental Fig `r {(sfig.n <- 1)}`. Respiration rates for Experiment 3**
-
->*Caption:* Experiment 3 storage duration treatment samples were only incubated for a single enclosure period, as the results of Experiment 1 and Experiment 2 showed no significant difference in $\Delta$^14^C-CO~2~ between the rewetting pulse CO~2~ released during the pre-incubation period and the CO~2~ respired during the equilibrium respiration period. The grassland storage duration treatment samples (blue dashed line) respired an equivalent amount of CO~2~ in just 3 d as the corresponding control-3 samples respired during the pre-incubation period and the equilibrium respiration period combined. Consequently those incubations were stopped after the first CO~2~ measurement point. Control-3 samples did undergo pre-incubation, but as the CO~2~ release was not measured nor was $\Delta$^14^C-CO~2~ for the majority of the samples, all data were averaged by day of measurement. 
-
-```{r CO2-flux-plots-SI-2}
 # Note: this code plots data with pre-incubation observations averaged
 # Plot resp rates over time
 ts.avg2 %>%
   filter(Experiment != "tme") %>%
   ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
   geom_vline(xintercept = 4, color="gray") +
-  geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment)) +
+  geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment), show.legend = FALSE) +
   geom_point(aes(color = Type, shape = Treatment)) +
   geom_line(aes(color = Type, linetype = Treatment)) +
   facet_grid(rows = vars(Experiment),
@@ -457,19 +435,25 @@ ts.avg2 %>%
   scale_linetype_manual(name = 'Treatment',
                         values = c("air-dry + storage" = 'dashed',
                                    "control" ='solid',
-                                   "air-dry" = "dotted")) +
+                                   "air-dry" = "dotted"),
+                        labels = c("air-dry + storage" = 'air-dry/rewet + storage',
+                                   "control" ='control-1 (2011)\ncontrol-2 (2019)',
+                                   "air-dry" = "air-dry/rewet")) +
   scale_shape_manual(name = 'Treatment',
                      values = c("air-dry + storage" = 0,
                                 "control" = 16,
-                                "air-dry" = 1)) +
+                                "air-dry" = 1),
+                     labels = c("air-dry + storage" = 'air-dry/rewet + storage',
+                                "control" ='control-1 (2011)\ncontrol-2 (2019)',
+                                "air-dry" = "air-dry/rewet")) +
   ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
   xlab("Time (days)") +
   theme_bw() +
   theme(panel.grid = element_blank())
 ```
->**Supplemental Fig `r {(sfig.n + 1)}`. Respiration rates for Experiment 1 and Experiment 2 shown with all pre-incubation data calculated as cumulative averages**
+>**Supplemental Fig `r {(sfig.n <- 1)}`. Respiration rates for Experiment 1 and Experiment 2 (pre-incubation respiration rates shown as a cumulative average for all samples)**
 
->*Caption:* CO~2~ concentrations for Experiment 1 control samples were only measured once during the pre-incubation period, in contrast to daily measurements for all other samples. Pre-incubation respiration rates are shown here calculated as cumulative averages for the purpose of fair comparison across all treatments.
+>*Caption:* CO~2~ concentrations for Experiment 1 control samples were only measured once during the pre-incubation period, in contrast to daily measurements for all other samples. Pre-incubation respiration rates are shown here calculated as cumulative averages for the whole pre-incubation period for ease of comparison across all treatments in both Experiment 1 and Experiment 2.
 
 ```{r load ams-jena-ingest fx}
 # 1. Read in isotope data from various sources
@@ -516,7 +500,6 @@ names(iso_results_ls) <- list.files("../data/raw", pattern = "iso_jena_results")
 #   * time_d (days in incubation period prior to measurement)
 #   * dH2O_grav (percent change in gravimetric water content due to laboratory moisture adjustment)
 #   * dH2O_whc (percent change in water holding capacity due to laboratory moisture adjustment)
-  
 unique.id.n <- c(length(unique(archive.ts[archive.ts$Treatment == "control", "SampleName"])),
                  length(unique(archive.ts[archive.ts$Treatment == "air-dry + storage", "SampleName"])),
                  length(unique(rewet.ctl.ts$SampleName)),
@@ -633,16 +616,24 @@ ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc <- data.frame(m
 ams_results_ls$exploratories_ischoening_14c.co2_2011$tme_ctl_inc_xplr <- data.frame(matrix(nrow = length(tme_ctl_inc_xplr_SN), ncol = length(results.14c.nms)))
 
 # add names and fill SampleNames for new data frames
-ams_results_ls$exploratories_ischoening_14c.co2_2011 <- lapply(ams_results_ls$exploratories_ischoening_14c.co2_2011, function(x) {
-  names(x) <- results.14c.nms
-  return(x)
-  }) 
+ams_results_ls$exploratories_ischoening_14c.co2_2011 <- lapply(
+  ams_results_ls$exploratories_ischoening_14c.co2_2011, function(df) {
+    names(df) <- results.14c.nms
+    df <- data.frame(
+      mapply(FUN = as,
+             df, 
+             sapply(ams_results_ls$`ams_jena_results-co2_2019-01-28`$`Beem-Miller_9.xlsx`, class),
+             SIMPLIFY = FALSE),
+      stringsAsFactors = FALSE)
+  return(df)
+})
+
 ams_results_ls$exploratories_ischoening_14c.co2_2011$arc_ctl_inc[ , c("SampleName","Probe")] <- arc_ctl_inc_SN
 ams_results_ls$exploratories_ischoening_14c.co2_2011$tme_ctl_inc_xplr[ , c("SampleName","Probe")] <- tme_ctl_inc_xplr_SN
 
 # fill 14C data
 ams_results_ls$exploratories_ischoening_14c.co2_2011 <- lapply(ams_results_ls$exploratories_ischoening_14c.co2_2011, function(df) {
-  df$`∆14C.(‰)` <- xplr.ctl.iso[match(df$Probe, xplr.ctl.iso$EP_Plotid), "14c_CO2"]
+  df$`X.14C....` <- xplr.ctl.iso[match(df$Probe, xplr.ctl.iso$EP_Plotid), "14c_CO2"]
   df$Treatment <- "control"
   df$Period <- "inc"
   return(df)
@@ -738,7 +729,7 @@ ams_results_tme <- lapply(ams_results_ls[c(1:2,7)], function(x) lapply(x, tme.14
 ams_results_tme.df <- bind_rows(lapply(ams_results_tme, function(x) bind_rows(x)))
 
 # cut out non-relevant AMS results columns
-nms.ams.vars <- c("F14C", "err", "∆14C.(‰)", "err.(‰)",
+nms.ams.vars <- c("F14C", "err", "X.14C....", "err....",
                  "SampleName", "Treatment", "Period", "Experiment")
 ams_results_arc_rewet.df <- ams_results_arc_rewet.df[ , nms.ams.vars]
 colnames(ams_results_arc_rewet.df) <- c("fm", "fm_err", "d14c", "d14c_err", nms.ams.vars[5:8])
@@ -1045,7 +1036,7 @@ all.14c.pre.inc %>%
         aspect.ratio = 1)
 ```
 
-```{r pre-inc-13c-plot, include = FALSE}
+```{r pre-inc-13c-stats, include = FALSE}
 iso.12.avg <- iso_df %>%
   select(ID, Experiment, Period, Treatment, d13c) %>%
   group_by(ID, Experiment, Period, Treatment) %>%
@@ -1080,46 +1071,6 @@ t.test(iso.12.avg[iso.12.avg$Period == "inc" & iso.12.avg$Treatment == "air-dry"
 t.test(iso.12.avg[iso.12.avg$Period == "inc" & iso.12.avg$Treatment == "air-dry" & iso.12.avg$Type == "G", "d13c_mean"],
        iso.12.avg[iso.12.avg$Period == "inc" & iso.12.avg$Experiment == "rewet" & iso.12.avg$Treatment == "control" & iso.12.avg$Type == "G", "d13c_mean"], 
        tails = 2, paired = TRUE)
-
-iso.12.pre.inc <- merge(iso.12.avg[iso.12.avg$Period == "pre", c("ID", "Experiment", "Type", "Treatment", "d13c_mean", "d13c_u", "d13c_l")],
-                        iso.12.avg[iso.12.avg$Period == "inc", c("ID", "Experiment", "Type", "Treatment", "d13c_mean", "d13c_u", "d13c_l")],
-                         by = c("ID", "Experiment", "Type", "Treatment"),
-                         suffixes = c("_pre", "_inc"))
-iso.12.pre.inc$treat.bi <- ifelse(iso.12.pre.inc$Treatment == "control", "control", "treatment")
-
-# range(c(iso.12.pre.inc$d13c_l_pre, iso.12.pre.inc$d13c_l_inc, iso.12.pre.inc$d13c_u_inc, iso.12.pre.inc$d13c_l_inc), na.rm = TRUE)
-iso.12.pre.inc %>%
-  ggplot(., aes(d13c_mean_pre, d13c_mean_inc, color = Type, shape = Treatment)) +
-  geom_abline(slope = 1, intercept = 0) +
-  geom_point(size = 3) +
-  geom_errorbar(
-    aes(ymin = d13c_l_inc, 
-        ymax = d13c_u_inc, 
-        color = Type), 
-    width = .25) +
-  geom_errorbarh(
-    aes(xmin = d13c_l_pre, 
-        xmax = d13c_u_pre,
-        color = Type), 
-    height = .25) +
-  scale_color_manual(name = 'Ecosystem',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  scale_shape_manual(name = 'Treatment',
-                     values = c("control" = 16,
-                                "air-dry" = 1,
-                                "air-dry + storage" = 0),
-                     labels = c("control" = "control-1 (2011), control-2 (2019)",
-                                "air-dry" = "air-dry",
-                                "air-dry + storage" = "air-dry + storage")) +
-  scale_x_continuous(limits = c(-29.1, -22.25)) +
-  scale_y_continuous(limits = c(-29.1, -22.25)) +
-  xlab(expression('Pre-incubation '*delta*''^13*'C (‰)')) +
-  ylab(expression('Equilibrium respiration '*delta*''^13*'C (‰)')) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        legend.key.height=unit(.8, "cm"),
-        aspect.ratio = 1)
 ```
 
 ```{r pre-equ-14c-stats, include = FALSE}
@@ -1552,8 +1503,7 @@ suppressWarnings(
   )
 ```
 
-
-```{r treatment effects by time, fig.height=4}
+```{r treatment effects by time, include = FALSE}
 # # code for plotting data by ID
 # all.14c.sum %>%
 #   filter(Period == "inc") %>%
@@ -1616,7 +1566,7 @@ all.14c.sum2 %>%
                                 "control" = 16),
                      labels = c("air-dry" = "air-dry", 
                                 "air-dry + storage" = "air-dry + storage",
-                                "control" = "control-1 (2011), control-2 (2019)")) +
+                                "control" = "control-1 (2011)\ncontrol-2 (2019)")) +
   scale_x_continuous(limits = c(2010, 2020), breaks = c(2013, 2016, 2019)) +
   scale_y_continuous(limits = c(-15, 100)) +
   xlab('Year sampled') +
@@ -1653,7 +1603,53 @@ all.14c.sum2 %>%
 
 ```
 
-## $\delta$^13^C
+## Treatment effects on $\delta$^13^C-CO~2~ (Figures S2, S3)
+```{r pre-inc-13c-plot}
+iso.12.pre.inc <- merge(iso.12.avg[iso.12.avg$Period == "pre", c("ID", "Experiment", "Type", "Treatment", "d13c_mean", "d13c_u", "d13c_l")],
+                        iso.12.avg[iso.12.avg$Period == "inc", c("ID", "Experiment", "Type", "Treatment", "d13c_mean", "d13c_u", "d13c_l")],
+                         by = c("ID", "Experiment", "Type", "Treatment"),
+                         suffixes = c("_pre", "_inc"))
+iso.12.pre.inc$treat.bi <- ifelse(iso.12.pre.inc$Treatment == "control", "control", "treatment")
+
+# range(c(iso.12.pre.inc$d13c_l_pre, iso.12.pre.inc$d13c_l_inc, iso.12.pre.inc$d13c_u_inc, iso.12.pre.inc$d13c_l_inc), na.rm = TRUE)
+iso.12.pre.inc %>%
+  ggplot(., aes(d13c_mean_pre, d13c_mean_inc, color = Type, shape = Treatment)) +
+  geom_abline(slope = 1, intercept = 0) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = d13c_l_inc, 
+        ymax = d13c_u_inc, 
+        color = Type), 
+    width = .25) +
+  geom_errorbarh(
+    aes(xmin = d13c_l_pre, 
+        xmax = d13c_u_pre,
+        color = Type), 
+    height = .25) +
+  scale_color_manual(name = 'Ecosystem',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = 'Treatment',
+                     values = c("control" = 16,
+                                "air-dry" = 1,
+                                "air-dry + storage" = 0),
+                     labels = c("control" = "control-2",
+                                "air-dry" = "air-dry/rewet",
+                                "air-dry + storage" = "air-dry/rewet + storage")) +
+  scale_x_continuous(limits = c(-29.1, -22.25)) +
+  scale_y_continuous(limits = c(-29.1, -22.25)) +
+  xlab(expression('Pre-incubation '*delta*''^13*'C (‰)')) +
+  ylab(expression('Equilibrium respiration '*delta*''^13*'C (‰)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.key.height=unit(.8, "cm"),
+        aspect.ratio = 1)
+```
+>**Supplemental Fig `r {(sfig.n + 1)}`. Rewetting pulse (pre-incubation period) $\delta$^13^C-CO~2~ versus equilibrium respiration $\delta$^13^C-CO~2~**
+
+>*Caption:* Points are means and error bars show the minimum and maximum of laboratory duplicates. 
+
+### Figure S3
 ```{r ctl-trt-difs-13c}
 # average control and treatment data
 # note that upper/lower limits = 2xSE
@@ -1673,15 +1669,15 @@ iso.12.avg2 %>%
   scale_color_manual(name = 'Ecosystem',
                      values = c('F'='#a35513',
                                 'G'='#1361a3'),
-                     labels = c('forest',
-                                'grassland')) +
+                     labels = c('Forest',
+                                'Grassland')) +
   scale_shape_manual(name = 'Treatment',
                      values = c("air-dry" = 1, 
                                 "air-dry + storage" = 0,
                                 "control" = 16),
-                     labels = c("air-dry" = "air-dry", 
-                                "air-dry + storage" = "air-dry + storage",
-                                "control" = "control-1 (2011), control-2 (2019)")) +
+                     labels = c("air-dry" = "air-dry/rewet", 
+                                "air-dry + storage" = "air-dry/rewet + storage",
+                                "control" = "control-1 (2011)\ncontrol-2 (2019)")) +
   ylab(expression('mean '*delta*''^13*'C (‰)')) +
   facet_grid(cols = vars(Eco)) +
   theme_bw() +
@@ -1716,7 +1712,7 @@ iso.12.avg2 %>%
 ```
 >**Supplemental Fig `r {sfig.n + 2}`. Time series of control and treatment $\delta$^13^C-CO~2~ (Experiments 1 and 2)**
 
->*Caption:* Filled circles show $\delta$^13^C-CO~2~ observed for control samples, while open symbols show $\delta$^13^C-CO~2~ observed for treament samples (open squares = air-dry + storage treatment, Experiment 1, 2011; open circles = air-dry only treatment, Experiment 2, 2019). Points are means and error bars show 2x standard error. 
+>*Caption:* Points are means and error bars show 2x standard error. 
 
 ```{r ctl-trt-stats, include = FALSE}
 # calculate difs ctl-trt, look at effect of C resp
@@ -1739,6 +1735,7 @@ arc.rewet.14c.ctl.trt <- left_join(
 
 arc.rewet.14c.ctl.trt$d14c_dif <- arc.rewet.14c.ctl.trt$d14c_corr_mean.ctl - arc.rewet.14c.ctl.trt$d14c_corr_mean.trt
 arc.rewet.14c.ctl.trt$c_dif <- arc.rewet.14c.ctl.trt$mgCO2.C_gC_mean.ctl - arc.rewet.14c.ctl.trt$mgCO2.C_gC_mean.trt
+arc.rewet.14c.ctl.trt$d14c_dif_sd <- sqrt(rowMeans(cbind(arc.rewet.14c.ctl.trt$d14c_corr_sd.ctl^2, arc.rewet.14c.ctl.trt$d14c_corr_sd.trt^2), na.rm = TRUE))
 
 ## Look at effect of c_dif by experiment and interaction with type
 # air-dry + storage
@@ -1797,10 +1794,12 @@ ggplot(arc.rewet.14c.ctl.trt, aes(c_dif, d14c_dif, color = Type, shape = Experim
   theme_bw() +
   theme(panel.grid = element_blank())
 ```
-## Treatment effect on $\Delta$^14^C as a function of the amount of carbon respired
+## Additional factors influencing treatment effects on $\Delta$^14^C-CO~2~
+### Text S1: Change in $\Delta$^14^C-CO~2~ relative to the difference in carbon respired
 
-We looked at the possible effect of the difference in the amount of carbon respired (mg CO~2~-C g soil C^-1^) on the differences between control and treatment ^14^C-CO~2~ using a linear regression model, but it was not significant overall. When data from Experiment 1 and Experiment 2 were considered separately, we observed a slight positive trend between the difference in respired carbon and the difference in ^14^C-CO~2~ within Experiment 2, but it was only marginally significant (p = `r {round(summary(lm(d14c_dif ~ c_dif * Type, arc.rewet.14c.ctl.trt[arc.rewet.14c.ctl.trt$Experiment == "rewet", ]))$coef[2,4],3)}`). 
+We looked at the possible effect of the difference in the amount of carbon respired (mg CO~2~-C g soil C^-1^) on the differences between control and treatment $\Delta$^14^C-CO~2~ using a linear regression model, but it was not significant overall. When data from Experiment 1 and Experiment 2 were considered separately, we observed a slight positive trend between the difference in respired carbon and the difference in $\Delta$^14^C-CO~2~ within Experiment 2, but it was only marginally significant (p = `r {round(summary(lm(d14c_dif ~ c_dif * Type, arc.rewet.14c.ctl.trt[arc.rewet.14c.ctl.trt$Experiment == "rewet", ]))$coef[2,4],3)}`). 
 
+### Figure S4
 ```{r plot-14c-by-c-resp}
 # 10. Plot $\Delta$^14^C against proportion of soil C respired by experiment, land cover, and sampling period.
 
@@ -1830,10 +1829,10 @@ all.14c.sum.df %>%
                      labels = c('Forest','Grassland')) +
   scale_shape_manual(name = 'Sampling period (treatment)',
                      values =c(16, 17, 1, 2),
-                     labels = c("control pre" = 'pre-incubation\n(control)', 
-                                "control inc" = 'equilibrium respiration\n(control)',
-                                "treatment pre" = 'pre-incubation\n(air-dry/air-dry + storage)',
-                                "treatment inc" = 'equilibrium respiration\n(air-dry/air-dry + storage)')) +
+                     labels = c("control pre" = 'pre-incubation\n(control-1, 2011; control-2, 2019)', 
+                                "control inc" = 'equilibrium respiration\n(control-1, 2011; control-2, 2019)',
+                                "treatment pre" = 'pre-incubation\n(air-dry/rewet + storage)',
+                                "treatment inc" = 'equilibrium respiration\n(air-dry/rewet + storage)')) +
   facet_grid(cols = vars(Eco), rows = vars(YearSampled)) +
   xlab(expression('Respired C (mg CO'[2]*'-C'*' g soil C'^-1*')')) +
   ylab(expression('mean '*Delta*''^14*'C (‰)')) +
@@ -1842,9 +1841,9 @@ all.14c.sum.df %>%
         legend.key.height=unit(.8, "cm"))
 ```
 
->**Supplementary Fig. `r {sfig.n + 3}`. Change in ^14^C-CO~2~ in relation to cumulative soil carbon respired**
+>**Supplementary Fig. `r {sfig.n + 3}`. Change in $\Delta$^14^C-CO~2~ in relation to cumulative soil carbon respired**
 
->*Caption:* Note that pre-incubation $\Delta$^14^C was not measured for the control-1 samples in 2011. Limits exclude outlier point (HEW22 control-2, pre-incubation) for improved legibility. Points are means, error bars show min and max of duplicate samples.
+>*Caption:* Error bars show minimum and maximum values measured for laboratory duplicates, while points show the mean. Lines connect mean pre-incubation and equilibrium respiration observations for a single sample. Lines parallel to the x-axis indicate a lack of trend in $\Delta$^14^C-CO~2~ with the amount of carbon respired, while differences between open and filled symbols show the impact of treatments on both the amount of carbon respired and $\Delta$^14^C-CO~2~. Note that pre-incubation $\Delta$^14^C-CO~2~ was not measured for the control-1 samples in 2011. Plot limits exclude outlier point (HEW22 control-2, pre-incubation) for improved legibility.
 
 ```{r plot C resp vs 14C averaged by Ecosystem and treatment, include = FALSE}
 # Alternate C-resp x 14c fig: data averaged by Ecosystem and treatment within sampling periods
@@ -2194,9 +2193,15 @@ dd14c.sum %>%
   theme_bw() +
   theme(panel.grid.minor = element_blank())
 ```
+### Text S2: Change in equilibrium respiration $\Delta$^14^C-CO~2~ as a function of field-moisture content
 
-## Treatment effect on $\Delta$^14^C as a function of field-moisture content
+Differences in field moisture content of samples could be related to the magnitude of the shift in $\Delta$^14^C-CO~2~ observed between control and treatment sample, as control sample field moisture content varied. All treatment samples were air-dried in the laboratory prior to rewetting: a change in moisture content of zero percent water holding capacity (%WHC) to 60 %WHC. In contrast, moisture adjustment of control samples was made from field moisture, thus, for example, control samples with lower field moisture contents received a correspondingly greater water addition than wetter control samples. 
 
+In order to control for the variance in field moisture content of control samples, we looked at the relationship of the difference in equilibrium respiration period $\Delta$^14^C-CO~2~ observed between control and treatment samples and the change in moisture content of the control samples. If the shift in $\Delta$^14^C-CO~2~ observed in response to the air-drying and rewetting treatment were a linear function of the change in moisture content, the differences between control and treatment $\Delta$^14^C-CO~2~ should be smaller for samples with lower field moisture. However, we did not observe any consistent relationship between the difference in $\Delta$^14^C-CO~2~ and field moisture (Supplemental Fig. `r {(sfig.n + 4)}`). 
+
+We observed the strongest trend in the Experiment 2 grassland samples, but the trend was opposite to what we expected: differences in $\Delta$^14^C-CO~2~ between treatment samples and control samples were greater for drier samples than wetter samples (Supplemental Fig. `r {(sfig.n + 4)}`). Experiment 2 forest samples showed the expected trend, but it did not appear to be linear (Supplemental Fig. `r {(sfig.n + 4)}`). Given the relatively low sample number when considered within treatment and ecosystem groups (Experiment 1 *n* = 6, Experiment 2 *n* = 3), we do not consider these trends to be significant, but the data from Experiment 2 suggest that the relationship between the change in $\Delta$^14^C-CO~2~ and the magnitude of rewetting warrents further study.
+
+### Figure S5
 ```{r delta-moisture-calc}
 # compare the change in moisture with control samples versus treatment samples
 whcFresh <- merge(archive.ctl.ts.wide[archive.ctl.ts.wide$Experiment == "arc", c("ID", "whcFresh")],
@@ -2231,14 +2236,33 @@ whcFresh.long <- rbind(whcFresh.2011, whcFresh.2019)
 
 # stats
 whc.ctl.trt <- merge(arc.rewet.14c.ctl.trt, whcFresh.long, by = c("ID", "Experiment"))
-ggplot(whc.ctl.trt, aes(whcFresh, d14c_dif, color = Type, shape = Experiment)) +
+whc.ctl.trt %>%
+  mutate(whcFresh = round(whcFresh*100,0),
+         d14c_dif_u = d14c_dif + d14c_dif_sd,
+         d14c_dif_l = d14c_dif - d14c_dif_sd) %>%
+  ggplot(., aes(whcFresh, d14c_dif, color = Type, shape = Experiment)) +
   geom_hline(yintercept = 0) +
   geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = d14c_dif_l, 
+        ymax = d14c_dif_u, 
+        color = Type), 
+    width = .25) +
   scale_color_manual(name = 'Ecosystem',
                      values =c('F'='#a35513','G'='#1361a3'),
                      labels = c('Forest','Grassland')) +
+  scale_shape_manual(name = "Experiment",
+                     values = c("arc" = 16,
+                                "rewet" = 17),
+                     labels = c("arc" = "1",
+                                "rewet" = "2")) +
+  facet_grid(cols = vars(Type), rows = vars(Experiment),
+             labeller = labeller(Experiment = c("arc" = "Experiment 1", "rewet" = "Experiment 2"),
+                                 Type = c("F" = "Forest", "G" = "Grassland"))) +
+  xlab("Field moisture content (%WHC)") +
+  ylab(expression('Control - treatment '*Delta*''^14*'C (‰)')) +
   theme_bw() +
-  theme(panel.grid = element_blank())
+  theme(panel.grid.minor = element_blank())
 
 # summary(lm(d14c_dif ~ whcFresh * Type, whc.ctl.trt))
 
@@ -2253,6 +2277,9 @@ ggplot(whc.ctl.trt, aes(whcFresh, d14c_dif, color = Type, shape = Experiment)) +
 # mean(slopes$slope, na.rm = T)
 ```
 
->**Supplemental Fig `r {(sfig.n + 4)}`. Change in $\Delta$^14^C-CO~2~ (control - treatment) relative to field moisture**
+>**Supplemental Fig. `r {(sfig.n + 4)}`. Change in $\Delta$^14^C-CO~2~ (control - treatment) relative to the change in moisture content**
 
->*Caption:* Data are from Experiment 1 ("arc") and Experiment 2 ("rewet"). All samples were moisture-adjusted prior to incubation, but control samples were adjusted from field moisture, "whcFresh" (percent of WHC), whereas treatment samples were moisture adjusted after air-drying, i.e. at approximately 0% of WHC.
+>*Caption:* Differences in $\Delta$^14^C-CO~2~ are shown as means; error bars show one standard deviation of the difference in means. All samples were moisture-adjusted to 60% of water holding capacity (WHC) prior to incubation, but control samples were adjusted from field moisture whereas treatment samples were moisture adjusted after air-drying. Data from Experiment 3 are not shown as field moisture content was unknown for the majority of samples (Supplemental Table 1). 
+
+## Site data, soil properties, and supporting references for all samples (Experiments 1, 2, and 3)
+### Table S1

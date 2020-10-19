@@ -1,0 +1,42 @@
+---
+title: |
+  ![](aguLogo.png){width=3.5in,height=0.67in}
+subtitle: |
+  | *JGR Biogeosciences*
+  | 
+  | Supporting Information for:
+  | 
+  | **Impacts of Drying and Rewetting on the Radiocarbon Signature of Respired CO~2~ and Implications for Incubating Archived Soils**
+author: 
+  - Jeffrey Beem-Miller^1^
+  - Marion Schrumpf^1^
+  - Alison Hoyt^1,2^
+  - Georg Guggenberger^3^
+  - Susan Trumbore^1,4^
+date: $^1$Max Planck Institute for Biogeochemistry, Jena, Germany \newline
+      $^2$Lawrence Berkeley National Laboratory, Berkeley, CA, USA \newline
+      $^3$Institute of Soil Science, Leibniz Universität Hannover, Hannover, Germany \newline
+      $^4$Department of Earth System Sciences, University of California, Irvine, CA, USA \newline
+    \newline    
+    \newline
+    \textit{\today}
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: '2'
+  html_notebook:
+    css: "custom.css"
+    toc: yes
+    toc_depth: 2
+header_includes:
+- \usepackage[utf8]{inputenc}
+- \usepackage{float}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
