@@ -1,3 +1,6 @@
+# data release for manuscript submission
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4106666.svg)](https://doi.org/10.5281/zenodo.4106666)
+
 # arc-inc
 Code, data, and documents for archived soil incubation project
 
