@@ -1,0 +1,479 @@
+---
+title: "Archived Soil Incubations Manuscript Figures"
+author: "J. Beem-Miller"
+date: "14 June 2021"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: '2'
+  html_notebook:
+    css: "custom.css"
+    toc: yes
+    toc_depth: 2
+  pdf_document:
+    latex_engine: xelatex
+header_includes:
+- \usepackage[utf8]{inputenc}
+- \usepackage{float}
+---
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
+                      fig.align = 'center', dev = 'cairo_pdf', fig.width = 7.48)
+```
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(SoilR)
+library(corrplot)
+library(openxlsx)
+library(ISRaD)
+```
+## Figures
+
+# Results
+## Respiration rates
+
+```{r CO2-resp-rates}
+# plotted as measured
+load("ts.avg.RData")
+ts.avg %>%
+  filter(Experiment != "tme") %>%
+  mutate(Treatment = ifelse(
+    Treatment == "control", "control-1\ncontrol-2",
+    ifelse(Treatment == "air-dry", "air-dry/rewet", "air-dry/rewet + storage")),
+    .keep = "unused") %>%
+  ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
+  geom_vline(xintercept = 4, color="gray") +
+  geom_ribbon(aes(ymin = se_slope_l, ymax = se_slope_u, fill = Type, linetype = Treatment, alpha = Treatment), show.legend = FALSE) +
+  geom_point(aes(color = Type, shape = Treatment), size = 2) +
+  geom_line(aes(color = Type, linetype = Treatment)) +
+  facet_grid(rows = vars(Experiment),
+             labeller = labeller(Experiment = c("arc" = "Experiment 1", "rewet" = "Experiment 2"))) +
+  scale_x_continuous(limits = c(0,18)) +
+  scale_color_manual(name = 'Ecosystem',
+                     values = c('F' = '#a35513', 'G' = '#1361a3'),
+                     labels = c('forest', 'grassland')) +
+  scale_fill_manual(values =c('F' = '#a35513','G'='#1361a3'),
+                    labels = c('forest','grassland')) +
+  scale_alpha_manual(values = c("air-dry/rewet + storage" = .2,
+                                "control-1\ncontrol-2" = .4,
+                                "air-dry/rewet" = .2)) +
+  scale_linetype_manual(values = c("air-dry/rewet + storage" = "dotted",
+                                   "control-1\ncontrol-2" = "solid",
+                                   "air-dry/rewet" = "dotted")) +
+  scale_shape_manual(values = c("air-dry/rewet + storage" = 0,
+                                "control-1\ncontrol-2" = 16,
+                                "air-dry/rewet" = 1)) +
+  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
+  xlab("Time (days)") +
+  labs(linetype = "Treatment", shape = "Treatment") +
+  guides(color = guide_legend(order = 1)) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+
+# panel annotations
+anno.f1 <- data.frame(Experiment = c("arc", "rewet"),
+                      label = c("a) Experiment 1",
+                                "b) Experiment 2"))
+
+# w/o legend
+ts.avg %>%
+  filter(Experiment != "tme") %>%
+  mutate(Treatment = ifelse(
+    Treatment == "control", "control-1\ncontrol-2",
+    ifelse(Treatment == "air-dry", "air-dry/rewet", "air-dry/rewet + storage")),
+    .keep = "unused") %>%
+  ggplot(., aes(time_d_cmtv_mean, mgCO2.C_gC_d_mean)) +
+  geom_vline(xintercept = 4, color="gray") +
+  geom_ribbon(
+    aes(ymin = se_slope_l, ymax = se_slope_u, 
+        fill = Type, linetype = Treatment, alpha = Treatment), 
+    show.legend = FALSE) +
+  geom_point(aes(color = Type, shape = Treatment), size = 2) +
+  geom_line(aes(color = Type, linetype = Treatment)) +
+  geom_text(data = anno.f1, aes(x = 6.8, y = 7, label = label),
+            color = "black", size = 5) +
+  scale_color_manual(name = 'Ecosystem',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  scale_fill_manual(values =c('F' = '#a35513', 'G' = '#1361a3')) +
+  scale_alpha_manual(values = c("air-dry/rewet + storage" = .2,
+                                "control-1\ncontrol-2" = .4,
+                                "air-dry/rewet" = .2)) +
+  scale_linetype_manual(values = c("air-dry/rewet + storage" = "dotted",
+                                   "control-1\ncontrol-2" = "solid",
+                                   "air-dry/rewet" = "dotted")) +
+  scale_shape_manual(values = c("air-dry/rewet + storage" = 0,
+                                "control-1\ncontrol-2" = 16,
+                                "air-dry/rewet" = 1)) +
+  scale_x_continuous(limits = c(0,18)) +
+  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'d'^-1*')')) +
+  xlab("Time (days)") +
+  facet_grid(rows = vars(Experiment)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.position = "none",
+        strip.background = element_blank(),
+        strip.text.y = element_blank())
+```
+>**Fig. `r {(fig.n <- 1)}`. Respiration rates for Experiment 1 (air-dry + storage treatment, 2011) and Experiment 2 (air-dry only treatment, 2019)**
+
+>*Caption:* Top panel shows data from samples collected in 2011 for Experiment 1 (air-dry + storage treatment), bottom panel shows data from samples collected in 2019 for Experiment 2 (air-dry only treatment). Vertical gray line at day 4 demarcates the end of the pre-incubation period and the start of the second enclosure period. Points show measurements and lines show trends in mean respiration rate. Shaded ribbons represent one standard error. The final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons; respiration rates for those samples remained flat. Note that headspace CO~2~ concentrations for Experiment 1 control samples were only measured once during the pre-incubation period (day 4) in contrast to daily measurements for all other samples. Consequently the respiration rate for those samples is the cumulative average rate over the first 4 d.
+
+## Radiocarbon data
+
+*Pre-incubation versus equilibrium respiration ^14^C-CO~2~*
+
+```{r pre-inc-14c-plot}
+load("all.14c.pre.inc.RData")
+all.14c.pre.inc %>%
+  filter(Experiment != "tme") %>%
+  ggplot(., aes(d14c_corr_mean_pre, d14c_corr_mean_inc, color = Type, shape = Treatment)) +
+  geom_abline(slope = 1, intercept = 0) +
+  geom_vline(xintercept = 0, color = "gray") +
+  geom_hline(yintercept = 0, color = "gray") +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_min_inc, 
+        ymax = d14c_corr_max_inc, 
+        color = Type), 
+    width = .25) +
+  geom_errorbarh(
+    aes(xmin = d14c_corr_min_pre, 
+        xmax = d14c_corr_max_pre, 
+        color = Type), 
+    height = .9) +
+  scale_color_manual(name = 'Ecosystem',
+                     values =c('F'='#a35513','G'='#1361a3'),
+                     labels = c('forest','grassland')) +
+  scale_shape_manual(name = 'Treatment',
+                     values = c("control" = 16,
+                                "air-dry" = 1,
+                                "air-dry + storage" = 0),
+                     labels = c("control" = "control-2",
+                                "air-dry" = "air-dry/rewet",
+                                "air-dry + storage" = "air-dry/rewet + storage")) +
+  scale_x_continuous(limits = c(-60, 115)) +
+  scale_y_continuous(limits = c(-60, 115)) +
+  xlab(expression('Rewetting pulse '*Delta*''^14*'C-CO'[2]*' (‰)')) +
+  ylab(expression('2'^nd*' enclosure period '*Delta*''^14*'C-CO'[2]*' (‰)')) +
+  guides(color = guide_legend(order = 1)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.key.height=unit(.8, "cm"),
+        aspect.ratio = 1)
+```
+>**Fig. `r {fig.n + 1}`. $\Delta$^14^C-CO~2~ of the rewetting pulse compared to that of the second enclosure period**
+
+>*Caption:* Points are means of laboratory duplicates and error bars are the min and max. Note that rewetting pulse $\Delta$^14^C was not measured for control-1 samples; additionally samples from three of the forest plots of the air-dry + storage samples from Experiment 1 failed to accumulate enough CO~2~ during the pre-incubation period to measure $\Delta$^14^C. The outlier point with the substantially depleted pre-incubation $\Delta$^14^C is from Experiment 2 (control).
+
+## Treatment effect on ^14^C-CO~2~ for all samples (Experiments 1, 2, and 3)
+
+```{r plot ctl vs trt}
+load("all.14c.ctl.trt.RData")
+
+# list of locations for recoding
+loc <- list(
+    "Duke" = "Duke FACE control (#3)",
+    "Howland" = "Howland (#3)",
+    "Harvard" = "Harvard Forest (#3)",
+    "Hainich" = "Central Germany",
+    "Schorfheide" = "Central Germany",
+    "Musick" = "Sierra Nevada (#3)",
+    "Shaver" = "Sierra Nevada (#3)",
+    "Walker Branch" = "Oak Ridge (#3)",
+    "Tennessee Valley" = "Oak Ridge (#3)")
+
+# Plot on 1:1 line w/ diagonal lines showing ‰ offsets
+# first collapse sites for better visuals
+all.14c.ctl.trt %>%
+  filter(Horizon == "A") %>%
+  mutate(Location = recode(Site, !!!loc)) %>%
+  mutate(Location = ifelse(Location == "Central Germany" & Experiment == "rewet", "Central Germany (#2)", ifelse(Location == "Central Germany" & Experiment == "arc", "Central Germany (#1)", ifelse(Location == "Central Germany" & Experiment == "tme", "Central Germany (#3)", Location)))) %>%
+  ggplot(., aes(d14c_corr_mean_ctl, d14c_corr_mean_trt, color = Location, shape = Type)) +
+  geom_abline(slope = 1, intercept = 0) +
+  geom_abline(slope = 1, intercept = -20, linetype = "dashed") +
+  geom_abline(slope = 1, intercept = 20, linetype = "dashed") +
+  geom_abline(slope = 1, intercept = -40, linetype = "dotted") +
+  geom_abline(slope = 1, intercept = 40, linetype = "dotted") +
+  geom_vline(xintercept = 0, color = "gray") +
+  geom_hline(yintercept = 0, color = "gray") +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = d14c_corr_min_trt, 
+        ymax = d14c_corr_max_trt, 
+        color = Location), 
+    width = .25) +
+  geom_errorbarh(
+    aes(xmin = d14c_corr_min_ctl, 
+        xmax = d14c_corr_max_ctl, 
+        color = Location), 
+    height = .9) +
+  scale_color_manual(name = "Location (Experiment #)",
+                     values = c('Duke FACE control (#3)' = '#01BB97',
+                                'Sierra Nevada (#3)' = '#FFC107',
+                                'Central Germany (#1)' = 'black',
+                                'Central Germany (#2)' = '#999999',
+                                'Central Germany (#3)' = '#c6c6c6',
+                                'Harvard Forest (#3)' = '#1E88E5',
+                                'Oak Ridge (#3)' = '#D81B60')) +
+  scale_shape_manual(name = 'Ecosystem',
+                     values = c('F'= 17,'G' = 16),
+                     labels = c('forest','grassland')) +
+  xlab(expression('Control '*Delta*''^14*'C (‰)')) +
+  ylab(expression('Treatment '*Delta*''^14*'C (‰)')) +
+  guides(shape = guide_legend(order = 1)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.key.height=unit(.8, "cm"),
+        aspect.ratio = 1)
+```
+>**Fig. `r {fig.n + 2}`. Overall effect of air-dry/rewet treatment with and without storage on ^14^C-CO~2~**
+
+>*Caption:* Points are from all three experiments: the treatment for Experiments 1 and 3 was air-dry/rewet + storage, while Experiment 2 samples underwent air-drying and rewetting without storage. Points are the mean of laboratory replicates (for replicated samples); error bars on points are 2x standard error. Solid line is 1:1. For context, the dashed and dotted lines show differences of ±20‰ and ±$40‰, equivalent to the decline in $Delta/$^14^C in atmospheric CO~2~ over 4 and 8 y respectively, during the period of 2000 to 2020 (Graven et al. 2017).
+
+
+```{r treatment effects by time}
+# ts.pooled.Rdata = arc.rewet.pooled
+load("ts.pooled.Rdata")
+load("Datm.RData")
+
+# annotated labels
+anno.f5 <- data.frame(Type = c("F", "G"),
+                   label = c("a) Forest", "b) Grassland"))
+
+# plot over time, averaged by Type
+arc.rewet.pooled[grep("pooled", row.names(arc.rewet.pooled)),] %>%
+  mutate(YearSampled = ifelse(Experiment == "arc", 2011, 2019),
+         Treatment = factor(ifelse(treat.bi == "treatment" & Experiment == "arc", 
+                            "air-dry/rewet + storage", 
+                            ifelse(treat.bi == "treatment" & Experiment == "rewet",
+                            "air-dry/rewet", treat.bi))),
+         upper = sample.mean + sample.sd,
+         lower = sample.mean - sample.sd) %>%
+  ggplot(., aes(YearSampled, sample.mean, color = Type)) +
+  geom_point(aes(shape = Treatment),
+             size = 4, stroke = 1.5,
+             position = position_dodge(width = 1)) +
+  geom_errorbar(
+    aes(ymin = upper, 
+        ymax = lower,
+        linetype = Treatment), 
+    width = .4, alpha = .4, 
+    position = position_dodge(width = 1),
+    show.legend = FALSE) +
+  geom_path(data = Datm, aes(Date, NHc14), color = "black") +
+  geom_text(data = anno.f5, aes(x = 2016, y = 105, label = label),
+            color = "black", size = 5) +
+  scale_color_manual(name = 'Ecosystem',
+                     values = c('F' = '#a35513',
+                                'G' = '#1361a3'),
+                     labels = c('forest',
+                                'grassland')) +
+  scale_shape_manual(name = 'Treatment',
+                     values = c("air-dry/rewet" = 1, 
+                                "air-dry/rewet + storage" = 0,
+                                "control" = 16),
+                     labels = c("air-dry/rewet" = "air-dry/rewet", 
+                                "air-dry/rewet + storage" = "air-dry/rewet + storage",
+                                "control" = "control-1 (2011)\ncontrol-2 (2019)")) +
+  scale_linetype_manual(values = c("atmosphere" = 1,
+                                   "air-dry/rewet" = 1, 
+                                   "air-dry/rewet + storage" = 1,
+                                   "control" = 1)) +
+  guides(linetype = "none",
+         color = guide_legend(order = 1)) +
+  scale_x_continuous(limits = c(2010, 2020), breaks = c(2011, 2019)) +
+  scale_y_continuous(limits = c(-15, 105)) +
+  xlab('Year sampled') +
+  ylab(expression('mean '*Delta*''^14*'C-CO'[2]*' (‰)')) +
+  facet_grid(cols = vars(Type)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        text = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_blank())
+```
+>**Fig `r {fig.n + 3}`. Time series of control and treatment $\Delta$^14^C-CO~2~ (Experiments 1 and 2)**
+
+>*Caption:* Filled circles show $\Delta$^14^C-CO~2~ observed for both control-1 and control-2 samples (2011 and 2019 points, respectively). Open symbols show $\Delta$^14^C-CO~2~ observed for treament samples: open squares = air-dry + storage treatment, Experiment 1; open circles = air-dry only treatment, Experiment 2. Arrows show the direction of change in $\Delta$^14^C-CO~2~ relative to the controls. Points are means and error bars show 2x standard error. The gray line shows $\Delta$^14^C of the atmosphere.
+
+## Storage duration effect on ^14^C-CO~2~ (Experiment 3)
+
+```{r plot-dur-stor}
+# new location codes
+loc2 <- list(
+    "Duke" = "Duke FACE control",
+    "Howland" = "Howland",
+    "Harvard" = "Harvard Forest",
+    "Hainich" = "Central Germany",
+    "Schorfheide" = "Central Germany",
+    "Musick" = "Sierra Nevada",
+    "Shaver" = "Sierra Nevada",
+    "Walker Branch" = "Oak Ridge",
+    "Tennessee Valley" = "Oak Ridge")
+
+# Plot storage duration
+suppressWarnings(
+  all.14c.ctl.trt %>%
+    filter(Horizon == "A") %>%
+    filter(Experiment != "rewet") %>%
+    dplyr::select(Type, tme.f, Site, trt.ctl.d14, tme) %>%
+    group_by(Type, tme.f, Site) %>%
+    summarise_all(list(mean = mean, sd = sd), na.rm = TRUE) %>%
+    mutate(dif_u = trt.ctl.d14_mean + trt.ctl.d14_sd,
+           dif_l = trt.ctl.d14_mean - trt.ctl.d14_sd) %>%
+    mutate(Location = factor(recode(Site, !!!loc2), exclude = TRUE)) %>%
+    ggplot(., aes(tme_mean, trt.ctl.d14_mean, color = Location, shape = Type)) +
+    geom_hline(yintercept = 0) +
+    geom_hline(yintercept = -20, linetype = "dashed") +
+    geom_hline(yintercept = 20, linetype = "dashed") +
+    geom_hline(yintercept = 40, linetype = "dotted") +
+    geom_hline(yintercept = -40, linetype = "dotted") +
+    geom_point(size = 3, position = position_dodge2(width = .7, preserve = "single")) +
+    geom_errorbar(
+      aes(ymin = dif_l,
+          ymax = dif_u, 
+          color = Location),
+      width = .7,
+      position = position_dodge2(width = .7, preserve = "single")) +
+    scale_color_manual(values = c('Duke FACE control' = '#01BB97',
+                                  'Sierra Nevada' = '#FFC107',
+                                  'Central Germany' = 'black',
+                                  'Harvard Forest' = '#1E88E5',
+                                  'Oak Ridge' = '#D81B60')) +
+    scale_shape_manual(name = 'Ecosystem',
+                       values = c('F'= 17, 'G' = 16),
+                       labels = c('forest', 'grassland')) +
+    scale_x_continuous(breaks = seq(5,13,2)) +
+    ylab(expression('Treatment - Control '*Delta*''^14*'C (‰)')) +
+    xlab("Storage duration (years)") +
+    theme_bw() +
+    theme(panel.grid = element_blank())
+  )
+```
+>**Fig. `r {fig.n + 4}`. Change in ^14^C-CO~2~ in relation to storage duration**
+
+>*Caption:* Points show the mean differences of paired treatment and control samples, averaged by site and ecosystem type. All data are from Experiment 3, except for the Central Germany points, where data from both Experiment 1 and Experiment 3 were included. Points are the mean, error bars are 2x standard error. For context, the dashed and dotted lines are the same is in Fig. `r {fig.n + 3}` and show a difference of 20‰ and 40‰, equivalent to the decline in $Delta/$^14^C in atmospheric CO~2~ over 4 and 8 y respectively, during the period of 2000 to 2020 (Graven et al. 2017). Position of points jittered to avoid overplotting; storage duration has been rounded down to the nearest whole year.
+
+# Discussion
+
+```{r conceptual-model-fig1, fig.height = 4.52756, fig.width = 7.48}
+load("schrumpf.2015.mod.RData")
+load("obs.rsp.m.RData")
+load("obs.rsp.t.m.RData")
+
+# plot
+schrumpf.2015 %>%
+  filter(pool != "bulk C") %>%
+  ggplot(., aes(years, d14C)) +
+  geom_path(aes(color = pool, linetype = pool)) +
+  geom_point(data = obs.rsp.m, aes(years, d14C, shape = Treatment), 
+             color = "black", size = 3) +
+  geom_point(data = obs.rsp.t.m, aes(years, d14C, shape = Treatment), 
+             color = "black", size = 3) +
+  geom_errorbar(data = obs.rsp.m, 
+                aes(ymin = d14C - resp_sd, ymax = d14C + resp_sd),
+                color = "black", width = .2) +
+  geom_errorbar(data = obs.rsp.t.m, 
+                aes(ymin = d14C - resp_sd, ymax = d14C + resp_sd),
+                color = "black", width = .2) +
+  scale_color_manual(
+    name = "Model pool",
+    values = c("atm" = "#FFC107",
+               "fast" = "#D81B60", 
+               "respiration" = "black", 
+               "slow" = "#1E88E5"),
+    labels = c("atm" = "atmosphere\n(measured)",
+               "fast" = "fast",
+               "slow" = "slow")) +
+  scale_linetype_manual(
+    name = "Model pool",
+    values = c("atm" = 1,
+               "fast" = 2,
+               "slow" = 2,
+               "respiration" = 1),
+    labels = c("atm" = "atmosphere\n(measured)",
+               "fast" = "fast",
+               "slow" = "slow")) +
+  scale_shape_manual(
+    values = c("control" = 16,
+               "air-dry/rewet" = 1, 
+               "air-dry/rewet + storage" = 0),
+    labels = c("control" = "control-1 (2011)\ncontrol-2 (2019)",
+               "air-dry/rewet" = "air-dry/rewet", 
+               "air-dry/rewet + storage" = "air-dry/rewet + storage")) +
+  scale_x_continuous(limits = c(1952, 2032), breaks = c(1960, 1980, 2000, 2020)) +
+  guides(color = guide_legend(order = 1),
+         linetype = guide_legend(order = 1)) +
+  xlab("Year") +
+  ylab(expression(''*Delta*''^14*'C (‰)')) +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+```
+
+>**Fig `r {(fig.n + 5)}`a. Modeled trajectories of $\Delta$^14^C over time for a hypothetical 2-pool soil carbon model in relationship to observed atmospheric $\Delta$^14^C**
+
+>*Caption:* Modeled curves derived from a hypothetical two-pool parallel model system in which inputs are partitioned between a fast cycling soil carbon pool (*k* = 1/6) and a more slowly cycling pool (*k* = 1/100) without any tranfers between the pools. Carbon stocks and pool sizes are based on density fraction data for the Hainich Forest (Schrumpf et al. 2013); decomposition rates are chosen to be realistic but are arbitrary. Atmospheric $\Delta$^14^C data up to the year 2015 are from Graven et al. (2017), while data points beyond 2015 use the extrapolation method from Sierra (2018). All atmospheric radiocarbon data is for the northern hemisphere (zone 2).
+
+```{r conceptual-model-figb, fig.width = 2.695, fig.height = 2.438}
+# zoom (w/ atm, to 2022)
+schrumpf.2015 %>%
+  filter(pool != "bulk C") %>%
+  ggplot(., aes(years, d14C)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax, fill = pool),
+              alpha = .1, show.legend = FALSE) +
+  geom_path(aes(color = pool, linetype = pool)) +
+  geom_point(data = obs.rsp.m, aes(years, d14C, shape = Treatment), 
+             color = "black", size = 3.5) +
+  geom_point(data = obs.rsp.t.m, aes(years, d14C, shape = Treatment), 
+             color = "black", size = 3.5) +
+  geom_errorbar(data = obs.rsp.m, 
+                aes(ymin = d14C - resp_sd, ymax = d14C + resp_sd),
+                color = "black", width = .2) +
+  geom_errorbar(data = obs.rsp.t.m, 
+                aes(ymin = d14C - resp_sd, ymax = d14C + resp_sd),
+                color = "black", width = .2) +
+  scale_color_manual(
+    name = "Model pool",
+    values = c("atm" = "#FFC107",
+               "fast" = "#D81B60", 
+               "respiration" = "black", 
+               "slow" = "#1E88E5"),
+    labels = c("atm" = "atmosphere\n(measured)",
+               "fast" = "fast",
+               "slow" = "slow")) +
+  scale_fill_manual(
+    values = c("atm" = "#FFC107",
+               "fast" = "#D81B60", 
+               "respiration" = "gray", 
+               "slow" = "#1E88E5")) +
+  scale_shape_manual(
+    values = c("control" = 16,
+               "air-dry/rewet" = 1, 
+               "air-dry/rewet + storage" = 0),
+    labels = c("control" = "control-1 (2011)\ncontrol-2 (2019)",
+               "air-dry/rewet" = "air-dry/rewet", 
+               "air-dry/rewet + storage" = "air-dry/rewet + storage")) +
+  scale_linetype_manual(name = "Model pool",
+                        values = c("atm" = 1,
+                                   "fast" = 2,
+                                   "slow" = 2,
+                                   "respiration" = 1),
+                        labels = c("atm" = "atmosphere\n(measured)",
+                                   "fast" = "fast",
+                                   "slow" = "slow")) +
+  scale_x_continuous(limits = c(2008.5, 2022), breaks = c(2011, 2019)) +
+  scale_y_continuous(limits = c(-24, 130)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.position = "none",
+        axis.title = element_blank())
+```
+
+>**Fig `r {(fig.n + 5)}`b. Potential shifts in $\Delta$^14^C of respired CO~2~ in response to treatment**
+
+>*Caption:* Blue and magenta lines show modeled trajectories of $\Delta$^14^C in fast and slow cycling soil carbon pools (same model as Fig 1a), while $\Delta$^14^C of respired CO~2~ is shown in yellow. Filled circles show hypothetical observations of $\Delta$^14^C-CO~2~ from control incubations, while the open symbols represent two possible scenarios in which an air-drying and rewetting treatment leads to shifts in $\Delta$^14^C-CO~2~. In the first scenario (open squares), an increased contribution from the slow pool shifts $\Delta$^14^C-CO~2~ toward the slow pool curve (blue line), while in the second scenario (open circles), an increased contribution from the fast pool shifts $\Delta$^14^C-CO~2~ toward the fast pool curve (magenta line). Due to the crossing of the slow and fast pool curves in 2009, an increased contribution of the slow pool to respiration following treatment leads to relative depletion of $\Delta$^14^C-CO~2~ in 1991, but relative enrichment of $\Delta$^14^C-CO~2~ in 2019, while the opposite is observed for the increased fast pool contribution scenario.
