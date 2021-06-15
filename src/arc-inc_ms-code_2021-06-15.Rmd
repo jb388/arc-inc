@@ -30,6 +30,7 @@ library(SoilR)
 library(corrplot)
 library(openxlsx)
 library(ISRaD)
+library(utilities)
 ```
 ## Notes
 * This workbook is intended to load and prepare the key data for analysis for the archive incubation project.
@@ -85,7 +86,6 @@ tme.14c.fx <- function(df) {
   return(df)
 }
 ```
-
 
 ```{r read wide ts data}
 # 1. Load flux data from air-dry + storage (experiment 1) and storage duration (experiment 3) control samples, and convert from "wide" to "long" format so as to match other data. 
@@ -195,6 +195,7 @@ tme.trt.ts <- rbind(read.csv("../data/derived/arc-tme-t2-flux/arc-tme-t2-flux-1_
 
 # Read miscellaneous storage treatment data
 tme.misc <- read.csv("../data/derived/arc-tme-misc/arc-tme-misc-iso_2020-04-29.csv")
+save(tme.misc, file = "tme.misc.RData")
 ```
 
 ```{r summarize data, include = FALSE}
@@ -480,103 +481,11 @@ ts.avg %>%
 
 >*Caption:* Top panel shows data from samples collected in 2011 for Experiment 1 (air-dry + storage treatment), bottom panel shows data from samples collected in 2019 for Experiment 2 (air-dry only treatment). Vertical gray line at day 4 demarcates the end of the pre-incubation period and the start of the equilibrium respiration period. Points show measurements and lines show trends in mean respiration rate. Shaded ribbons represent one standard error. The final measurement points for a few samples which took >18 days to reach CO~2~ targets are excluded for display reasons; respiration rates for those samples remained flat. Note that headspace CO~2~ concentrations for Experiment 1 control samples were only measured once during the pre-incubation period (day 4) in contrast to daily measurements for all other samples. Consequently the respiration rate for those samples is the cumulative average rate over the first 4 d.
 
-
-*Supplemental respiration rates figures:*
-
 *Experiment 3 (storage duration)*
 
 Grassland soils from the storage duration treatment group responded rapidly to rewetting and reached target CO~2~ levels after just `r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "storage duration" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h of incubation. Only a single observation was made for the grassland treament samples due to the rapid respiration rates, which peaked at `r {round(max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "storage duration" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^. The mean peak respiration rate for forest treatment samples was lower and lagged in comparison to the grassland soils, reaching `r {round(max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "storage duration" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^ after `r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "storage duration" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h.
 
 Control-3 respiration rates peaked after the pre-incubation period (`r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "control" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h), at `r {round(max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "control" & ts.avg2$Type == "G", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^. Forest control samples were pre-incubated under various conditions, but respiration rates were only measured during the pre-incubation period for two samples from the Sierra Nevada mountains (USA). In general, respiration rates for forest control samples in Experiment 3 were much lower than in the treatment incubations, peaking at `r {round(max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "control" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"]),1)}` mg CO~2~ g soil C^-1^ d^-1^ after `r {round(ts.avg2[which(ts.avg2$mgCO2.C_gC_d_mean == max(ts.avg2[ts.avg2$Experiment == "tme" & ts.avg2$Treatment == "control" & ts.avg2$Type == "F", "mgCO2.C_gC_d_mean"])), "time_d_cmtv_mean"]*24,0)}` h.
-
-```{r CO2-flux-plots-SI-1}
-# respiration rates for experiment 3
-ts.avg %>%
-  filter(Experiment == "tme") %>%
-  mutate(time_hr_cmtv_mean = time_d_cmtv_mean * 24,
-         mgCO2.C_gC_hr_mean = mgCO2.C_gC_d_mean * 24,
-         se_slope_l.hr = se_slope_l * 24,
-         se_slope_u.hr = se_slope_u * 24) %>%
-  ggplot(., aes(time_hr_cmtv_mean, mgCO2.C_gC_hr_mean)) +
-  geom_vline(xintercept = 4 * 24, color="gray") +
-  geom_ribbon(aes(ymin = se_slope_l.hr, ymax = se_slope_u.hr, fill = Type, linetype = Treatment, alpha = Treatment)) +
-  geom_point(aes(color = Type, shape = Treatment)) +
-  geom_line(aes(color = Type, linetype = Treatment)) +
-  facet_grid(rows = vars(Experiment),
-             labeller = labeller(Experiment = c("arc" = "2011", "rewet" = "2019"))) +
-  scale_x_continuous(limits = c(0, 430)) +
-  scale_color_manual(name = 'Ecosystem',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  scale_fill_manual(name = 'Std. Err.',
-                    values =c('F'='#a35513','G'='#1361a3'),
-                    labels = c('Forest','Grassland')) +
-  scale_alpha_manual(name = 'Treatment',
-                     values = c("air-dry + storage" = .2,
-                                "control" = .4,
-                                "air-dry" = .2)) +
-  scale_linetype_manual(name = 'Treatment',
-                        values = c("air-dry + storage" = 'dashed',
-                                   "control" ='solid',
-                                   "air-dry" = "dotted")) +
-  scale_shape_manual(name = 'Treatment',
-                     values = c("air-dry + storage" = 0,
-                                "control" = 16,
-                                "air-dry" = 1)) +
-  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'hr'^-1*')')) +
-  xlab("Time (hours)") +
-  theme_bw() +
-  theme(panel.grid = element_blank())
-```
->**Supplemental Fig `r {(sfig.n <- 1)}`. Respiration rates for Experiment 3**
-
->*Caption:* Experiment 3 storage duration treatment samples were only incubated for a single enclosure period, as the results of Experiment 1 and Experiment 2 showed no significant difference in $\Delta$^14^C-CO~2~ between the rewetting pulse CO~2~ released during the pre-incubation period and the CO~2~ respired during the equilibrium respiration period. The grassland storage duration treatment samples (blue dashed line) respired an equivalent amount of CO~2~ in just 3 d as the corresponding control-3 samples respired during the pre-incubation period and the equilibrium respiration period combined. Consequently those incubations were stopped after the first CO~2~ measurement point. Control-3 samples did undergo pre-incubation, but as the CO~2~ release was not measured nor was $\Delta$^14^C-CO~2~ for the majority of the samples, all data were averaged by day of measurement. 
-
-Preincubation headspace CO~2~ concentations were only measured once for the control-1 samples, at the end of the four=day preincubation period. In order to compare the control-1 respiration rates more easily with the air-dry + storage treatment samples, Supplemental Figure 2 shows the air-dry + storage pre-incubation respiration rates plotted as a cumulative average for the preincubation period. However, as can be seen in Figure 1, headspace CO~2~ concentration was measured daily for the air-dry + storage samples.
-
-```{r CO2-flux-plots-SI-2}
-# Note: this code plots data with pre-incubation observations averaged
-# Plot resp rates over time
-ts.avg2 %>%
-  filter(Experiment != "tme") %>%
-  mutate(time_hr_cmtv_mean = time_d_cmtv_mean * 24,
-         mgCO2.C_gC_hr_mean = mgCO2.C_gC_d_mean * 24,
-         se_slope_l.hr = se_slope_l * 24,
-         se_slope_u.hr = se_slope_u * 24) %>%
-  ggplot(., aes(time_hr_cmtv_mean, mgCO2.C_gC_hr_mean)) +
-  geom_vline(xintercept = 4 * 24, color="gray") +
-  geom_ribbon(aes(ymin = se_slope_l.hr, ymax = se_slope_u.hr, fill = Type, linetype = Treatment, alpha = Treatment)) +
-  geom_point(aes(color = Type, shape = Treatment)) +
-  geom_line(aes(color = Type, linetype = Treatment)) +
-  facet_grid(rows = vars(Experiment),
-             labeller = labeller(Experiment = c("arc" = "2011", "rewet" = "2019"))) +
-  scale_x_continuous(limits = c(0, 430)) +
-  scale_color_manual(name = 'Ecosystem',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  scale_fill_manual(name = 'Std. Err.',
-                    values =c('F'='#a35513','G'='#1361a3'),
-                    labels = c('Forest','Grassland')) +
-  scale_alpha_manual(name = 'Treatment',
-                     values = c("air-dry + storage" = .2,
-                                "control" = .4,
-                                "air-dry" = .2)) +
-  scale_linetype_manual(name = 'Treatment',
-                        values = c("air-dry + storage" = 'dashed',
-                                   "control" ='solid',
-                                   "air-dry" = "dotted")) +
-  scale_shape_manual(name = 'Treatment',
-                     values = c("air-dry + storage" = 0,
-                                "control" = 16,
-                                "air-dry" = 1)) +
-  ylab(expression('Respiration Rate (mgCO'[2]*'-C gC'^-1*'hr'^-1*')')) +
-  xlab("Time (hours)") +
-  theme_bw() +
-  theme(panel.grid = element_blank())
-```
->**Supplemental Fig `r {(sfig.n + 1)}`. Respiration rates for Experiment 1 and Experiment 2 shown with all pre-incubation data calculated as cumulative averages**
-
->*Caption:* CO~2~ concentrations for Experiment 1 control samples were only measured once during the pre-incubation period, in contrast to daily measurements for all other samples. Pre-incubation respiration rates are shown here calculated as cumulative averages for the purpose of fair comparison across all treatments.
 
 ## Radiocarbon data
 
@@ -957,6 +866,7 @@ all.14c.ls <- lapply(list(tme.14c, all.14c), function(df) {
   df$d14c_corr <- decay.corr.fx(df$YearSampled, df$fm)
   return(df)
 })
+save(all.14c.ls, file = "all.14c.ls.RData")
 
 all.14c.sum <- lapply(all.14c.ls, function(df) {
   df.sum <- select(df, -SampleName) %>%
@@ -967,6 +877,7 @@ all.14c.sum <- lapply(all.14c.ls, function(df) {
 })
 all.14c.sum <- rapply(all.14c.sum, f = function(x) ifelse(is.nan(x), NA , x), how = "replace")
 all.14c.sum.df <- suppressMessages(bind_rows(all.14c.sum))
+save(all.14c.sum.df, file = "all.14c.sum.df.RData")
 ```
 
 ```{r read-calc-13c}
@@ -1068,6 +979,7 @@ iso_results_ls_clean[[6]][[3]]["Treatment"] <- "air-dry"
 
 # Flatten list
 iso_df <- suppressWarnings(bind_rows(unlist(iso_results_ls_clean, recursive = FALSE)))
+save(iso_df, file = "iso_df.RData")
 
 # extract original IDs
 og.sn <- vector()
@@ -1206,6 +1118,7 @@ iso.12.pre.inc <- merge(iso.12.avg[iso.12.avg$Period == "pre", c("ID", "Experime
                          by = c("ID", "Experiment", "Type", "Treatment"),
                          suffixes = c("_pre", "_inc"))
 iso.12.pre.inc$treat.bi <- ifelse(iso.12.pre.inc$Treatment == "control", "control", "treatment")
+save(iso.12.pre.inc, file = "iso.12.pre.inc.RData")
 
 # range(c(iso.12.pre.inc$d13c_l_pre, iso.12.pre.inc$d13c_l_inc, iso.12.pre.inc$d13c_u_inc, iso.12.pre.inc$d13c_l_inc), na.rm = TRUE)
 iso.12.pre.inc %>%
@@ -1262,10 +1175,308 @@ arc.rewet.inc.14c <- bind_rows(lapply(all.14c.ls, function(df) {
 arc.rewet.14c <- merge(arc.rewet.pre.14c, arc.rewet.inc.14c, 
                        by = c(j.vars[1:6], "treat.bi"), suffixes = c("_pre", "_inc"))
 arc.rewet.14c$YearSampled <- ifelse(grepl("arc", arc.rewet.14c$Experiment), 2011, 2019)
+save(arc.rewet.14c, file = "arc.rewet.14c.RData")
+```
 
-# linear mixed model w/ replicates
-library(lme4)
-library(lmerTest)
+```{r pre-equ-13c-stats, include = FALSE}
+# gather pre and inc data from all reps, arc and rewet exp only
+iso_df$treat.bi <- ifelse(iso_df$Treatment == "control", "control", "treatment")
+arc.rewet.13c.stats.ls <- lapply(
+  split(iso_df, iso_df$Experiment), function(exp) 
+    lapply(split(exp, exp$Period), function(per) 
+      lapply(split(per, per$treat.bi), function(trt) {
+            # calculate mean and var of reps
+              bind_rows(
+                lapply(split(trt, trt$ID), function(id) {
+                  data.frame(m = mean(id$d13c),
+                             v = var(id$d13c),
+                             Type = unique(id$Type))
+                }), .id = "ID")})))
+
+# calculate mean rep var
+mean.rep.var.13c <- mean(unlist(lapply(arc.rewet.13c.stats.ls, function(exp)
+  lapply(exp, function(per)
+    lapply(per, function(trt) {
+      mean(trt$v, na.rm = T)
+    })))), na.rm = T)
+
+# add rep var as needed
+arc.rewet.13c.stats.ls <- lapply(arc.rewet.13c.stats.ls, function(exp)
+  lapply(exp, function(per)
+    lapply(per, function(trt) {
+      trt$v <- ifelse(is.na(trt$v), mean.rep.var.13c, trt$v)
+      return(trt)
+      })))
+
+# calculate grand mean and pooled sd within exp, trt, type
+# for plotting 13C
+arc.rewet.13c.pooled <- bind_rows(lapply(arc.rewet.13c.stats.ls, function(exp)
+  bind_rows(lapply(exp, function(per)
+    bind_rows(lapply(per, function(trt)
+      bind_rows(lapply(split(trt, trt$Type), function(id.sum) {
+        d <- sample.decomp(n = rep(2, length(id.sum$m)),
+                           sample.mean = id.sum$m,
+                           sample.var = id.sum$v,
+                           include.sd = TRUE)
+        return(d[grepl("pooled", rownames(d)), ])
+      }), .id = "Type")), .id = "treat.bi")), .id = "Period")), .id = "Experiment")
+save(arc.rewet.13c.pooled, file = "arc.rewet.13c.pooled.RData")
+
+# Calculate mean differences between enclosure periods
+arc.rewet.13c.pre.inc.ls <- lapply(arc.rewet.13c.stats.ls, function(exp) {
+  per.ls <- lapply(exp, function(per) bind_rows(per, .id = "treat.bi"))
+  pre.inc.df <- merge(
+    per.ls[[1]], per.ls[[2]], by = c("ID", "treat.bi"), suffixes = names(per.ls))
+  # calculate mean difference
+  pre.inc.df$dif <- pre.inc.df$mpre - pre.inc.df$minc
+  # sum variances
+  pre.inc.df$vdif <- pre.inc.df$vpre + pre.inc.df$vinc
+  pre.inc.df$Type <- pre.inc.df$Typepre
+  return(pre.inc.df[ , c("ID", "dif", "vdif", "Type", "treat.bi")])
+})
+
+# calculate mean of mean difference and pooled variance
+arc.rewet.13c.pre.inc.stats <- lapply(arc.rewet.13c.pre.inc.ls, function(exp)
+  lapply(split(exp, exp$treat.bi), function(trt)
+    lapply(split(trt, trt$Type), function(id.sum) {
+      sample.decomp(n = rep(2, length(id.sum$dif)),
+                    sample.mean = id.sum$dif,
+                    sample.var = id.sum$vdif,
+                    include.sd = TRUE)})))
+
+# Calculate mean differences for 2nd enclosure period ("inc")
+arc.rewet.13c.inc.dif.ls <- lapply(arc.rewet.13c.stats.ls, function(exp) {
+  inc.ls <- unlist(exp[which(names(exp) == "inc")], recursive = FALSE) 
+  inc.df <- merge(inc.ls[[1]], inc.ls[[2]], by = "ID", suffixes = names(exp$inc))
+  # calculate mean difference
+  inc.df$dif <- inc.df$mtreatment - inc.df$mcontrol
+  # sum variances
+  inc.df$vdif <- inc.df$vcontrol + inc.df$vtreatment
+  inc.df$Type <- inc.df$Typecontrol
+  return(inc.df[ , c("ID", "dif", "vdif", "Type")])
+})
+
+# calculate mean of mean difference and pooled variance
+arc.rewet.13c.stats.inc.ls <- lapply(arc.rewet.13c.inc.dif.ls, function(exp) {
+  lapply(split(exp, exp$Type), function(id.sum) {
+    sample.decomp(n = rep(2, length(id.sum$dif)),
+                  sample.mean = id.sum$dif,
+                  sample.var = id.sum$vdif,
+                  include.sd = TRUE)
+  })
+})
+```
+
+## Treatment effect on $\Delta$^14^C-CO~2~ for all samples (Experiments 1, 2, and 3)
+
+```{r stats-2021-05-21}
+# calculate means and variances within experiment, period, type, and ID
+all.14c.df <- rbind(all.14c.ls[[1]],
+                    all.14c.ls[[2]][, which(names(all.14c.ls[[2]]) %in% names(all.14c.ls[[1]]))])
+all.14c.df$treat.bi <- ifelse(all.14c.df$Treatment == "control", "control", "treatment")
+
+all.14c.stats.ls <- lapply(
+  # split by Experiment and restrict to A horizon
+  split(all.14c.df[all.14c.df$Horizon == "A", ], 
+        all.14c.df[all.14c.df$Horizon == "A", "Experiment"]), function(exp) {
+    # split by Period
+          # exclude Oak Ridge
+          # if (exp[1, "Experiment"] == "tme") {
+          #   exp <- exp[-which(exp$Site == "Tennessee Valley" | exp$Site == "Walker Branch"), ]
+          # }
+          lapply(split(exp, exp$Period), function(per) {
+            # split by Treatment
+            lapply(split(per, per$treat.bi), function(trt) {
+            # calculate mean and var of reps
+              bind_rows(
+                lapply(split(trt, trt$ID), function(id) {
+                  data.frame(m = mean(id$d14c_corr),
+                             v = var(id$d14c_corr),
+                             Type = unique(id$Type))
+                }), .id = "ID")
+            })
+        })
+      })
+
+# Use mean of replicate variances across all experiments for missing variances
+mean.rep.var <- mean(c(all.14c.stats.ls$rewet$inc$control$v,
+                       all.14c.stats.ls$rewet$inc$treatment$v,
+                       all.14c.stats.ls$arc$inc$treatment$v,
+                       all.14c.stats.ls$tme$inc$control$v), na.rm = TRUE)
+# add var where needed
+all.14c.stats.ls <- lapply(all.14c.stats.ls, function(exp) {
+  lapply(exp, function(per) {
+    lapply(per, function(trt) {
+      trt$v <- ifelse(is.na(trt$v), mean.rep.var, trt$v)
+      return(trt)
+      })
+    })
+  })
+
+# calculate grand means and pooled variance w/in treatment groups and types
+arc.rewet.14c.stats.inc.ls2 <- lapply(all.14c.stats.ls[1:2], function(exp)
+  lapply(exp, function(per)
+    lapply(per, function(trt)
+      lapply(split(trt, trt$Type), function(id.sum) {
+        id.sum <- id.sum[!is.na(id.sum$m), ]
+        df <- sample.decomp(n = rep(2, length(id.sum$m)),
+                             sample.mean = id.sum$m,
+                             sample.var = id.sum$v,
+                             include.sd = TRUE)
+        df[, "ID"] <- c(id.sum$ID, "pooled")
+        return(df)
+      }))))
+
+# Calculate mean differences for 2nd enclosure period ("inc")
+all.14c.stats.inc.dif.ls <- lapply(all.14c.stats.ls, function(exp) {
+  inc.ls <- unlist(exp[which(names(exp) == "inc")], recursive = FALSE) 
+  inc.df <- merge(inc.ls[[1]], inc.ls[[2]], by = "ID", suffixes = names(exp$inc))
+  # calculate mean difference
+  inc.df$dif <- inc.df$mtreatment - inc.df$mcontrol
+  # sum variances
+  inc.df$vdif <- inc.df$vcontrol + inc.df$vtreatment
+  inc.df$Type <- inc.df$Typecontrol
+  return(inc.df[ , c("ID", "dif", "vdif", "Type")])
+})
+
+# calculate mean of mean difference and pooled variance
+# arc, rewet
+arc.rewet.14c.stats.inc.ls <- lapply(all.14c.stats.inc.dif.ls[1:2], function(exp) {
+  lapply(split(exp, exp$Type), function(id.sum) {
+    df <- sample.decomp(n = rep(2, length(id.sum$dif)),
+                        sample.mean = id.sum$dif,
+                        sample.var = id.sum$vdif,
+                        include.sd = TRUE)
+    df[, "ID"] <- c(id.sum$ID, "pooled")
+    return(df)
+  })
+})
+save(arc.rewet.14c.stats.inc.ls, file = "arc.rewet.14c.stats.inc.ls.RData")
+
+## tme
+# all
+tme.14c.stats <- sample.decomp(n = rep(2, nrow(all.14c.stats.inc.dif.ls$tme)),
+                               sample.mean = all.14c.stats.inc.dif.ls$tme$dif,
+                               sample.var = all.14c.stats.inc.dif.ls$tme$vdif,
+                               include.sd = TRUE)
+tme.ci95.int <- tme.14c.stats[nrow(tme.14c.stats), "sample.sd"] / sqrt(tme.14c.stats[nrow(tme.14c.stats), "n"]) * qt(0.975, tme.14c.stats[nrow(tme.14c.stats), "n"] - 1)
+tme.ci95 <- c(tme.14c.stats[nrow(tme.14c.stats), "sample.mean"] - tme.ci95.int,
+              tme.14c.stats[nrow(tme.14c.stats), "sample.mean"] + tme.ci95.int)
+
+# Oak Ridge
+tme.OR <- all.14c.stats.inc.dif.ls$tme[c(which(grepl("WB", all.14c.stats.inc.dif.ls$tme$ID)),
+                                         which(grepl("TVA", all.14c.stats.inc.dif.ls$tme$ID))), ]
+tme.OR.stats <- sample.decomp(n = rep(2, nrow(tme.OR)),
+                               sample.mean = tme.OR$dif,
+                               sample.var = tme.OR$vdif,
+                               include.sd = TRUE)
+tme.OR.ci95.int <- tme.OR.stats[nrow(tme.OR.stats), "sample.sd"] / sqrt(tme.OR.stats[nrow(tme.OR.stats), "n"]) * qt(0.975, tme.OR.stats[nrow(tme.OR.stats), "n"] - 1)
+tme.OR.ci95 <- c(tme.OR.stats[nrow(tme.OR.stats), "sample.mean"] - tme.OR.ci95.int,
+                 tme.OR.stats[nrow(tme.OR.stats), "sample.mean"] + tme.OR.ci95.int)
+# Non Oak Ridge
+tme.nonOR <- all.14c.stats.inc.dif.ls$tme[-as.numeric(row.names(tme.OR)), ]
+tme.nonOR.stats <- sample.decomp(n = rep(2, nrow(tme.nonOR)),
+                                 sample.mean = tme.nonOR$dif,
+                                 sample.var = tme.nonOR$vdif,
+                                 include.sd = TRUE)
+tme.nonOR.ci95.int <- tme.nonOR.stats[nrow(tme.nonOR.stats), "sample.sd"] / sqrt(tme.nonOR.stats[nrow(tme.nonOR.stats), "n"]) * qt(0.975, tme.nonOR.stats[nrow(tme.nonOR.stats), "n"] - 1)
+tme.nonOR.ci95 <- c(tme.nonOR.stats[nrow(tme.nonOR.stats), "sample.mean"] - tme.nonOR.ci95.int,
+                    tme.nonOR.stats[nrow(tme.nonOR.stats), "sample.mean"] + tme.nonOR.ci95.int)
+# nonOR F
+tme.nonOR.F <- tme.nonOR[tme.nonOR$Type == "F", ]
+tme.nonOR.F.stats <- sample.decomp(n = rep(2, nrow(tme.nonOR.F)),
+                                   sample.mean = tme.nonOR.F$dif,
+                                   sample.var = tme.nonOR.F$vdif,
+                                   include.sd = TRUE)
+tme.nonOR.F.ci95.int <- tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "sample.sd"] /
+  sqrt(tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "n"]) * 
+  qt(0.975, tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "n"] - 1)
+tme.nonOR.F.ci95 <- c(tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "sample.mean"] - tme.nonOR.F.ci95.int,
+                    tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "sample.mean"] + tme.nonOR.F.ci95.int)
+# nonOR G
+tme.nonOR.G <- tme.nonOR[tme.nonOR$Type == "G", ]
+tme.nonOR.G.stats <- sample.decomp(n = rep(2, nrow(tme.nonOR.G)),
+                                   sample.mean = tme.nonOR.G$dif,
+                                   sample.var = tme.nonOR.G$vdif,
+                                   include.sd = TRUE)
+tme.nonOR.G.ci95.int <- tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "sample.sd"] /
+  sqrt(tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "n"]) * 
+  qt(0.975, tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "n"] - 1)
+tme.nonOR.G.ci95 <- c(tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "sample.mean"] - tme.nonOR.G.ci95.int,
+                    tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "sample.mean"] + tme.nonOR.G.ci95.int)
+
+# calculate for aggregated dataset
+arc.rewet.14c.stats.inc.ls2 <- lapply(
+  split(
+    bind_rows(lapply(all.14c.stats.inc.dif.ls, function(df) bind_rows(df, .id = "type"))),
+    bind_rows(lapply(all.14c.stats.inc.dif.ls, function(df) bind_rows(df, .id = "type")))[["type"]]), 
+  function(id.sum)
+    sample.decomp(n = rep(2, length(id.sum$dif)),
+                  sample.mean = id.sum$dif,
+                  sample.var = id.sum$vdif,
+                  include.sd = TRUE))
+
+# # homogeneity of variance?
+# arc.rewet.14c.var.inc.ls <- lapply(arc.rewet.14c.stats.inc.ls, function(df) {
+#   var.df <- bind_rows(df, .id = "Type")
+#   var.df <- var.df[which(var.df$n < 3), ]
+#   var.test(sample.var ~ Type, data = var.df)
+# })
+# # control vs. treatment, Exp 2
+# rewet.ctl.trt.var <- lapply(all.14c.stats.ls$rewet$inc, function(df) {
+#     var.df <- bind_rows(df, .id = "treat.bi")
+#     return(var.test(v ~ treat.bi, data = var.df))
+# })
+
+# extract mean differences
+arc.14c.inc.meanDif <- bind_rows(
+  lapply(arc.rewet.14c.stats.inc.ls, function(exp) {
+    bind_rows(
+      lapply(exp, function(md) {
+        df <- round(md[nrow(md), c("n", "sample.mean", "sample.sd")], 1)
+        t <- qt(.975, df = max(df$n) - 1)
+        df$se <- round(df$sample.sd/sqrt(df$n), 1)
+        df$ci95.l <- round(df$sample.mean - df$se * t, 1)
+        df$ci95.u <- round(df$sample.mean + df$se * t, 1)
+        return(df)
+    }), .id = "type")
+}), .id = "Experiment") %>%
+  mutate(Type = substr(type, nchar(type), nchar(type))) %>%
+  select(c(Experiment, Type, n, sample.mean, ci95.l, ci95.u, sample.sd, se))
+ggplot(arc.14c.inc.meanDif, aes(Type, sample.mean, color = Type)) +
+  geom_hline(yintercept = 0) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = ci95.l, ymax = ci95.u), width = .1) +
+  scale_color_manual(name = 'Ecosystem',
+                     values = c('F'='#a35513','G'='#1361a3'),
+                     labels = c('Forest','Grassland')) +
+  coord_flip() +
+  facet_grid(rows = vars(Experiment), 
+             labeller = labeller(Experiment = c("arc" = "Experiment 1", 
+                                                "rewet" = "Experiment 2",
+                                                "tme" = "Experiment 3"))) +
+  ylab(expression("Control - Treatment "*Delta^14*"C-CO"[2]*" (‰)")) +
+  xlab(NULL) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_blank())
+
+# extract mean differences for overall dataset
+arc.14c.inc.meanDif2 <- bind_rows(
+  lapply(arc.rewet.14c.stats.inc.ls2, function(md) {
+        df <- round(md[nrow(md), c("n", "sample.mean", "sample.sd")], 1)
+        t <- qt(.975, df = max(df$n) - 1)
+        df$se <- round(df$sample.sd/sqrt(df$n), 1)
+        df$ci95.l <- round(df$sample.mean - df$se * t, 1)
+        df$ci95.u <- round(df$sample.mean + df$se * t, 1)
+        return(df)
+    }), .id = "type") %>%
+  mutate(Type = substr(type, nchar(type), nchar(type))) %>%
+  select(c(Type, n, sample.mean, ci95.l, ci95.u, sample.sd, se))
+```
+
+```{r stats-pooled-2}
+# arc + rewet w/ reps
 arc.rewet.14c.reps <- unsplit(
   lapply(split(arc.rewet.14c, arc.rewet.14c$Experiment), function(exp) {
     unsplit(lapply(split(exp, exp$treat.bi), function(trt) {
@@ -1365,6 +1576,8 @@ arc.rewet.14c.ctl.trt.ls <- lapply(
       })
 
 # 13C
+load("iso_df.RData")
+# calc difs
 iso_df$treat.bi <- ifelse(iso_df$Treatment == "control", "control", "treatment")
 mean.rep.var.13c <- mean(
   unlist(lapply(split(iso_df, iso_df$Experiment), function(exp)
@@ -1439,137 +1652,14 @@ iso_df.inc.ls <- lapply(
             })
           return(trt.dif.pool)
       })
-
-# lmer for pre/inc
-arc.rewet.14c.reps.pre.inc <- rbind(
-  arc.rewet.14c.reps.pre[ , c("ID", "Type", "Experiment", "treat.bi", "d14c_corr_pre")] %>%
-    rename(d14c_corr = d14c_corr_pre) %>%
-    mutate(Period = "pre"),
-  arc.rewet.14c.reps.pre[ , c("ID", "Type", "Experiment", "treat.bi", "d14c_corr_inc")] %>%
-    rename(d14c_corr = d14c_corr_inc) %>%
-    mutate(Period = "inc"))
-lmer.pre.inc <- lmer(d14c_corr ~ Period * Experiment * treat.bi * Type + (1|ID),
-                     data = arc.rewet.14c.reps.pre.inc)
-lmer.pre.inc2 <- lmer(d14c_corr ~ Period * Experiment * treat.bi * Type + (1|ID),
-                     data = arc.rewet.14c.reps.pre.inc[-which(arc.rewet.14c.reps.pre.inc$ID == "HEW22" &arc.rewet.14c.reps.pre.inc$Experiment == "rewet" & arc.rewet.14c.reps.pre.inc$treat.bi == "control"), ])
-lmer.pre.inc.em <- emmeans(lmer.pre.inc, ~ Period * treat.bi * Experiment * Type)
-contrast(ref_grid(lmer.pre.inc), "pairwise", simple = c("Period"))
-contrast(ref_grid(lmer.pre.inc2), "pairwise", simple = c("Period"))
-
-## Storage duration
-arc.tme.14c <- bind_rows(lapply(all.14c.ls, function(df) {
-  df <- df[which(df$Period == "inc" & df$Experiment != "rewet" & df$Horizon == "A"), ]
-  df$treat.bi <- ifelse(df$Treatment == "control", "control", "treatment")
-  return(df)
-  }))
-arc.tme.14c$YearMeasured <- 2018
-arc.tme.14c[which(arc.tme.14c$ID %in% tme.misc$ID), "YearMeasured"] <- 2009
-arc.tme.14c[which(arc.tme.14c$Site == "Musick" | arc.tme.14c$Site == "Shaver"), "YearSampled"] <- 2009
-arc.tme.14c$dur <- arc.tme.14c$YearMeasured - arc.tme.14c$YearSampled
-arc.tme.14c <- arc.tme.14c[-which(arc.tme.14c$ID == "Du123"), ]
-arc.tme.14c <- arc.tme.14c[ , c("ID", "treat.bi", "Experiment", "d14c_corr", "dur", "Site")]
-
-# storage duration model
-lmer.arc.tme.14c <- lmer(
-  d14c_corr ~ treat.bi * dur + (1 | ID),
-  data = arc.tme.14c)
-lmer.arc.tme.14c.df <- emtrends(lmer.arc.tme.14c, pairwise ~ treat.bi, var = "dur")
-emmip(lmer.arc.tme.14c, treat.bi ~ dur, cov.reduce = range)
-
-# w/o Oak Ridge
-lmer.arc.tme.14c2 <- lmer(
-  d14c_corr ~ treat.bi * dur + (1 | ID),
-  data = arc.tme.14c[-which(arc.tme.14c$Site == "Tennessee Valley" | arc.tme.14c$Site == "Walker Branch"), ])
-lmer.arc.tme.14c2.et <- emtrends(lmer.arc.tme.14c2, pairwise ~ treat.bi, var = "dur")
-emmip(lmer.arc.tme.14c2, treat.bi ~ dur, cov.reduce = range)
-
-# Full model (Exp 1+2)
-# model
-lmer.arcRewet.14c <- lmer(
-  d14c_corr_inc ~ treat.bi * Experiment * Type + (1|ID),
-  data = arc.rewet.14c.reps)
-lmer.hai.14c <- lmer(
-  d14c_corr_inc ~ treat.bi * Experiment * Type + (1|ID),
-  data = arc.rewet.14c.reps[arc.rewet.14c.reps$Site == "Hainich", ])
-lmer.arcRewet.14c.df <- data.frame(
-  emmeans(lmer.arcRewet.14c, ~ treat.bi * Experiment * Type))
-
-# contrasts, e.g.
-# within Type, trt F 2011 - trt F 2019, ctl F 2011 - ctl F 2019...etc.
-lmer.arcRewet.14c.ct <- contrast(ref_grid(lmer.arcRewet.14c), "pairwise", 
-                                 simple = c("treat.bi", "Experiment"))
-arc.14c.inc.meanDif
-# Hainich
-lmer.hai.14c.ct <- contrast(ref_grid(lmer.hai.14c), "pairwise", 
-                            simple = c("treat.bi", "Experiment"))
-contrast.key <- c("control arc - treatment arc" = "Trt - Ctl (Experiment 1)",
-                  "control arc - control rewet" = "∆/t Ctl",
-                  "control arc - treatment rewet" = "∆/t E1 Ctl - E2 Trt",
-                  "treatment arc - control rewet" = "∆/t E1 Trt - E2 Ctl",
-                  "treatment arc - treatment rewet" = "∆/t Trt",
-                  "control rewet - treatment rewet" = "Trt - Ctl (Experiment 2)")
-# p <- confint(lmer.hai.14c.ct) %>%
-#   data.frame(.) %>%
-#   mutate(Contrast = factor(recode(contrast, !!!contrast.key),
-#                            levels = c("Trt - Ctl (Experiment 1)",
-#                                       "Trt - Ctl (Experiment 2)",
-#                                       "∆/t Ctl",
-#                                       "∆/t Trt",
-#                                       "∆/t E1 Ctl - E2 Trt",
-#                                       "∆/t E1 Trt - E2 Ctl"))) %>%
-#   ggplot(., aes(Contrast, estimate, color = Type)) +
-#   geom_hline(yintercept = 0) +
-#   geom_point(size = 3, position = position_dodge(width = .5, preserve = "total")) +
-#   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = .5,
-#                 position = position_dodge(width = .5, preserve = "total")) +
-#   scale_color_manual(name = 'Ecosystem',
-#                      values =c('F'='#a35513','G'='#1361a3'),
-#                      labels = c('Forest','Grassland')) +
-#   ylab(expression('Mean difference in '*Delta^14*'C-CO'[2]*' (‰)')) +
-#   ggtitle("Hainich contrasts") +
-#   theme(panel.grid = element_blank(),
-#         axis.text.x = element_text(angle = 45, hjust = 1),
-#         plot.title = element_text(hjust = 0.5))
-# ggsave("lmer.contrasts.hai.pdf", p, device = cairo_pdf)
-
-# plot
-lmer.arcRewet.14c.df %>%
-  mutate(ys = ifelse(Experiment == "arc", 2011, 2019),
-         Treatment = ifelse(Experiment == "arc" & treat.bi == "treatment", 
-                            "air-dry/rewet + storage", 
-                            ifelse(Experiment == "rewet" & treat.bi == "treatment",
-                            "air-dry/rewet", "control"))) %>%
-  mutate(YearSampled = ifelse(treat.bi == "treatment", ys + .6, ys)) %>%
-  ggplot(., aes(YearSampled, emmean, color = Type)) +
-  geom_path(data = Datm, aes(Date, NHc14, linetype = Atmosphere), color = "black") +
-  geom_point(aes(shape = Treatment), size = 3) +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = .5) +
-  scale_color_manual(name = 'Ecosystem',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  scale_shape_manual(name = 'Treatment',
-                     values = c("control" = 16,
-                                "air-dry/rewet" = 1,
-                                "air-dry/rewet + storage" = 0),
-                     labels = c("control" = "control-1 (2011)\ncontrol-2 (2019)",
-                                "air-dry/rewet" = "air-dry/rewet",
-                                "air-dry/rewet + storage" = "air-dry/rewet + storage")) +
-  scale_x_continuous(limits = c(2010, 2020), breaks = c(2011, 2019)) +
-  scale_y_continuous(limits = c(-15, 110)) +
-  facet_grid(cols = vars(Type),
-             labeller = labeller(Type = c("F" = "Forest", "G" = "Grassland"))) +
-  ylab(expression(Delta^14*'C-CO'[2]*' (‰)')) +
-  xlab("Year Sampled") +
-  theme(panel.grid = element_blank())
 ```
-
-```{r pre-equ-13c-stats, include = FALSE}
-# gather pre and inc data from all reps, arc and rewet exp only
-```
-
-## Treatment effect on $\Delta$^14^C-CO~2~ for all samples (Experiments 1, 2, and 3)
 
 ```{r 14c-trt-difs}
+# Load atmospheric data
+Datm <- rbind(graven, future14C)
+save(Datm, file = "Datm.RData")
+yrs <- Datm$Date
+
 # Filter data to "inc", split by binary treatment variable, then merge
 # collapse treatment variable into binary control/treatment
 all.14c.sum.df$treat.bi <- ifelse(all.14c.sum.df$Treatment == "control", "control", "treatment")
@@ -1613,36 +1703,6 @@ all.14c.ctl.trt$ctl.trt.dd14 <- all.14c.ctl.trt$dd.ctl - all.14c.ctl.trt$dd.trt
 
 # save Rdat file
 save(all.14c.ctl.trt, file = "./all.14c.ctl.trt.RData")
-
-# Stats
-# linear models
-lm.all.14c.ctl.trt <- lapply(
-  split(all.14c.ctl.trt, all.14c.ctl.trt$Experiment), function(exp) {
-    summary(lm(ctl.trt.d14 ~ Type, data = exp))
-  })
-# look at type separately (null models)
-lm2.all.14c.ctl.trt <- lapply(
-  split(all.14c.ctl.trt, all.14c.ctl.trt$Experiment), function(exp) {
-    lapply(split(exp, exp$Type), function(x) {
-      summary(lm(ctl.trt.d14 ~ 1, data = x))
-    })
-  })
-# without Oak Ridge samples in tme experiment
-lm3.all.14c.ctl.trt <- lapply(
-  split(all.14c.ctl.trt, all.14c.ctl.trt$Experiment), function(exp) {
-    if (exp[1, "Experiment"] == "tme") {
-      exp %>%
-        filter(Site != "Walker Branch" & Site != "Tennessee Valley") %>%
-        lm(ctl.trt.d14 ~ Type, data = .) %>%
-        summary()
-    } else {
-      summary(lm(ctl.trt.d14 ~ Type, data = exp)) 
-    }
-  })
-# combine experiments 1 and 3
-summary(lm(ctl.trt.d14 ~ Type, data = all.14c.ctl.trt[all.14c.ctl.trt$Experiment != "rewet", ]))
-# combine experiments 1, 2, and 3
-summary(lm(ctl.trt.d14 ~ Type, data = all.14c.ctl.trt))
 
 # difs
 e12.14c.ctl.trt.sum <- all.14c.ctl.trt %>%
@@ -2021,45 +2081,6 @@ all.14c.sum.df %>%
   theme_bw() +
   theme(panel.grid = element_blank())
 
-# original plot but with mixed model calculated CIs
-fixef.arc.rewet %>%
-  mutate(YearSampled = ifelse(Experiment == "arc", 2011, 2019)) %>%
-  mutate(year.Type = paste(YearSampled, Type),
-         Treatment = ifelse(treat.bi == "treatment" & Experiment == "arc", "air-dry/rewet + storage", ifelse(treat.bi == "treatment" & Experiment == "rewet", "air-dry/rewet", "control")),
-         yrsm_offset = ifelse(treat.bi == "treatment", YearSampled + .25, YearSampled - .25)) %>%
-  ggplot(., aes(yrsm_offset, est, color = Type)) +
-  geom_point(aes(shape = Treatment), 
-             size = 3, stroke = 1.5) +
-  geom_path(aes(YearSampled, est, group = year.Type), 
-            arrow = arrow(type = "open", length = unit(.1, "inches"), ends = "last"),
-            show.legend = FALSE,
-            position = position_dodge(width = -1.5, preserve = "single"),
-            size = 1.2) +
-  geom_path(data = Datm, aes(Date, NHc14, linetype = Atmosphere), color = "black") +
-  geom_errorbar(
-    aes(ymin = ci95.l, ymax = ci95.u, color = Type), 
-    width = .5, alpha = .3) +
-  scale_color_manual(name = 'Ecosystem',
-                     values = c('F' = '#a35513',
-                                'G' = '#1361a3'),
-                     labels = c('Forest',
-                                'Grassland')) +
-  scale_shape_manual(name = 'Treatment',
-                     values = c("air-dry/rewet" = 1, 
-                                "air-dry/rewet + storage" = 0,
-                                "control" = 16),
-                     labels = c("air-dry" = "air-dry/rewet", 
-                                "air-dry + storage" = "air-dry/rewet + storage",
-                                "control" = "control-1 (2011)\ncontrol-2 (2019)")) +
-  guides(linetype = guide_legend(title = NULL)) +
-  scale_x_continuous(limits = c(2010, 2020), breaks = c(2011, 2019)) +
-  scale_y_continuous(limits = c(-15, 105)) +
-  xlab('Year sampled') +
-  ylab(expression('mean '*Delta*''^14*'C-CO'[2]*' (‰)')) +
-  facet_grid(cols = vars(Type)) +
-  theme_bw() +
-  theme(panel.grid = element_blank())
-
 # Plot Hainich points only, no arrows
 all.14c.sum.df %>%
   filter(Experiment != "tme" & Period == "inc" & Site == "Hainich") %>%
@@ -2203,75 +2224,11 @@ arc.rewet.pooled[grep("pooled", row.names(arc.rewet.pooled)),] %>%
         text = element_text(size = 14))
 ```
 >**Fig `r {fig.n + 4}`. Time series of control and treatment $\Delta$^14^C-CO~2~ (Experiments 1 and 2)**
-
 >*Caption:* Filled circles show $\Delta$^14^C-CO~2~ observed for both control-1 and control-2 samples (2011 and 2019 points, respectively). Open symbols show $\Delta$^14^C-CO~2~ observed for treament samples: open squares = air-dry + storage treatment, Experiment 1; open circles = air-dry only treatment, Experiment 2. Points are means and error bars show the pooled standard deviation. The black line shows $\Delta$^14^C of the atmosphere.
 
-The absolute mean difference in ^14^C-CO~2~ between control and treatment samples was greater in grassland samples (`r {round(mean(abs(trt.ctl.df[trt.ctl.df$Type == "G", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Type == "G", "d14c_corr_mean.trt"])), 1)}`‰) than in forest samples (`r {round(mean(abs(trt.ctl.df[trt.ctl.df$Type == "F", "d14c_corr_mean.ctl"] - trt.ctl.df[trt.ctl.df$Type == "F", "d14c_corr_mean.trt"])), 1)}`‰) for both Experiment 1 and Experiment 2. 
-
-## $\delta$^13^C
-```{r ctl-trt-difs-13c}
-# average control and treatment data
-# note that upper/lower limits = 2xSE
-
-# Plot side-by-side w/ 2xSE
-iso.12.avg2 %>%
-  filter(Period == "inc") %>%
-  mutate(YearSampled = ifelse(Experiment == "arc", "2011", "2019")) %>%
-  mutate(Eco = ifelse(Type == "F", "Forest", "Grassland")) %>%
-  ggplot(., aes(YearSampled, d13c_mean, color = Type)) +
-  geom_point(aes(shape = Treatment), size = 3) +
-  geom_errorbar(
-    aes(ymin = d13c_u, 
-        ymax = d13c_l, 
-        color = Type), 
-    width = .1) +
-  scale_color_manual(name = 'Ecosystem',
-                     values = c('F'='#a35513',
-                                'G'='#1361a3'),
-                     labels = c('forest',
-                                'grassland')) +
-  scale_shape_manual(name = 'Treatment',
-                     values = c("air-dry" = 1, 
-                                "air-dry + storage" = 0,
-                                "control" = 16),
-                     labels = c("air-dry" = "air-dry", 
-                                "air-dry + storage" = "air-dry + storage",
-                                "control" = "control-1 (2011)\n control-2 (2019)")) +
-  ylab(expression('mean '*delta*''^13*'C (‰)')) +
-  facet_grid(cols = vars(Eco)) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        axis.title.x = element_blank())
-
-# iso.12.avg2 %>%
-#   mutate(YearSampled = ifelse(Experiment == "arc", "2011", "2019"),
-#          treat.period = paste(Treatment, Period, sep = "."),
-#          Eco = ifelse(Type == "F", "Forest", "Grassland")) %>%
-#   ggplot(., aes(YearSampled, d13c_mean, color = Type)) +
-#   geom_point(aes(shape = treat.period), size = 3) +
-#   geom_errorbar(
-#     aes(ymin = d13c_u,
-#         ymax = d13c_l,
-#         color = Type),
-#     width = .1) +
-#   scale_color_manual(name = 'Ecosystem',
-#                      values = c('F'='#a35513','G'='#1361a3')) +
-#   scale_shape_manual(name = 'Treatment',
-#                      values = c("air-dry.pre" = 2,
-#                                 "air-dry.inc" = 1,
-#                                 "air-dry + storage.inc" = 0,
-#                                 "air-dry + storage.pre" = 6,
-#                                 "control.inc" = 16,
-#                                 "control.pre" = 17)) +
-#   ylab(expression('mean '*delta*''^13*'C (‰)')) +
-#   facet_grid(cols = vars(Eco)) +
-#   theme_bw() +
-#   theme(panel.grid = element_blank(),
-#         axis.title.x = element_blank())
-```
 >**Supplemental Fig `r {sfig.n + 2}`. Time series of control and treatment $\delta$^13^C-CO~2~ (Experiments 1 and 2)**
 
->*Caption:* Filled circles show $\delta$^13^C-CO~2~ observed for control samples, while open symbols show $\delta$^13^C-CO~2~ observed for treament samples (open squares = air-dry + storage treatment, Experiment 1, 2011; open circles = air-dry only treatment, Experiment 2, 2019). Points are means and error bars show 2x standard error. 
+>*Caption:* Filled circles show $\delta$^13^C-CO~2~ observed for control samples, while open symbols show $\delta$^13^C-CO~2~ observed for treament samples (open squares = air-dry + storage treatment, Experiment 1, 2011; open circles = air-dry only treatment, Experiment 2, 2019). Points are means and error bars show standard deviations. 
 
 *Effect of cumulative respired carbon on ^14^C-CO~2~*
 
@@ -2314,52 +2271,6 @@ summary(lm(d14c_dif ~ Type * c_dif * Experiment, arc.rewet.14c.ctl.trt))
 # no significance of c_dif overall
 rm(j.vars)
 ```
-
-```{r d14c-stats, include = FALSE}
-# average duplicates and get vectors of experiment/type/treatment
-arc.rewet.14c.sum2 <- all.14c.ls[[2]] %>%
-  filter(Period == "inc") %>%
-  select(ID, Type, Treatment, Experiment, d14c_corr) %>%
-  group_by(ID, Type, Treatment, Experiment) %>%
-  summarize_all(list(mean = mean, sd = sd), na.rm = TRUE)
-arc.rewet.14c.sum2 <- data.frame(arc.rewet.14c.sum2)
-
-
-# stats
-# air-dry + storage
-# forest
-t.test(arc.rewet.14c.sum2[arc.rewet.14c.sum2$Experiment == "arc" & arc.rewet.14c.sum2$Treatment == "control" & arc.rewet.14c.sum2$Type == "F", "mean"], 
-       arc.rewet.14c.sum2[arc.rewet.14c.sum2$Experiment == "arc" & arc.rewet.14c.sum2$Treatment == "air-dry + storage" & arc.rewet.14c.sum2$Type == "F", "mean"], tails = 2, paired = TRUE)
-
-# grassland
-t.test(arc.rewet.14c.sum2[arc.rewet.14c.sum2$Experiment == "arc" & arc.rewet.14c.sum2$Treatment == "control" & arc.rewet.14c.sum2$Type == "G", "mean"], 
-       arc.rewet.14c.sum2[arc.rewet.14c.sum2$Experiment == "arc" & arc.rewet.14c.sum2$Treatment == "air-dry + storage" & arc.rewet.14c.sum2$Type == "G", "mean"], tails = 2, paired = TRUE)
-
-# air-dry only
-# forest
-t.test(arc.rewet.14c.sum2[arc.rewet.14c.sum2$Experiment == "rewet" & arc.rewet.14c.sum2$Treatment == "control" & arc.rewet.14c.sum2$Type == "F", "mean"], 
-       arc.rewet.14c.sum2[arc.rewet.14c.sum2$Experiment == "rewet" & arc.rewet.14c.sum2$Treatment == "air-dry" & arc.rewet.14c.sum2$Type == "F", "mean"], tails = 2, paired = TRUE)
-
-# grassland
-t.test(arc.rewet.14c.sum2[arc.rewet.14c.sum2$Experiment == "rewet" & arc.rewet.14c.sum2$Treatment == "control" & arc.rewet.14c.sum2$Type == "G", "mean"], 
-       arc.rewet.14c.sum2[arc.rewet.14c.sum2$Experiment == "rewet" & arc.rewet.14c.sum2$Treatment == "air-dry" & arc.rewet.14c.sum2$Type == "G", "mean"], tails = 2, paired = TRUE)
-```
-
-
-```{r plot-cdif-d14c, include = FALSE}
-ggplot(arc.rewet.14c.ctl.trt, aes(c_dif, d14c_dif, color = Type, shape = Experiment)) +
-  geom_vline(xintercept = 0) +
-  geom_hline(yintercept = 0) +
-  geom_point(size = 3) +
-  scale_color_manual(name = 'Ecosystem',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  theme_bw() +
-  theme(panel.grid = element_blank())
-```
-
-
-We looked at the possible effect of the difference in the amount of carbon respired (mg CO~2~-C g soil C^-1^) on the differences between control and treatment ^14^C-CO~2~ using a linear regression model, but it was not significant overall. When data from Experiment 1 and Experiment 2 were considered separately, we observed a slight positive trend between the difference in respired carbon and the difference in ^14^C-CO~2~ within Experiment 2, but it was only marginally significant (p = `r {round(summary(lm(d14c_dif ~ c_dif * Type, arc.rewet.14c.ctl.trt[arc.rewet.14c.ctl.trt$Experiment == "rewet", ]))$coef[2,4],3)}`). 
 
 ```{r plot-14c-by-c-resp}
 # 10. Plot $\Delta$^14^C against proportion of soil C respired by experiment, land cover, and sampling period.
@@ -2405,40 +2316,6 @@ all.14c.sum.df %>%
 >**Supplementary Fig. `r {sfig.n + 3}`. Change in ^14^C-CO~2~ in relation to cumulative soil carbon respired**
 
 >*Caption:* Note that pre-incubation $\Delta$^14^C was not measured for the control-1 samples in 2011. Limits exclude outlier point (HEW22 control-2, pre-incubation) for improved legibility. Points are means, error bars show min and max of duplicate samples.
-
-```{r plot C resp vs 14C averaged by Ecosystem and treatment, include = FALSE}
-# Alternate C-resp x 14c fig: data averaged by Ecosystem and treatment within sampling periods
-all.14c.sum2 %>%
-  mutate(treat.Period = paste(treat.bi, Period)) %>%
-  ggplot(., aes(mgCO2.C_gC_mean, d14c_corr_mean, color = Type, shape = treat.Period)) +
-  geom_point(size = 3) +
-  geom_path(aes(group = Treatment)) +
-  geom_errorbar(
-    aes(ymin = d14c_corr_u, 
-        ymax = d14c_corr_l, 
-        color = Type), 
-    width = .25) +
-  geom_errorbarh(
-    aes(xmin = mgCO2.C_gC_u, 
-        xmax = mgCO2.C_gC_l, 
-        color = Type), 
-    height = .9) +
-  scale_color_manual(name = 'Ecosystem',
-                     values =c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  scale_shape_manual(name = 'Sampling period (treatment)',
-                     values =c(16, 17, 1, 2),
-                     labels = c("control pre" = 'pre-incubation\n(control)', 
-                                "control inc" = 'equilibrium respiration\n(control)',
-                                "treatment pre" = 'pre-incubation\n(air-dry/air-dry + storage)',
-                                "treatment inc" = 'equilibrium respiration\n(air-dry/air-dry + storage)')) +
-  facet_grid(cols = vars(Type), rows = vars(YearSampled)) +
-  xlab(expression('Respired C (mgCO'[2]*'-C'*' g soil C'^-1*')')) +
-  ylab(expression('mean '*Delta*''^14*'C (‰)')) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        legend.key.height=unit(.8, "cm"))
-```
 
 ```{r plot 14c by c resp with outlier, include = FALSE}
 # Code for a third plot with outlier data
@@ -2933,231 +2810,6 @@ var.cf <- cbind.data.frame(e12.14c.ctl.trt[1:4, ], e12.d14.sdif2[ , c("mean", "s
 #              digits = 1)
 ```
 
-```{r stats-2021-05-21}
-# calculate means and variances within experiment, period, type, and ID
-all.14c.df <- rbind(all.14c.ls[[1]],
-                    all.14c.ls[[2]][, which(names(all.14c.ls[[2]]) %in% names(all.14c.ls[[1]]))])
-all.14c.df$treat.bi <- ifelse(all.14c.df$Treatment == "control", "control", "treatment")
-
-# Dunnett's test (treat+rep comparisons against single control)
-all.14c.df.dun <- bind_rows(lapply(split(all.14c.df, all.14c.df$Experiment), function(exp)
-  bind_rows(lapply(split(exp, exp$Period), function(per)
-    bind_rows(lapply(split(per, per$treat.bi), function(trt)
-      bind_rows(
-        lapply(split(trt, trt$ID), function(id) {
-        id$rep <- seq(1, nrow(id))
-        return(id)
-      }), .id = "ID")), .id = "treat.bi")), .id = "Period")), .id = "Experiment")
-all.14c.df.dun$trtRep <- factor(paste0(all.14c.df.dun$treat.bi, all.14c.df.dun$rep))
-arc.inc.F.aov <- aov(d14c ~ trtRep,
-                     data = all.14c.df.dun[all.14c.df.dun$Experiment == "arc" & 
-                                             all.14c.df.dun$Period == "inc" & 
-                                             all.14c.df.dun$Type == "F", ])
-arc.inc.F.ghlt <- glht(arc.inc.F.aov, linfct = mcp(trtRep = "Dunnett"))
-arc.inc.G.aov <- aov(d14c ~ trtRep,
-                     data = all.14c.df.dun[all.14c.df.dun$Experiment == "arc" & 
-                                             all.14c.df.dun$Period == "inc" & 
-                                             all.14c.df.dun$Type == "G", ])
-arc.inc.G.ghlt <- glht(arc.inc.G.aov, linfct = mcp(trtRep = "Dunnett"))
-
-
-all.14c.stats.ls <- lapply(
-  # split by Experiment and restrict to A horizon
-  split(all.14c.df[all.14c.df$Horizon == "A", ], 
-        all.14c.df[all.14c.df$Horizon == "A", "Experiment"]), function(exp) {
-    # split by Period
-          # exclude Oak Ridge
-          # if (exp[1, "Experiment"] == "tme") {
-          #   exp <- exp[-which(exp$Site == "Tennessee Valley" | exp$Site == "Walker Branch"), ]
-          # }
-          lapply(split(exp, exp$Period), function(per) {
-            # split by Treatment
-            lapply(split(per, per$treat.bi), function(trt) {
-            # calculate mean and var of reps
-              bind_rows(
-                lapply(split(trt, trt$ID), function(id) {
-                  data.frame(m = mean(id$d14c_corr),
-                             v = var(id$d14c_corr),
-                             Type = unique(id$Type))
-                }), .id = "ID")
-            })
-        })
-      })
-
-# Use mean of replicate variances across all experiments for missing variances
-mean.rep.var <- mean(c(all.14c.stats.ls$rewet$inc$F$control$v,
-                       all.14c.stats.ls$rewet$inc$G$control$v,
-                       all.14c.stats.ls$rewet$inc$G$treatment$v,
-                       all.14c.stats.ls$rewet$inc$F$treatment$v,
-                       all.14c.stats.ls$arc$inc$F$treatment$v,
-                       all.14c.stats.ls$arc$inc$G$treatment$v,
-                       all.14c.stats.ls$tme$inc$F$control$v,
-                       all.14c.stats.ls$tme$inc$F$treatment$v), na.rm = TRUE)
-# add var where needed
-all.14c.stats.ls <- lapply(all.14c.stats.ls, function(exp) {
-  lapply(exp, function(per) {
-    lapply(per, function(trt) {
-      trt$v <- ifelse(is.na(trt$v), mean.rep.var, trt$v)
-      return(trt)
-      })
-    })
-  })
-
-# calculate grand means and pooled variance w/in treatment groups and types
-arc.rewet.14c.stats.inc.ls2 <- lapply(all.14c.stats.ls[1:2], function(exp)
-  lapply(exp, function(per) 
-    lapply(per, function(trt)
-      lapply(split(trt, trt$Type), function(id.sum) {
-        sample.decomp(n = rep(2, length(id.sum$m)),
-                      sample.mean = id.sum$m,
-                      sample.var = id.sum$v,
-                      include.sd = TRUE)
-      }))))
-
-# Calculate mean differences for 2nd enclosure period ("inc")
-all.14c.stats.inc.dif.ls <- lapply(all.14c.stats.ls, function(exp) {
-  inc.ls <- unlist(exp[which(names(exp) == "inc")], recursive = FALSE) 
-  inc.df <- merge(inc.ls[[1]], inc.ls[[2]], by = "ID", suffixes = names(exp$inc))
-  # calculate mean difference
-  inc.df$dif <- inc.df$mtreatment - inc.df$mcontrol
-  # sum variances
-  inc.df$vdif <- inc.df$vcontrol + inc.df$vtreatment
-  inc.df$Type <- inc.df$Typecontrol
-  return(inc.df[ , c("ID", "dif", "vdif", "Type")])
-})
-
-# calculate mean of mean difference and pooled variance
-# arc, rewet
-arc.rewet.14c.stats.inc.ls <- lapply(all.14c.stats.inc.dif.ls[1:2], function(exp) {
-  lapply(split(exp, exp$Type), function(id.sum) {
-    sample.decomp(n = rep(2, length(id.sum$dif)),
-                  sample.mean = id.sum$dif,
-                  sample.var = id.sum$vdif,
-                  include.sd = TRUE)
-  })
-})
-
-## tme
-# all
-tme.14c.stats <- sample.decomp(n = rep(2, nrow(all.14c.stats.inc.dif.ls$tme)),
-                               sample.mean = all.14c.stats.inc.dif.ls$tme$dif,
-                               sample.var = all.14c.stats.inc.dif.ls$tme$vdif,
-                               include.sd = TRUE)
-tme.ci95.int <- tme.14c.stats[nrow(tme.14c.stats), "sample.sd"] / sqrt(tme.14c.stats[nrow(tme.14c.stats), "n"]) * qt(0.975, tme.14c.stats[nrow(tme.14c.stats), "n"] - 1)
-tme.ci95 <- c(tme.14c.stats[nrow(tme.14c.stats), "sample.mean"] - tme.ci95.int,
-              tme.14c.stats[nrow(tme.14c.stats), "sample.mean"] + tme.ci95.int)
-
-# Oak Ridge
-tme.OR <- all.14c.stats.inc.dif.ls$tme[c(which(grepl("WB", all.14c.stats.inc.dif.ls$tme$ID)),
-                                         which(grepl("TVA", all.14c.stats.inc.dif.ls$tme$ID))), ]
-tme.OR.stats <- sample.decomp(n = rep(2, nrow(tme.OR)),
-                               sample.mean = tme.OR$dif,
-                               sample.var = tme.OR$vdif,
-                               include.sd = TRUE)
-tme.OR.ci95.int <- tme.OR.stats[nrow(tme.OR.stats), "sample.sd"] / sqrt(tme.OR.stats[nrow(tme.OR.stats), "n"]) * qt(0.975, tme.OR.stats[nrow(tme.OR.stats), "n"] - 1)
-tme.OR.ci95 <- c(tme.OR.stats[nrow(tme.OR.stats), "sample.mean"] - tme.OR.ci95.int,
-                 tme.OR.stats[nrow(tme.OR.stats), "sample.mean"] + tme.OR.ci95.int)
-# Non Oak Ridge
-tme.nonOR <- all.14c.stats.inc.dif.ls$tme[-as.numeric(row.names(tme.OR)), ]
-tme.nonOR.stats <- sample.decomp(n = rep(2, nrow(tme.nonOR)),
-                                 sample.mean = tme.nonOR$dif,
-                                 sample.var = tme.nonOR$vdif,
-                                 include.sd = TRUE)
-tme.nonOR.ci95.int <- tme.nonOR.stats[nrow(tme.nonOR.stats), "sample.sd"] / sqrt(tme.nonOR.stats[nrow(tme.nonOR.stats), "n"]) * qt(0.975, tme.nonOR.stats[nrow(tme.nonOR.stats), "n"] - 1)
-tme.nonOR.ci95 <- c(tme.nonOR.stats[nrow(tme.nonOR.stats), "sample.mean"] - tme.nonOR.ci95.int,
-                    tme.nonOR.stats[nrow(tme.nonOR.stats), "sample.mean"] + tme.nonOR.ci95.int)
-# nonOR F
-tme.nonOR.F <- tme.nonOR[tme.nonOR$Type == "F", ]
-tme.nonOR.F.stats <- sample.decomp(n = rep(2, nrow(tme.nonOR.F)),
-                                   sample.mean = tme.nonOR.F$dif,
-                                   sample.var = tme.nonOR.F$vdif,
-                                   include.sd = TRUE)
-tme.nonOR.F.ci95.int <- tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "sample.sd"] /
-  sqrt(tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "n"]) * 
-  qt(0.975, tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "n"] - 1)
-tme.nonOR.F.ci95 <- c(tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "sample.mean"] - tme.nonOR.F.ci95.int,
-                    tme.nonOR.F.stats[nrow(tme.nonOR.F.stats), "sample.mean"] + tme.nonOR.F.ci95.int)
-# nonOR G
-tme.nonOR.G <- tme.nonOR[tme.nonOR$Type == "G", ]
-tme.nonOR.G.stats <- sample.decomp(n = rep(2, nrow(tme.nonOR.G)),
-                                   sample.mean = tme.nonOR.G$dif,
-                                   sample.var = tme.nonOR.G$vdif,
-                                   include.sd = TRUE)
-tme.nonOR.G.ci95.int <- tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "sample.sd"] /
-  sqrt(tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "n"]) * 
-  qt(0.975, tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "n"] - 1)
-tme.nonOR.G.ci95 <- c(tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "sample.mean"] - tme.nonOR.G.ci95.int,
-                    tme.nonOR.G.stats[nrow(tme.nonOR.G.stats), "sample.mean"] + tme.nonOR.G.ci95.int)
-
-# calculate for aggregated dataset
-arc.rewet.14c.stats.inc.ls2 <- lapply(
-  split(
-    bind_rows(lapply(all.14c.stats.inc.dif.ls, function(df) bind_rows(df, .id = "type"))),
-    bind_rows(lapply(all.14c.stats.inc.dif.ls, function(df) bind_rows(df, .id = "type")))[["type"]]), 
-  function(id.sum)
-    sample.decomp(n = rep(2, length(id.sum$dif)),
-                  sample.mean = id.sum$dif,
-                  sample.var = id.sum$vdif,
-                  include.sd = TRUE))
-
-# # homogeneity of variance?
-# arc.rewet.14c.var.inc.ls <- lapply(arc.rewet.14c.stats.inc.ls, function(df) {
-#   var.df <- bind_rows(df, .id = "Type")
-#   var.df <- var.df[which(var.df$n < 3), ]
-#   var.test(sample.var ~ Type, data = var.df)
-# })
-# # control vs. treatment, Exp 2
-# rewet.ctl.trt.var <- lapply(all.14c.stats.ls$rewet$inc, function(df) {
-#     var.df <- bind_rows(df, .id = "treat.bi")
-#     return(var.test(v ~ treat.bi, data = var.df))
-# })
-
-# extract mean differences
-arc.14c.inc.meanDif <- bind_rows(
-  lapply(arc.rewet.14c.stats.inc.ls, function(exp) {
-    bind_rows(
-      lapply(exp, function(md) {
-        df <- round(md[nrow(md), c("n", "sample.mean", "sample.sd")], 1)
-        t <- qt(.975, df = max(df$n) - 1)
-        df$se <- round(df$sample.sd/sqrt(df$n), 1)
-        df$ci95.l <- round(df$sample.mean - df$se * t, 1)
-        df$ci95.u <- round(df$sample.mean + df$se * t, 1)
-        return(df)
-    }), .id = "type")
-}), .id = "Experiment") %>%
-  mutate(Type = substr(type, nchar(type), nchar(type))) %>%
-  select(c(Experiment, Type, n, sample.mean, ci95.l, ci95.u, sample.sd, se))
-ggplot(arc.14c.inc.meanDif, aes(Type, sample.mean, color = Type)) +
-  geom_hline(yintercept = 0) +
-  geom_point(size = 3) +
-  geom_errorbar(aes(ymin = ci95.l, ymax = ci95.u), width = .1) +
-  scale_color_manual(name = 'Ecosystem',
-                     values = c('F'='#a35513','G'='#1361a3'),
-                     labels = c('Forest','Grassland')) +
-  coord_flip() +
-  facet_grid(rows = vars(Experiment), 
-             labeller = labeller(Experiment = c("arc" = "Experiment 1", 
-                                                "rewet" = "Experiment 2",
-                                                "tme" = "Experiment 3"))) +
-  ylab(expression("Control - Treatment "*Delta^14*"C-CO"[2]*" (‰)")) +
-  xlab(NULL) +
-  theme(panel.grid = element_blank(),
-        axis.text.y = element_blank())
-
-# extract mean differences for overall dataset
-arc.14c.inc.meanDif2 <- bind_rows(
-  lapply(arc.rewet.14c.stats.inc.ls2, function(md) {
-        df <- round(md[nrow(md), c("n", "sample.mean", "sample.sd")], 1)
-        t <- qt(.975, df = max(df$n) - 1)
-        df$se <- round(df$sample.sd/sqrt(df$n), 1)
-        df$ci95.l <- round(df$sample.mean - df$se * t, 1)
-        df$ci95.u <- round(df$sample.mean + df$se * t, 1)
-        return(df)
-    }), .id = "type") %>%
-  mutate(Type = substr(type, nchar(type), nchar(type))) %>%
-  select(c(Type, n, sample.mean, ci95.l, ci95.u, sample.sd, se))
-```
-
 ```{r delta-delta-plot, include = FALSE}
 # calculate dd14c
 dd14c.sum <- e12.d14.inc
@@ -3228,7 +2880,7 @@ whcFresh.long <- rbind(whcFresh.2011, whcFresh.2019)
 
 # stats
 whc.ctl.trt <- merge(arc.rewet.14c.ctl.trt, whcFresh.long, by = c("ID", "Experiment"))
-save(whc.ctl.trt, file = "./whc.ctl.trt.Rdata")
+save(whc.ctl.trt, file = "whc.ctl.trt.Rdata")
 ggplot(whc.ctl.trt, aes(whcFresh, d14c_dif, color = Type, shape = Experiment)) +
   geom_hline(yintercept = 0) +
   geom_point(size = 3) +
