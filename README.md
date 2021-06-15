@@ -4,4 +4,4 @@
 # arc-inc
 Code, data, and documents for archived soil incubation project
 
-Analysis script (.Rmd) and pdf output are available [here](src) (*in progress*). To run the .Rmd script you must first make a local clone of the repository.
+All analysis and figures for the submitted manuscript "Impacts of Drying and Rewetting on the Radiocarbon Signature of Respired CO2 and Implications for Incubating Archived Soils" can be viewed and recreated with the script linked [here](src/arc-inc_ms-code_2020-10-08.Rmd). To run the .Rmd script you must first make a local clone of the repository.
